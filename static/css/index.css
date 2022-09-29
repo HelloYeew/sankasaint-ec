@@ -3,8 +3,65 @@
     background: var(--color-accent);
 }
 
+/* Add NotoSansThai as Thai font */
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-Bold.ttf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-ExtraBold.ttf');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-ExtraLight.ttf');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-Light.ttf');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-Medium.ttf');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-SemiBold.ttf');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'NotoSansThai';
+    src: url('/static/fonts/NotoSansThai-Thin.ttf');
+    font-weight: 100;
+    font-style: normal;
+}
+
 * {
-    font-family: 'Comfortaa', cursive;
+    font-family: 'Comfortaa', 'NotoSansThai', sans-serif;
     font-size: 14px;
 }
 

@@ -43,7 +43,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top" aria-label="Navbar">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'homepage' %}">ayaka</a>
+            <a class="navbar-brand" href="{% url 'homepage' %}">Sankasaint</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -58,9 +58,9 @@
 {#                        <a class="nav-link" href="#">Not Active</a>#}
 {#                    </li>#}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Dummy menu</a>
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Information</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Dummy dropdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'area_list' %}">Area list</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -70,6 +70,9 @@
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">{{ user.username }}</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
+                            {% if user.is_superuser %}
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                         </ul>
                     </li>
@@ -103,5 +106,15 @@
     {% if messages %}
     new bootstrap.Toast(document.getElementById('messages')).show();
     {% endif %}
+
+    if (document.getElementById('back-button') !== null) {
+        document.getElementById('back-button').addEventListener('click', () => {
+            window.history.back();
+        });
+    }
+
+    function goBack() {
+        window.history.back();
+    }
 </script>
 </html>
