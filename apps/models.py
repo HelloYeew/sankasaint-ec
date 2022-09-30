@@ -11,7 +11,10 @@ class Area(models.Model):
 
 class Candidate(models.Model):
     name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='candidates')
+    image = models.ImageField(default='default_candidate.png', upload_to='candidates')
     description = models.TextField()
-    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True)
+    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
 

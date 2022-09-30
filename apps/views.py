@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from apps.forms import AddAreaForm
-from apps.models import Area
+from apps.models import Area, Candidate
 from users.models import ColourSettings
 
 
@@ -74,4 +74,13 @@ def area_detail(request, area_id):
     return render(request, 'apps/area/area_detail.html', {
         'colour_settings': colour_settings,
         'area': area
+    })
+
+
+def candidate_list(request):
+    colour_settings = ColourSettings.objects.filter(user=request.user).first()
+    all_candidate = Candidate.objects.all()
+    return render(request, 'apps/candidate/candidate_list.html', {
+        'colour_settings': colour_settings,
+        'all_candidate': all_candidate
     })
