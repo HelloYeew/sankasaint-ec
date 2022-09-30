@@ -1,0 +1,34 @@
+[
+{
+    "model": "apps.area",
+    "pk": 1,
+    "fields": {
+        "name": "Mondstadt",
+        "description": "The land of freedom"
+    }
+},
+{
+    "model": "apps.area",
+    "pk": 2,
+    "fields": {
+        "name": "Sumeru",
+        "description": "Ahhh 😭😭😭😭"
+    }
+},
+{
+    "model": "apps.area",
+    "pk": 3,
+    "fields": {
+        "name": "Inazuma",
+        "description": "เอ๋ : ตกนรกอเวจีสี่แสนล้านภพสี่แสนล้านชาติในอเวจีปอยเปตเดี๋ยวนี้ค่ะ ช่วยตัวเองหน่อยสิคะ ออกจากเกาะไปค่ะ"
+    }
+},
+{
+    "model": "apps.area",
+    "pk": 4,
+    "fields": {
+        "name": "Liyue",
+        "description": "Where amongus live here"
+    }
+}
+]
