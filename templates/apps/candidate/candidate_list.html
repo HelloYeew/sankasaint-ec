@@ -6,7 +6,7 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Candidate list</h1>
     {% if user.is_superuser or user.is_staff %}
-    <a href="#" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Add candidate</a>
+    <a href="{% url 'add_candidate' %}" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Add candidate</a>
     {% endif %}
     <p></p>
     <div style="overflow:hidden">
@@ -34,9 +34,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="#" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                        <a href="{% url 'candidate_detail' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                         {% if user.is_superuser or user.is_staff %}
-                        <a href="#" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+                        <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
                         {% endif %}
                     </td>
                 </tr>

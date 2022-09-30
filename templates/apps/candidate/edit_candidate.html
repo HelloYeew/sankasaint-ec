@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Edit {{ area.name }}{% endblock %}
+{% block title %}Edit {{ candidate.name }}{% endblock %}
 
 {% block content %}
 <div class="container" style="padding: 5rem;">
-    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Edit {{ area.name }}</h1>
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Edit {{ candidate.name }}</h1>
     <form method="POST">
         {% csrf_token %}
         {{ form | crispy }}

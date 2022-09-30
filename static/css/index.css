@@ -193,6 +193,11 @@ a:hover {
     color: var(--color-primary)!important;
 }
 
+.form-text {
+    color: var(--color-primary);
+    filter: brightness(75%);
+}
+
 small.text-muted {
     color: var(--color-primary)!important;
     filter: brightness(85%);
