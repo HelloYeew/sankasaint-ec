@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
 
 from users.forms import UserCreationForms, UserSettingsForm
-from users.models import ColourSettings
+from users.models import ColourSettings, Profile
 
 
 class LogoutAndRedirect(auth_views.LogoutView):
@@ -38,4 +38,12 @@ def settings(request):
     return render(request, 'users/settings.html', {
         'colour_settings': colour_settings,
         'form': form
+    })
+
+
+def profile(request, user_id):
+    colour_settings = ColourSettings.objects.filter(user=request.user).first()
+    return render(request, 'users/profile.html', {
+        'colour_settings': colour_settings,
+        'profile': Profile.objects.get(id=user_id),
     })

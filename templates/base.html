@@ -67,8 +67,9 @@
                 {% if user.is_authenticated %}
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">{{ user.username }}</a>
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false"><img src="{{ user.profile.image.url }}" alt="{{ user.username }}'s profile" style="width:30px; height:30px; border-radius:100px"> {{ user.username }}</a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'profile' user.id %}">Profile</a></li>
                             <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
                             {% if user.is_superuser %}
                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
