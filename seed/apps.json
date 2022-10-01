@@ -12,7 +12,7 @@
     "pk": 2,
     "fields": {
         "name": "Sumeru",
-        "description": "Ahhh 😭😭😭😭"
+        "description": "https://youtu.be/5wA4Y883Oxs"
     }
 },
 {
@@ -29,6 +29,206 @@
     "fields": {
         "name": "Liyue",
         "description": "Where amongus live here"
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 1,
+    "fields": {
+        "name": "Barbara",
+        "image": "candidates/barbara.png",
+        "description": "I'm an idol",
+        "area": 1
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 2,
+    "fields": {
+        "name": "Klee",
+        "image": "candidates/klee.jpg",
+        "description": "Your house will be on fire with my bomb",
+        "area": 1
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 3,
+    "fields": {
+        "name": "Venti",
+        "image": "candidates/venti.png",
+        "description": "I'm always drunk",
+        "area": 1
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 4,
+    "fields": {
+        "name": "Mona",
+        "image": "candidates/mona.jpg",
+        "description": "I need your money",
+        "area": 1
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 5,
+    "fields": {
+        "name": "Sucrose",
+        "image": "candidates/sucrose.png",
+        "description": "(No description cuz she's cute)",
+        "area": 1
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 6,
+    "fields": {
+        "name": "Keqing",
+        "image": "candidates/keqing.jpg",
+        "description": "I have a fake cat ear so vote me.",
+        "area": 4
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 7,
+    "fields": {
+        "name": "Zhongli",
+        "image": "candidates/zhongli.jpg",
+        "description": "He is handsome but no money so no.",
+        "area": 4
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 8,
+    "fields": {
+        "name": "Hu Tao",
+        "image": "candidates/hutao.png",
+        "description": "She will manage my funeral.",
+        "area": 4
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 9,
+    "fields": {
+        "name": "Qiqi",
+        "image": "candidates/qiqi.jpg",
+        "description": "Yeah, she's zombies...",
+        "area": 4
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 10,
+    "fields": {
+        "name": "Beidou",
+        "image": "candidates/beidou.jpg",
+        "description": "Select me if you want to sail every day.",
+        "area": 4
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 11,
+    "fields": {
+        "name": "Kamisato Ayaka",
+        "image": "candidates/ayaka.jpg",
+        "description": "Where's my traveler? Where's my traveler? Where's my traveler? Where's my traveler?",
+        "area": 3
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 12,
+    "fields": {
+        "name": "Sayu",
+        "image": "candidates/sayu.png",
+        "description": "(Nap time, no description)",
+        "area": 3
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 13,
+    "fields": {
+        "name": "Raiden Shogun",
+        "image": "candidates/shogun.jpg",
+        "description": "คุกเข่าแล้วกราบค่ะ แล้วให้พิซซ่าเราฟรีเดี๋ยวนี้ ไม่ได้เหรอคะ ตกอเวจีปอยเปตแสนล้านภพแสนล้านชาติชั่วนิจนิรันดร์เดี๋ยวนี้ค่ะ ห้ามแตะตัวผู้เป็นเจ้านะคะ\r\n\r\nสองแสนล้านภพสองแสนล้านชาติเดี๋ยวนี้ ยืนนิ่งๆ คืนไม่ได้ค่ะ หนูสงสารพวกคุณนะคะ พยายามเข้านะคะ สามแสนล้านภพสามแสนล้านชาติในนรกอเวจีปอยเปตเดี๋ยวนี้ค่ะ\r\n\r\nสี่แสนล้านภพสี่แสนล้านชาติในอเวจีปอยเปตเดี๋ยวนี้ค่ะ ช่วยตัวเองหน่อยสิคะ เดินออกประตูไปค่ะ 760 บาท เสียไม่ได้เหรอคะ เหรอคะ เหรอคะ เหรอคะ เหรอคะ\r\n\r\nห้าแสนล้านภพห้าแสนล้านชาติในอเวจีปอยเปตเดี๋ยวนี้ค่ะ เดี๋ยวนี้ค่ะ เดี๋ยวนี้ค่ะ",
+        "area": 3
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 14,
+    "fields": {
+        "name": "Yoimiya",
+        "image": "candidates/yoimiya.jpg",
+        "description": "Pick me if you want to see fireworks every day!",
+        "area": 3
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 15,
+    "fields": {
+        "name": "Sangonomiya Kokomi",
+        "image": "candidates/kokomi.png",
+        "description": "I'm noob but I have my own island.",
+        "area": 3
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 16,
+    "fields": {
+        "name": "Tighnari",
+        "image": "candidates/tighnari.jpg",
+        "description": "I'm protecting the forest just for you!",
+        "area": 2
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 17,
+    "fields": {
+        "name": "Collei",
+        "image": "candidates/collei.png",
+        "description": "I'm just a trainee but I will try my best!",
+        "area": 2
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 18,
+    "fields": {
+        "name": "Dori",
+        "image": "candidates/dori.jpg",
+        "description": "Matsuwa Matsuwa Matsuwaaaaaa",
+        "area": 2
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 19,
+    "fields": {
+        "name": "Aranara",
+        "image": "candidates/aranara.gif",
+        "description": "I'm not a character but I run around the forest and I'm cute.",
+        "area": 2
+    }
+},
+{
+    "model": "apps.candidate",
+    "pk": 20,
+    "fields": {
+        "name": "Nahida",
+        "image": "candidates/nahida.png",
+        "description": "https://youtu.be/BpR2bou-hYY",
+        "area": 2
     }
 }
 ]
