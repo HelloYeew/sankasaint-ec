@@ -1,10 +1,21 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.http import require_GET
 
 from apps.forms import AreaForm, CandidateForm
 from apps.models import Area, Candidate
 from users.models import ColourSettings
+
+@require_GET
+def robots_txt(request):
+    lines = [
+        # Disallowed all robots
+        "User-agent: *",
+        "Disallow: /",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
 def homepage(request):
