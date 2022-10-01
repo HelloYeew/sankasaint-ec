@@ -26,7 +26,7 @@ class CandidateForm(forms.ModelForm):
     description = forms.CharField(label="Candidate Description", widget=forms.Textarea(
         attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Candidate Description'}),
         help_text="Short description of the candidate.")
-    area = forms.ModelChoiceField(label="Area", queryset=Area.objects.all(), widget=forms.Select(
+    area = forms.ModelChoiceField(label="Area", queryset=Area.objects.all().order_by('id'), widget=forms.Select(
         attrs={'class': 'form-control'}),
         help_text="The area that the candidate is running for.")
 

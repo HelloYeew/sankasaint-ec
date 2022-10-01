@@ -133,7 +133,7 @@ def edit_candidate(request, candidate_id):
         candidate = Candidate.objects.get(id=candidate_id)
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
-            form = CandidateForm(request.POST, instance=candidate)
+            form = CandidateForm(request.POST, request.FILES, instance=candidate)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Edit candidate successfully!')
