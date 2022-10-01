@@ -1,5 +1,5 @@
-# ayaka
- My Django template that power my Django project include all essential function and custom styling support
+# Sankasaint Election Committee
+ EC app for election in Software project subject to select James Brucker as a next president powered by [ayaka](https://github.com/HelloYeew/ayaka).
 
 ## What's include in this template?
 
