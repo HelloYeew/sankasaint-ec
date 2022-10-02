@@ -18,3 +18,15 @@
 ## Project that use this template
 
 - [meaqua](https://github.com/HelloYeew/meaqua) - Startpage for your browser with built-in editors, full customization and built-in style sharing system
+
+## Dump database data
+
+```bash
+python manage.py dumpdata apps > seed/apps.json --indent 4
+```
+
+## Load database data
+
+```bash
+python manage.py loaddata seed/apps.json
+```

@@ -230,5 +230,16 @@
         "description": "https://youtu.be/BpR2bou-hYY",
         "area": 2
     }
+},
+{
+    "model": "apps.election",
+    "pk": 1,
+    "fields": {
+        "name": "Teyvat 1st Prime Minister Election",
+        "front_image": "elections/teyvat-1st-election.jpg",
+        "description": "The 1st election to select a new prime minister who make all 4 continents live peacefully.",
+        "start_date": "2022-10-02T17:19:46Z",
+        "end_date": "2024-10-02T17:19:48Z"
+    }
 }
 ]
