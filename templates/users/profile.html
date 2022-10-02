@@ -6,12 +6,12 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{{ profile.user.username }}'s Profile</h1>
     {% if user.id == profile.user.id %}
-    <a href="#" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit profile</a>
+    <a href="{% url 'edit_profile' %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit profile</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
         <div class="p-3 d-flex">
             <div class="pe-3">
-                <p><img src="{{ profile.image.url }}" alt="{{ profile.user.username }}'s profile" style="width:200px; height:200px; border-radius:100px"></p>
+                <p><img src="{{ profile.image.url }}" alt="{{ profile.user.username }}'s profile" style="width:200px; height:200px; border-radius:100px; object-fit:cover;"></p>
             </div>
             <div>
                 <h2>{{ profile.user.username }}</h2>

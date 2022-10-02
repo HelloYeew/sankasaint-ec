@@ -39,3 +39,14 @@ class UserSettingsForm(forms.ModelForm):
     class Meta:
         model = ColourSettings
         fields = ['color_primary', 'color_accent', 'color_background', 'mask_opacity']
+
+
+class ProfileForm(forms.ModelForm):
+    """Form for updating user's profile"""
+    image = forms.ImageField(label="Profile picture",
+                             help_text="A profile picture of the user. This will be use as the user's profile picture.",
+                             widget=forms.FileInput(attrs={'class': 'form-control-file'}))
+
+    class Meta:
+        model = ColourSettings
+        fields = ['image']

@@ -1,9 +1,10 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
 
 from apps.models import Vote
-from users.forms import UserCreationForms, UserSettingsForm
+from users.forms import UserCreationForms, UserSettingsForm, ProfileForm
 from users.models import ColourSettings, Profile
 
 
@@ -57,3 +58,21 @@ def profile(request, user_id):
         return render(request, 'users/profile.html', {
             'profile': user
         })
+
+
+@login_required
+def edit_profile(request):
+    user = Profile.objects.get(user=request.user)
+    colour_settings = ColourSettings.objects.filter(user=request.user).first()
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile', user_id=request.user.id)
+    else:
+        form = ProfileForm(instance=user)
+    return render(request, 'users/edit_profile.html', {
+        'form': form,
+        'colour_settings': colour_settings
+    })

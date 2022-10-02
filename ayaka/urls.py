@@ -28,6 +28,7 @@ urlpatterns = [
     path('logout/', users_views.LogoutAndRedirect.as_view(), name='logout'),
     path('settings/', users_views.settings, name='settings'),
     path('profile/<int:user_id>/', users_views.profile, name='profile'),
+    path('profile/edit', users_views.edit_profile, name='edit_profile'),
     path('', include('apps.urls')),
 ]
 
