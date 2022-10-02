@@ -6,6 +6,7 @@ from django.views.decorators.http import require_GET
 
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm
 from apps.models import Area, Candidate, Election
+from apps.utils import check_election_status
 from users.models import ColourSettings
 
 
@@ -22,8 +23,13 @@ def robots_txt(request):
 def homepage(request):
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        ongoing_election = []
+        for election in Election.objects.all():
+            if check_election_status(election) == 'Ongoing':
+                ongoing_election.append(election)
         return render(request, 'homepage.html', {
-            'colour_settings': colour_settings
+            'colour_settings': colour_settings,
+            'ongoing_election': ongoing_election
         })
     else:
         return render(request, 'homepage.html')
@@ -177,16 +183,21 @@ def candidate_detail(request, candidate_id):
 
 
 def election_list(request):
-    all_election = Election.objects.all()
+    rendered_election = []
+    for election in Election.objects.all():
+        rendered_election.append({
+            'election': election,
+            'status': check_election_status(election)
+        })
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election.html', {
             'colour_settings': colour_settings,
-            'all_election': all_election
+            'all_election': rendered_election
         })
     else:
         return render(request, 'apps/election/election.html', {
-            'election': all_election
+            'all_election': rendered_election
         })
 
 
@@ -196,7 +207,8 @@ def election_detail(request, election_id):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election_detail.html', {
             'colour_settings': colour_settings,
-            'election': election_object
+            'election': election_object,
+            'status': check_election_status(election_object)
         })
     else:
         return render(request, 'apps/election/election_detail.html', {

@@ -15,18 +15,20 @@
                 <tr>
                     <th scope="col">ID</th>
                     <th scope="col">Name</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for election in all_election %}
                 <tr>
-                    <th scope="row">{{ election.id }}</th>
-                    <td>{{ election.name }}</td>
+                    <th scope="row">{{ election.election.id }}</th>
+                    <td>{{ election.election.name }}</td>
+                    <td>{{ election.status }}</td>
                     <td>
-                        <a href="{% url 'election_detail' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                        <a href="{% url 'election_detail' election.election.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                         {% if user.is_superuser or user.is_staff %}
-                        <a href="{% url 'edit_election' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+                        <a href="{% url 'edit_election' election.election.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
                         {% endif %}
                     </td>
                 </tr>

@@ -6,10 +6,40 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem; font-weight: 500" class="display-4">Hello, {% if user.username %}{{ user.username }}{% else %}Guest{% endif %} !</h1>
     <h2 style="padding-bottom: 1rem;">Are you ready to vote the next president?</h2>
-    <a href="{% url 'start_election' %}" class="btn btn-ayaka"><i class="mdi mdi-airplane-cog" aria-hidden="true" style="font-size: 20px"></i> Start a new election</a>
+{#    <a href="{% url 'start_election' %}" class="btn btn-ayaka"><i class="mdi mdi-airplane-cog" aria-hidden="true" style="font-size: 20px"></i> Start a new election</a>#}
     <p></p>
-    <div style="overflow:hidden; color:var(--color-primary)">
-        Dummy homepage detail
+    <div style="overflow:hidden; color:var(--color-primary); padding-top: 1rem; padding-bottom: 1rem;">
+        {% if user.profile.area.id == null %}
+        <h4 style="padding-bottom: 1rem;"><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> You are not registered in any area. Please contact system administrator to assign your area.</h4>
+        {% else %}
+        <div style="padding-top: 1rem; padding-bottom: 1rem">
+            <h4 style="font-weight: bold">Ongoing election</h4>
+            {% if ongoing_election|length == 0 %}
+            No ongoing election.
+            {% else %}
+            <div class="container">
+                <div class="row">
+                    {% for election in ongoing_election %}
+                    <div class="col-4">
+                        <a href="{% url 'election_detail' election.id %}">
+                            <div class="card bg-dark text-white border-white">
+                                <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%);">
+                                <div class="card-img-overlay">
+                                    <h5 class="card-title fw-bold">{{ election.name }}</h5>
+                                    <p class="card-text">{{ election.description }}</p>
+                                    <small class="card-text">Started at {{ election.start_date }}</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <h4 style="font-weight: bold">Information about your area.</h4>
+        <a href="{% url 'area_detail' user.profile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.profile.area.name }} Detail</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
