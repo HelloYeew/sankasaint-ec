@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ election.name }} detail{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ election.name }}</h1>
+    {% if user.is_superuser or user.is_staff %}
+    <a href="{% url 'edit_election' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
+    {% endif %}
+    <div style="overflow:hidden; color: var(--color-primary);">
+        <div class="p-3">
+            <div>
+                <p><img src="{{ election.front_image.url }}" alt="election image" style="width: 100%; height: 450px; object-fit: cover; border-radius: 10px;"></p>
+            </div>
+            <h2 style="font-weight: bold">Description</h2>
+            <p>{{ election.description }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

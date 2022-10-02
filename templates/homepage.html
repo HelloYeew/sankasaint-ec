@@ -6,7 +6,7 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem; font-weight: 500" class="display-4">Hello, {% if user.username %}{{ user.username }}{% else %}Guest{% endif %} !</h1>
     <h2 style="padding-bottom: 1rem;">Are you ready to vote the next president?</h2>
-    <a href="#" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Dummy Button</a>
+    <a href="{% url 'start_election' %}" class="btn btn-ayaka"><i class="mdi mdi-airplane-cog" aria-hidden="true" style="font-size: 20px"></i> Start a new election</a>
     <p></p>
     <div style="overflow:hidden; color:var(--color-primary)">
         Dummy homepage detail

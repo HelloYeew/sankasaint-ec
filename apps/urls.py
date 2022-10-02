@@ -12,4 +12,8 @@ urlpatterns = [
     path('candidate/add', views.add_candidate, name='add_candidate'),
     path('candidate/<int:candidate_id>', views.candidate_detail, name='candidate_detail'),
     path('candidate/<int:candidate_id>/edit', views.edit_candidate, name='edit_candidate'),
+    path('election', views.election_list, name='election_list'),
+    path('election/add', views.start_election, name='start_election'),
+    path('election/<int:election_id>', views.election_detail, name='election_detail'),
+    path('election/<int:election_id>/edit', views.edit_election, name='edit_election'),
 ]

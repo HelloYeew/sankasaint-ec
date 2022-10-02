@@ -18,7 +18,7 @@ class ColourSettings(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    area = models.ForeignKey(Area, on_delete=models.CASCADE, null=True, blank=True)
+    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
     image = models.ImageField(default='default_profile.png', upload_to='profile_pics')
 
     def __str__(self):

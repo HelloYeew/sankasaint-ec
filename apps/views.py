@@ -4,9 +4,10 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 
-from apps.forms import AreaForm, CandidateForm
-from apps.models import Area, Candidate
+from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm
+from apps.models import Area, Candidate, Election
 from users.models import ColourSettings
+
 
 @require_GET
 def robots_txt(request):
@@ -173,3 +174,75 @@ def candidate_detail(request, candidate_id):
         return render(request, 'apps/candidate/candidate_detail.html', {
             'candidate': candidate
         })
+
+
+def election_list(request):
+    all_election = Election.objects.all()
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/election/election.html', {
+            'colour_settings': colour_settings,
+            'all_election': all_election
+        })
+    else:
+        return render(request, 'apps/election/election.html', {
+            'election': all_election
+        })
+
+
+def election_detail(request, election_id):
+    election_object = Election.objects.get(id=election_id)
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/election/election_detail.html', {
+            'colour_settings': colour_settings,
+            'election': election_object
+        })
+    else:
+        return render(request, 'apps/election/election_detail.html', {
+            'election': election_object
+        })
+
+
+@login_required
+def start_election(request):
+    if request.user.is_staff or request.user.is_superuser:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        if request.method == 'POST':
+            form = StartElectionForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Election has been added!')
+                return redirect('election_list')
+        else:
+            form = StartElectionForm()
+        return render(request, 'apps/election/add_election.html', {
+            'colour_settings': colour_settings,
+            'form': form
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
+
+
+@login_required
+def edit_election(request, election_id):
+    if request.user.is_staff or request.user.is_superuser:
+        election = Election.objects.get(id=election_id)
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        if request.method == 'POST':
+            form = EditElectionForm(request.POST, request.FILES, instance=election)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Edit election successfully!')
+                return redirect('election_list')
+        else:
+            form = EditElectionForm(instance=election)
+        return render(request, 'apps/election/edit_election.html', {
+            'colour_settings': colour_settings,
+            'form': form,
+            'election': election
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
