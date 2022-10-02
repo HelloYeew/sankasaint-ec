@@ -5,11 +5,12 @@
 {% block content %}
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem; font-weight: 500" class="display-4">Hello, {% if user.username %}{{ user.username }}{% else %}Guest{% endif %} !</h1>
-    <h2 style="padding-bottom: 1rem;">Are you ready to vote the next president?</h2>
-{#    <a href="{% url 'start_election' %}" class="btn btn-ayaka"><i class="mdi mdi-airplane-cog" aria-hidden="true" style="font-size: 20px"></i> Start a new election</a>#}
+    <h2 style="padding-bottom: 1rem;">Are you ready to select the next president?</h2>
     <p></p>
     <div style="overflow:hidden; color:var(--color-primary); padding-top: 1rem; padding-bottom: 1rem;">
-        {% if user.profile.area.id == null %}
+        {% if not user.is_authenticated %}
+        <h4 style="padding-bottom: 1rem;"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> <a href="{% url 'login' %}" style="font-size: calc(1.275rem + .3vw);">Sign in</a> to start a voting process!</h4>
+        {% elif user.is_authenticated and user.profile.area.id == null %}
         <h4 style="padding-bottom: 1rem;"><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> You are not registered in any area. Please contact system administrator to assign your area.</h4>
         {% else %}
         <div style="padding-top: 1rem; padding-bottom: 1rem">

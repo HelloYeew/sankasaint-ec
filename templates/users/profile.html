@@ -25,6 +25,37 @@
                 </p>
             </div>
         </div>
+        {% if user.id == profile.user.id %}
+        <div>
+            <h4 style="font-weight: bold">Vote history</h4>
+            {% if vote_history|length != 0 %}
+            <table class="table table-striped table-dark" style="vertical-align: middle;">
+                <thead>
+                    <tr>
+                        <th scope="col">Election</th>
+                        <th scope="col">Candidate</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vote in vote_history %}
+                    <tr>
+                        <th scope="row"><a href="{% url 'election_detail' vote.election.id %}">{{ vote.election.name }}</a></th>
+                        <td><a href="{% url 'candidate_detail' vote.candidate.id %}"><img src="{{ vote.candidate.image.url }}" alt="{{ vote.candidate.name }}" style="width:50px; height:50px; border-radius:100px"> {{ vote.candidate.name }}</a></td>
+                        <td>{{ vote.time }}</td>
+                        <td>
+                            <a href="{% url 'election_detail' vote.election.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> See election detail</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No vote history</p>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

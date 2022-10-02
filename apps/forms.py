@@ -1,6 +1,7 @@
 from django import forms
+from pip._internal.models import candidate
 
-from apps.models import Area, Candidate, Election
+from apps.models import Area, Candidate, Election, Vote
 
 
 class AreaForm(forms.ModelForm):
@@ -69,3 +70,18 @@ class EditElectionForm(forms.ModelForm):
     class Meta:
         model = Election
         fields = ['front_image', 'description']
+
+
+class VoteForm(forms.ModelForm):
+    candidate = forms.ModelChoiceField(label="Candidate", queryset=Candidate.objects.all(), widget=forms.Select(
+        attrs={'class': 'form-control'}),
+        help_text="The candidate that you want to vote for.")
+
+    def __init__(self, *args, **kwargs):
+        area = kwargs.pop('area')
+        super(VoteForm, self).__init__(*args, **kwargs)
+        self.fields['candidate'].queryset = Candidate.objects.filter(area=area)
+
+    class Meta:
+        model = Vote
+        fields = ['candidate']

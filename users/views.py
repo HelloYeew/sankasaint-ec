@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
 
+from apps.models import Vote
 from users.forms import UserCreationForms, UserSettingsForm
 from users.models import ColourSettings, Profile
 
@@ -42,8 +43,17 @@ def settings(request):
 
 
 def profile(request, user_id):
-    colour_settings = ColourSettings.objects.filter(user=request.user).first()
-    return render(request, 'users/profile.html', {
-        'colour_settings': colour_settings,
-        'profile': Profile.objects.get(id=user_id),
-    })
+    if request.user.is_authenticated:
+        user = Profile.objects.get(id=user_id)
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        votes = Vote.objects.filter(user__id=user_id)
+        return render(request, 'users/profile.html', {
+            'colour_settings': colour_settings,
+            'profile': user,
+            'vote_history': votes
+        })
+    else:
+        user = Profile.objects.get(id=user_id)
+        return render(request, 'users/profile.html', {
+            'profile': user
+        })

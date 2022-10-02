@@ -4,8 +4,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 
-from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm
-from apps.models import Area, Candidate, Election
+from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm
+from apps.models import Area, Candidate, Election, Vote
 from apps.utils import check_election_status
 from users.models import ColourSettings
 
@@ -203,12 +203,14 @@ def election_list(request):
 
 def election_detail(request, election_id):
     election_object = Election.objects.get(id=election_id)
+    vote_history = Vote.objects.filter(election=election_object, user=request.user).first()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election_detail.html', {
             'colour_settings': colour_settings,
             'election': election_object,
-            'status': check_election_status(election_object)
+            'status': check_election_status(election_object),
+            'vote_history': vote_history
         })
     else:
         return render(request, 'apps/election/election_detail.html', {
@@ -258,3 +260,40 @@ def edit_election(request, election_id):
     else:
         messages.error(request, 'You are not authorised to access this page.')
         return redirect('homepage')
+
+
+@login_required
+def vote(request, election_id):
+    if request.user.profile.area is None:
+        messages.error(request, 'Please contact administrator to set your area.')
+        return redirect('election_detail', election_id=election_id)
+    else:
+        election = Election.objects.get(id=election_id)
+        if check_election_status(election) == 'Ongoing':
+            if not Vote.objects.filter(election=election, user=request.user).exists():
+                colour_settings = ColourSettings.objects.filter(user=request.user).first()
+                if request.method == 'POST':
+                    form = VoteForm(request.POST, area=request.user.profile.area)
+                    if form.is_valid():
+                        vote = form.save(commit=False)
+                        vote.election = election
+                        vote.user = request.user
+                        vote.save()
+                        messages.success(request, 'Vote has been submitted!')
+                        return redirect('election_detail', election_id=election_id)
+                else:
+                    form = VoteForm(area=request.user.profile.area)
+                return render(request, 'apps/vote/vote.html', {
+                    'colour_settings': colour_settings,
+                    'form': form,
+                    'election': election
+                })
+            else:
+                messages.error(request, 'You have already voted in this election.')
+                return redirect('election_detail', election_id=election_id)
+        elif check_election_status(election) == 'Upcoming':
+            messages.error(request, 'This election has not started yet.')
+            return redirect('election_detail', election_id=election_id)
+        else:
+            messages.error(request, 'This election has ended.')
+            return redirect('election_detail', election_id=election_id)
