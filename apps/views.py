@@ -317,7 +317,7 @@ def vote_history(request, election_id):
 
 
 @login_required
-def election_result(request, election_id):
+def detailed_election_result(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
         election = Election.objects.get(id=election_id)
         vote_result = []
@@ -328,8 +328,11 @@ def election_result(request, election_id):
             })
         # sort the list of dictionary by vote_count
         vote_result = sorted(vote_result, key=lambda i: i['vote_count'], reverse=True)
+        # add rank to each candidate
+        for i in range(len(vote_result)):
+            vote_result[i]['rank'] = i + 1
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        return render(request, 'apps/vote/election_result.html', {
+        return render(request, 'apps/vote/detailed_election_result.html', {
             'colour_settings': colour_settings,
             'vote_result': vote_result,
             'election': election
