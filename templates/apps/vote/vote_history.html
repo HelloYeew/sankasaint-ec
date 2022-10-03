@@ -21,7 +21,7 @@
                 {% for history in vote_history %}
                 <tr>
                     <th scope="row">{{ history.id }}</th>
-                    <td><img src="{{ history.user.profile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</td>
+                    <td><a href="{% url 'profile' history.user.id %}"><img src="{{ history.user.profile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</a></td>
                     <td>
                         {% if history.user.profile.area.id == null %}
                         No registered area

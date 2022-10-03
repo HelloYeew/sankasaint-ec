@@ -11,6 +11,7 @@ from users.models import ColourSettings, Profile
 class LogoutAndRedirect(auth_views.LogoutView):
     # Redirect to / after logout
     def get_next_page(self):
+        messages.success(self.request, 'You have been logged out.')
         return '/'
 
 

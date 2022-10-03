@@ -6,6 +6,7 @@
 {% block content %}
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Vote {{ election.name }}</h1>
+    <p><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> The vote cannot be change later so please choose carefully!</p>
     <form method="POST">
         {% csrf_token %}
         {{ form | crispy }}
