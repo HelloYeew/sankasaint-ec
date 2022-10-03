@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.name }} election result{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ election.name }} election result</h1>
+    <a href="{% url 'detailed_election_result' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-format-list-text" aria-hidden="true" style="font-size: 20px"></i> View detailed result</a>
+    <p></p>
+    <div style="overflow:hidden">
+        <h1>Election result</h1>
+        <div class="row">
+            <div class="col-md-4" style="margin-top: 30px;">
+                <a href="{% url 'candidate_detail' second_candidate.candidate.id %}">
+                    <div class="card bg-dark text-white border-white">
+                        <img src="{{ second_candidate.candidate.image.url }}" class="card-img" alt="{{ second_candidate.candidate.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
+                        <div class="card-img-overlay">
+                            <h2 class="card-title fw-bold text-center"><i class="mdi mdi-medal" aria-hidden="true" style="font-size: 30px; color: #C0C0C0;"></i> {{ second_candidate.candidate.name }}</h2>
+                            <p class="card-text text-center"><a href="{% url 'area_detail' first_candidate.candidate.area.id %}">{{ second_candidate.candidate.area.name }}</a></p>
+                            <p class="card-text text-center">Vote counted : {{ second_candidate.vote_count }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'candidate_detail' first_candidate.candidate.id %}">
+                    <div class="card bg-dark text-white border-white">
+                        <img src="{{ first_candidate.candidate.image.url }}" class="card-img" alt="{{ first_candidate.candidate.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
+                        <div class="card-img-overlay">
+                            <h2 class="card-title fw-bold text-center"><i class="mdi mdi-medal" aria-hidden="true" style="font-size: 30px; color: #FFD700;"></i> {{ first_candidate.candidate.name }}</h2>
+                            <p class="card-text text-center"><a href="{% url 'area_detail' first_candidate.candidate.area.id %}">{{ first_candidate.candidate.area.name }}</a></p>
+                            <p class="card-text text-center">Vote counted : {{ first_candidate.vote_count }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4" style="margin-top: 60px;">
+                <a href="{% url 'candidate_detail' third_candidate.candidate.id %}">
+                    <div class="card bg-dark text-white border-white">
+                        <img src="{{ third_candidate.candidate.image.url }}" class="card-img" alt="{{ third_candidate.candidate.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
+                        <div class="card-img-overlay">
+                            <h2 class="card-title fw-bold text-center"><i class="mdi mdi-medal" aria-hidden="true" style="font-size: 30px; color: #CD7F32;"></i> {{ third_candidate.candidate.name }}</h2>
+                            <p class="card-text text-center"><a href="{% url 'area_detail' third_candidate.candidate.area.id %}">{{ third_candidate.candidate.area.name }}</a></p>
+                            <p class="card-text text-center">Vote counted : {{ third_candidate.vote_count }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
