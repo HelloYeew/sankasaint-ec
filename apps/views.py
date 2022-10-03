@@ -35,6 +35,16 @@ def homepage(request):
         return render(request, 'homepage.html')
 
 
+def documentation(request):
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'documentation.html', {
+            'colour_settings': colour_settings
+        })
+    else:
+        return render(request, 'documentation.html')
+
+
 def area_list(request):
     all_area = Area.objects.all()
     if request.user.is_authenticated:

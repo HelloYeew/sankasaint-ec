@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Documentation{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Documentation</h1>
+    <p></p>
+    <div style="overflow:hidden">
+        <h2><i class="mdi mdi-code-json" aria-hidden="true" style="font-size: 40px"></i> REST API (Beta)</h2>
+        <p><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> The API has not finished yet, but you can already use it. The API is still in development and may change.</p>
+        <p>Sankasaint EC system has a full REST API that allows you to access all the data in the system. The API is available at <code>/api/</code>
+            and is available to all users. The API is available in JSON format only.</p>
+        <p>The API has powered by <a href="https://www.django-rest-framework.org/">Django REST Framework</a> with the power of <a href="https://drf-yasg.readthedocs.io/en/stable/">drf-yasg</a> for documentation.</p>
+        <p>Our documentation have 2 versions, <a href="https://swagger.io/">Swagger</a> and <a href="https://redocly.github.io/redoc/">ReDoc</a> so you can choose which one you like.</p>
+        <p>
+            <a href="{% url 'schema-swagger-ui' %}" class="btn btn-ayaka"><i class="mdi mdi-file-document-outline" aria-hidden="true" style="font-size: 20px"></i> Swagger Documentation</a>
+            <a href="{% url 'schema-redoc' %}" class="btn btn-ayaka"><i class="mdi mdi-file-document-outline" aria-hidden="true" style="font-size: 20px"></i> ReDoc Documentation</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
