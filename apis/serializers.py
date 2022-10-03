@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
+from apps.models import Area, Candidate
 from users.models import Profile
 
 
@@ -75,3 +76,30 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('user', 'image', 'area')
         depth = 1
+
+
+class AreaSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize the area model.
+    """
+    class Meta:
+        model = Area
+        fields = ('id', 'name', 'description')
+
+
+class CandidateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize the candidate model.
+    This serializer need request context to get the website URL.
+    """
+    area = AreaSerializer()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Candidate
+        fields = ('id', 'name', 'description', 'image', 'area')
+        depth = 1
+
+    def get_image(self, obj):
+        """Add website URL to image path."""
+        return self.context['request'].build_absolute_uri(obj.image.url)
