@@ -24,7 +24,7 @@
                     <div class="col-4">
                         <a href="{% url 'election_detail' election.id %}">
                             <div class="card bg-dark text-white border-white">
-                                <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%);">
+                                <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
                                 <div class="card-img-overlay">
                                     <h5 class="card-title fw-bold">{{ election.name }}</h5>
                                     <p class="card-text">{{ election.description }}</p>

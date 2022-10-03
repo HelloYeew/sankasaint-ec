@@ -203,9 +203,9 @@ def election_list(request):
 
 def election_detail(request, election_id):
     election_object = Election.objects.get(id=election_id)
-    vote_history = Vote.objects.filter(election=election_object, user=request.user).first()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        vote_history = Vote.objects.filter(election=election_object, user=request.user).first()
         return render(request, 'apps/election/election_detail.html', {
             'colour_settings': colour_settings,
             'election': election_object,
@@ -214,7 +214,8 @@ def election_detail(request, election_id):
         })
     else:
         return render(request, 'apps/election/election_detail.html', {
-            'election': election_object
+            'election': election_object,
+            'status': check_election_status(election_object),
         })
 
 
@@ -297,3 +298,19 @@ def vote(request, election_id):
         else:
             messages.error(request, 'This election has ended.')
             return redirect('election_detail', election_id=election_id)
+
+
+@login_required
+def vote_history(request, election_id):
+    if request.user.is_staff or request.user.is_superuser:
+        election = Election.objects.get(id=election_id)
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        election_vote_history = Vote.objects.filter(election=election)
+        return render(request, 'apps/vote/vote_history.html', {
+            'colour_settings': colour_settings,
+            'vote_history': election_vote_history,
+            'election': election
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')

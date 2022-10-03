@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.name }} Vote History{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ election.name }} Vote History</h1>
+    <p></p>
+    <div style="overflow:hidden">
+        <table class="table table-striped table-dark" style="vertical-align: middle;">
+            <thead>
+                <tr>
+                    <th scope="col">History ID</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Area</th>
+                    <th scope="col">Candidate</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for history in vote_history %}
+                <tr>
+                    <th scope="row">{{ history.id }}</th>
+                    <td><img src="{{ history.user.profile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</td>
+                    <td>
+                        {% if history.user.profile.area.id == null %}
+                        No registered area
+                        {% else %}
+                        <a href="{% url 'area_detail' history.user.profile.area.id %}">{{ history.user.profile.area.name }}</a>
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'candidate_detail' history.candidate.id %}"><img src="{{ history.candidate.image.url }}" alt="{{ history.candidate.name }}" style="width:50px; height:50px; border-radius:100px"> {{ history.candidate.name }}</a></td>
+                    <td>{{ history.time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
