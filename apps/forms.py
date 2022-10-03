@@ -1,5 +1,4 @@
 from django import forms
-from pip._internal.models import candidate
 
 from apps.models import Area, Candidate, Election, Vote
 
