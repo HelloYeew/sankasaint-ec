@@ -4,7 +4,7 @@ from rest_framework import permissions, status
 from rest_framework import views
 from rest_framework.response import Response
 
-from apps.models import Area, Candidate
+from apps.models import Area, Candidate, Election
 from . import serializers
 
 
@@ -58,3 +58,15 @@ class GetAllCandidatesView(views.APIView):
         """
         serializer = serializers.CandidateSerializer(Candidate.objects.all(), many=True, context={'request': self.request})
         return Response({'detail': 'Get all candidates successfully', 'result': serializer.data}, status=status.HTTP_200_OK)
+
+
+class GetAllElectionsView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={200: serializers.ElectionSerializer(many=True)})
+    def get(self, request):
+        """
+        Get all elections.
+        """
+        serializer = serializers.ElectionSerializer(Election.objects.all(), many=True, context={'request': self.request})
+        return Response({'detail': 'Get all elections successfully', 'result': serializer.data}, status=status.HTTP_200_OK)

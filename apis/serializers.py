@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from apps.models import Area, Candidate
+from apps.models import Area, Candidate, Election
 from users.models import Profile
 
 
@@ -103,3 +103,19 @@ class CandidateSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         """Add website URL to image path."""
         return self.context['request'].build_absolute_uri(obj.image.url)
+
+
+class ElectionSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize the election model.
+    This serializer need request context to get the website URL.
+    """
+    front_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Election
+        fields = ('id', 'name', 'description', 'start_date', 'end_date', 'front_image')
+
+    def get_front_image(self, obj):
+        """Add website URL to image path."""
+        return self.context['request'].build_absolute_uri(obj.front_image.url)
