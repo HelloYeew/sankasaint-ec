@@ -314,3 +314,26 @@ def vote_history(request, election_id):
     else:
         messages.error(request, 'You are not authorised to access this page.')
         return redirect('homepage')
+
+
+@login_required
+def election_result(request, election_id):
+    if request.user.is_staff or request.user.is_superuser:
+        election = Election.objects.get(id=election_id)
+        vote_result = []
+        for candidate in Candidate.objects.all():
+            vote_result.append({
+                'candidate': candidate,
+                'vote_count': Vote.objects.filter(candidate=candidate).count()
+            })
+        # sort the list of dictionary by vote_count
+        vote_result = sorted(vote_result, key=lambda i: i['vote_count'], reverse=True)
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/vote/election_result.html', {
+            'colour_settings': colour_settings,
+            'vote_result': vote_result,
+            'election': election
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')

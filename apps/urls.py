@@ -18,4 +18,5 @@ urlpatterns = [
     path('election/<int:election_id>/edit', views.edit_election, name='edit_election'),
     path('election/<int:election_id>/vote', views.vote, name='vote'),
     path('election/<int:election_id>/history', views.vote_history, name='vote_history'),
+    path('election/<int:election_id>/result', views.election_result, name='election_result'),
 ]

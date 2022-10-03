@@ -9,6 +9,7 @@
     {% if user.is_superuser or user.is_staff %}
     <a href="{% url 'edit_election' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
     <a href="{% url 'vote_history' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-history" aria-hidden="true" style="font-size: 20px"></i> Vote History</a>
+    <a href="{% url 'election_result' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-account-check" aria-hidden="true" style="font-size: 20px"></i> Election Result</a>
     {% endif %}
     {% if vote_history != None %}
     <p style="padding-top: 1rem;"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> You have voted <a href="{% url 'candidate_detail' vote_history.candidate.id %}">{{ vote_history.candidate.name }}</a> at {{ vote_history.time }}</p>
