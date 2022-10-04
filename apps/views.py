@@ -328,7 +328,7 @@ def vote_history(request, election_id):
 
 def election_result(request, election_id):
     election = Election.objects.get(id=election_id)
-    if check_election_status(election) == 'Finished':
+    if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
         sorted_result = get_sorted_election_result(election)
         first_candidate = sorted_result[0]
         second_candidate = sorted_result[1]
@@ -349,6 +349,9 @@ def election_result(request, election_id):
                 'third_candidate': third_candidate,
                 'election': election
             })
+    else:
+        messages.error(request, 'This election has not ended yet.')
+        return redirect('election_detail', election_id=election_id)
 
 
 @login_required
@@ -368,3 +371,6 @@ def detailed_election_result(request, election_id):
                 'vote_result': vote_result,
                 'election': election
             })
+    else:
+        messages.error(request, 'This election has not ended yet.')
+        return redirect('election_detail', election_id=election_id)
