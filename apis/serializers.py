@@ -119,3 +119,14 @@ class ElectionSerializer(serializers.ModelSerializer):
     def get_front_image(self, obj):
         """Add website URL to image path."""
         return self.context['request'].build_absolute_uri(obj.front_image.url)
+
+
+class ErrorSerializer(serializers.Serializer):
+    """
+    This serializer is used to serialize errors.
+    """
+    detail = serializers.CharField()
+
+    def __init__(self, detail, *args, **kwargs):
+        super(ErrorSerializer, self).__init__(*args, **kwargs)
+        self.fields['detail'] = serializers.CharField(default=detail)

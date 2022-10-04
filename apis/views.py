@@ -36,7 +36,7 @@ class UserProfileView(views.APIView):
         return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data}, status=status.HTTP_200_OK)
 
 
-class GetAllAreasView(views.APIView):
+class AreasView(views.APIView):
     permissions_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(responses={200: serializers.AreaSerializer(many=True)})
@@ -47,8 +47,27 @@ class GetAllAreasView(views.APIView):
         serializer = serializers.AreaSerializer(Area.objects.all(), many=True)
         return Response({'detail': 'Get all election area successfully', 'result': serializer.data}, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=serializers.AreaSerializer, responses={
+        201: serializers.AreaSerializer,
+        400: serializers.AreaSerializer,
+        401: serializers.ErrorSerializer(detail='You do not have permission to perform this action.')
+    })
+    def post(self, request):
+        """
+        Create a new area.
+        """
+        if request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff):
+            serializer = serializers.AreaSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'detail': 'Create new area successfully', 'result': serializer.data}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'detail': 'Create new area failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'detail': 'Create new area failed', 'errors': {'detail': 'You do not have permission to perform this action.'}}, status=status.HTTP_401_UNAUTHORIZED)
 
-class GetAllCandidatesView(views.APIView):
+
+class CandidatesView(views.APIView):
     permissions_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(responses={200: serializers.CandidateSerializer(many=True)})
@@ -58,6 +77,7 @@ class GetAllCandidatesView(views.APIView):
         """
         serializer = serializers.CandidateSerializer(Candidate.objects.all(), many=True, context={'request': self.request})
         return Response({'detail': 'Get all candidates successfully', 'result': serializer.data}, status=status.HTTP_200_OK)
+    
 
 
 class GetAllElectionsView(views.APIView):
