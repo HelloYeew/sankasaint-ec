@@ -326,38 +326,45 @@ def vote_history(request, election_id):
         return redirect('homepage')
 
 
-@login_required
 def election_result(request, election_id):
-    if request.user.is_staff or request.user.is_superuser:
-        election = Election.objects.get(id=election_id)
+    election = Election.objects.get(id=election_id)
+    if check_election_status(election) == 'Finished':
         sorted_result = get_sorted_election_result(election)
         first_candidate = sorted_result[0]
         second_candidate = sorted_result[1]
         third_candidate = sorted_result[2]
-        colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        return render(request, 'apps/vote/election_result.html', {
-            'colour_settings': colour_settings,
-            'first_candidate': first_candidate,
-            'second_candidate': second_candidate,
-            'third_candidate': third_candidate,
-            'election': election
-        })
-    else:
-        messages.error(request, 'You are not authorised to access this page.')
-        return redirect('homepage')
+        if request.user.is_authenticated:
+            colour_settings = ColourSettings.objects.filter(user=request.user).first()
+            return render(request, 'apps/vote/election_result.html', {
+                'colour_settings': colour_settings,
+                'first_candidate': first_candidate,
+                'second_candidate': second_candidate,
+                'third_candidate': third_candidate,
+                'election': election
+            })
+        else:
+            return render(request, 'apps/vote/election_result.html', {
+                'first_candidate': first_candidate,
+                'second_candidate': second_candidate,
+                'third_candidate': third_candidate,
+                'election': election
+            })
 
 
 @login_required
 def detailed_election_result(request, election_id):
-    if request.user.is_staff or request.user.is_superuser:
-        election = Election.objects.get(id=election_id)
+    election = Election.objects.get(id=election_id)
+    if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
         vote_result = get_sorted_election_result(election)
-        colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        return render(request, 'apps/vote/detailed_election_result.html', {
-            'colour_settings': colour_settings,
-            'vote_result': vote_result,
-            'election': election
-        })
-    else:
-        messages.error(request, 'You are not authorised to access this page.')
-        return redirect('homepage')
+        if request.user.is_authenticated:
+            colour_settings = ColourSettings.objects.filter(user=request.user).first()
+            return render(request, 'apps/vote/detailed_election_result.html', {
+                'colour_settings': colour_settings,
+                'vote_result': vote_result,
+                'election': election
+            })
+        else:
+            return render(request, 'apps/vote/detailed_election_result.html', {
+                'vote_result': vote_result,
+                'election': election
+            })
