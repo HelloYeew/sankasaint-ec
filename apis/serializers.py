@@ -87,7 +87,7 @@ class AreaSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description')
 
 
-class CandidateSerializer(serializers.ModelSerializer):
+class GetCandidateSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the candidate model.
     This serializer need request context to get the website URL.
@@ -105,7 +105,20 @@ class CandidateSerializer(serializers.ModelSerializer):
         return self.context['request'].build_absolute_uri(obj.image.url)
 
 
-class ElectionSerializer(serializers.ModelSerializer):
+class CreateCandidateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize for creating a candidate.
+    """
+    # TODO: Support image upload
+    area_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Candidate
+        fields = ('name', 'description', 'area_id')
+        depth = 1
+
+
+class GetElectionSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the election model.
     This serializer need request context to get the website URL.
@@ -119,6 +132,15 @@ class ElectionSerializer(serializers.ModelSerializer):
     def get_front_image(self, obj):
         """Add website URL to image path."""
         return self.context['request'].build_absolute_uri(obj.front_image.url)
+
+
+class CreateElectionSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize for creating an election.
+    """
+    class Meta:
+        model = Election
+        fields = ('name', 'description', 'start_date', 'end_date')
 
 
 class ErrorSerializer(serializers.Serializer):

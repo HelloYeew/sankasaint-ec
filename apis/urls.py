@@ -7,5 +7,5 @@ urlpatterns = [
     path('profile', UserProfileView.as_view(), name='api_profile'),
     path('area', AreasView.as_view(), name='api_area_list'),
     path('candidate', CandidatesView.as_view(), name='api_candidate_list'),
-    path('election', GetAllElectionsView.as_view(), name='api_election_list'),
+    path('election', ElectionsView.as_view(), name='api_election_list'),
 ]
