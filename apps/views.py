@@ -83,7 +83,11 @@ def add_area(request):
 @login_required
 def edit_area(request, area_id):
     if request.user.is_staff or request.user.is_superuser:
-        area = Area.objects.get(id=area_id)
+        try:
+            area = Area.objects.get(id=area_id)
+        except Area.DoesNotExist:
+            messages.error(request, 'This area does not exist.')
+            return redirect('area_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
             form = AreaForm(request.POST, instance=area)
@@ -104,7 +108,11 @@ def edit_area(request, area_id):
 
 
 def area_detail(request, area_id):
-    area = Area.objects.get(id=area_id)
+    try:
+        area = Area.objects.get(id=area_id)
+    except Area.DoesNotExist:
+        messages.error(request, 'This area does not exist.')
+        return redirect('area_list')
     available_candidate = Candidate.objects.filter(area=area)
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -158,7 +166,11 @@ def add_candidate(request):
 @login_required
 def edit_candidate(request, candidate_id):
     if request.user.is_staff or request.user.is_superuser:
-        candidate = Candidate.objects.get(id=candidate_id)
+        try:
+            candidate = Candidate.objects.get(id=candidate_id)
+        except Candidate.DoesNotExist:
+            messages.error(request, 'This candidate does not exist.')
+            return redirect('candidate_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
             form = CandidateForm(request.POST, request.FILES, instance=candidate)
@@ -180,6 +192,11 @@ def edit_candidate(request, candidate_id):
 
 def candidate_detail(request, candidate_id):
     candidate = Candidate.objects.get(id=candidate_id)
+    try:
+        candidate = Candidate.objects.get(id=candidate_id)
+    except Candidate.DoesNotExist:
+        messages.error(request, 'This candidate does not exist.')
+        return redirect('candidate_list')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/candidate/candidate_detail.html', {
@@ -212,7 +229,11 @@ def election_list(request):
 
 
 def election_detail(request, election_id):
-    election_object = Election.objects.get(id=election_id)
+    try:
+        election_object = Election.objects.get(id=election_id)
+    except Election.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         vote_history = Vote.objects.filter(election=election_object, user=request.user).first()
@@ -253,7 +274,11 @@ def start_election(request):
 @login_required
 def edit_election(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
-        election = Election.objects.get(id=election_id)
+        try:
+            election = Election.objects.get(id=election_id)
+        except Election.DoesNotExist:
+            messages.error(request, 'This election does not exist.')
+            return redirect('election_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
             form = EditElectionForm(request.POST, request.FILES, instance=election)
@@ -279,7 +304,11 @@ def vote(request, election_id):
         messages.error(request, 'Please contact administrator to set your area.')
         return redirect('election_detail', election_id=election_id)
     else:
-        election = Election.objects.get(id=election_id)
+        try:
+            election = Election.objects.get(id=election_id)
+        except Election.DoesNotExist:
+            messages.error(request, 'This election does not exist.')
+            return redirect('election_list')
         if check_election_status(election) == 'Ongoing':
             if not Vote.objects.filter(election=election, user=request.user).exists():
                 colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -313,7 +342,11 @@ def vote(request, election_id):
 @login_required
 def vote_history(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
-        election = Election.objects.get(id=election_id)
+        try:
+            election = Election.objects.get(id=election_id)
+        except Election.DoesNotExist:
+            messages.error(request, 'This election does not exist.')
+            return redirect('election_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         election_vote_history = Vote.objects.filter(election=election)
         return render(request, 'apps/vote/vote_history.html', {
@@ -327,7 +360,11 @@ def vote_history(request, election_id):
 
 
 def election_result(request, election_id):
-    election = Election.objects.get(id=election_id)
+    try:
+        election = Election.objects.get(id=election_id)
+    except Election.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
     if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
         sorted_result = get_sorted_election_result(election)
         first_candidate = sorted_result[0]
@@ -356,7 +393,11 @@ def election_result(request, election_id):
 
 @login_required
 def detailed_election_result(request, election_id):
-    election = Election.objects.get(id=election_id)
+    try:
+        election = Election.objects.get(id=election_id)
+    except Election.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
     if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
         vote_result = get_sorted_election_result(election)
         if request.user.is_authenticated:
