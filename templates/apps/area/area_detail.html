@@ -21,7 +21,6 @@
                         <th scope="col">ID</th>
                         <th scope="col">Image</th>
                         <th scope="col">Name</th>
-                        <th scope="col">Area</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -31,13 +30,6 @@
                         <th scope="row">{{ candidate.id }}</th>
                         <td><img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
                         <td>{{ candidate.name }}</td>
-                        <td>
-                            {% if candidate.area.id == null %}
-                            No registered area
-                            {% else %}
-                            <a href="{% url 'area_detail' candidate.area.id %}">{{ candidate.area.name }}</a>
-                            {% endif %}
-                        </td>
                         <td>
                             <a href="{% url 'candidate_detail' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                             {% if user.is_superuser or user.is_staff %}
