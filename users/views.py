@@ -45,8 +45,12 @@ def settings(request):
 
 
 def profile(request, user_id):
-    if request.user.is_authenticated:
+    try:
         user = Profile.objects.get(id=user_id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'This user does not exist.')
+        return redirect('homepage')
+    if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         votes = Vote.objects.filter(user__id=user_id)
         return render(request, 'users/profile.html', {
@@ -55,7 +59,6 @@ def profile(request, user_id):
             'vote_history': votes
         })
     else:
-        user = Profile.objects.get(id=user_id)
         return render(request, 'users/profile.html', {
             'profile': user
         })
