@@ -87,6 +87,20 @@ class AreaSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description')
 
 
+class UpdateAreaSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used for updating the area model.
+    """
+    area_id = serializers.IntegerField(write_only=True)
+    # Since we want user can only update some field, user can put blank value if they don't want to update.
+    name = serializers.CharField(required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Area
+        fields = ('area_id', 'name', 'description')
+
+
 class GetCandidateSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the candidate model.
@@ -118,6 +132,22 @@ class CreateCandidateSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+class UpdateCandidateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used for updating the candidate model.
+    """
+    candidate_id = serializers.IntegerField(write_only=True)
+    # Since we want user can only update some field, user can put blank value if they don't want to update.
+    name = serializers.CharField(required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    area_id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = Candidate
+        fields = ('candidate_id', 'name', 'description', 'area_id')
+        depth = 1
+
+
 class GetElectionSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the election model.
@@ -141,6 +171,21 @@ class CreateElectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
         fields = ('name', 'description', 'start_date', 'end_date')
+
+
+class UpdateElectionSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used for updating the election model.
+    """
+    election_id = serializers.IntegerField(write_only=True)
+    # Since we want user can only update some field, user can put blank value if they don't want to update.
+    # For election model as in the edit election form, the system will only allow to make
+    # some change on not essential information of the election only.
+    description = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Election
+        fields = ('election_id', 'description')
 
 
 class ErrorSerializer(serializers.Serializer):
