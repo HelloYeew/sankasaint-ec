@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.models import Area, Election
+from apps.models import Area, Election, Candidate
 from users.models import Profile
 
 
@@ -13,6 +14,12 @@ class HomepageTest(TestCase):
         """Create a dummy user"""
         self.user = User.objects.create_user(username='testuser', password='12345')
         self.url = reverse('homepage')
+
+    def test_homepage_rendering(self):
+        """Homepage must render correctly"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'homepage.html')
 
     def test_homepage_view_not_login(self):
         """User must see only sign in text."""
@@ -70,6 +77,12 @@ class AreaListViewTest(TestCase):
         self.area2 = Area.objects.create(name='test area 2', description='test area 2 description')
         self.area3 = Area.objects.create(name='test area 3', description='test area 3 description')
 
+    def test_area_list_view_rendering(self):
+        """Area list must render correctly"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'apps/area/area_list.html')
+
     def test_area_list_view_not_login(self):
         """User must see the list but not have the create and edit button."""
         response = self.client.get(self.url)
@@ -116,4 +129,122 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, reverse('edit_area', kwargs={'area_id': self.area1.id}))
         self.assertContains(response, reverse('edit_area', kwargs={'area_id': self.area2.id}))
         self.assertContains(response, reverse('edit_area', kwargs={'area_id': self.area3.id}))
+
+
+class AreaDetailViewTest(TestCase):
+    def setUp(self):
+        """Set up dummy user and area"""
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.area = Area.objects.create(name='test area', description='test area description')
+        self.url = reverse('area_detail', kwargs={'area_id': self.area.id})
+
+    def test_area_detail_view_rendering(self):
+        """Area detail must render correctly"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'apps/area/area_detail.html')
+
+    def test_area_detail_view_not_login(self):
+        """User must see the area detail but not have the edit button."""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'test area')
+        self.assertContains(response, 'Available Candidate')
+        self.assertContains(response, 'No available candidate in this area.')
+        self.assertNotContains(response, 'Edit')
+
+    def test_area_detail_view_login(self):
+        """User that's not superuser and staff must see the area detail like not login"""
+        self.client.login(username='testuser', password='12345')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'test area')
+        self.assertContains(response, 'Available Candidate')
+        self.assertContains(response, 'No available candidate in this area.')
+        self.assertNotContains(response, 'Edit')
+
+    def test_area_detail_view_login_staff(self):
+        """User that's staff must see the area detail with edit button."""
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username='testuser', password='12345')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'test area')
+        self.assertContains(response, 'Available Candidate')
+        self.assertContains(response, 'No available candidate in this area.')
+        self.assertContains(response, 'Edit')
+        self.assertContains(response, reverse('edit_area', kwargs={'area_id': self.area.id}))
+
+    def test_area_detail_view_with_candidate_not_login(self):
+        """User must see the candidate in the area detail."""
+        candidate1 = Candidate.objects.create(name='test candidate 1', description='test candidate description 1',
+                                             area=self.area)
+        candidate2 = Candidate.objects.create(name='test candidate 2', description='test candidate description 2',
+                                              area=self.area)
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'test area')
+        self.assertContains(response, 'Available Candidate')
+        self.assertContains(response, 'test candidate 1')
+        self.assertContains(response, 'test candidate 2')
+        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate2.id}))
+        self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate1.id}))
+        self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate2.id}))
+        self.assertNotContains(response, 'No available candidate in this area.')
+        self.assertNotContains(response, 'Edit')
+
+    def test_area_detail_view_with_candidate_login(self):
+        """User that's not superuser and staff must see the candidate in the area detail like not login."""
+        self.client.login(username='testuser', password='12345')
+        candidate1 = Candidate.objects.create(name='test candidate 1', description='test candidate description 1',
+                                             area=self.area)
+        candidate2 = Candidate.objects.create(name='test candidate 2', description='test candidate description 2',
+                                              area=self.area)
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'test area')
+        self.assertContains(response, 'Available Candidate')
+        self.assertContains(response, 'test candidate 1')
+        self.assertContains(response, 'test candidate 2')
+        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate2.id}))
+        self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate1.id}))
+        self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate2.id}))
+        self.assertNotContains(response, 'No available candidate in this area.')
+        self.assertNotContains(response, 'Edit')
+
+    def test_area_detail_view_with_candidate_login_staff(self):
+        """User that's staff must see the candidate in the area detail with edit button."""
+        self.user.is_staff = True
+        self.user.save()
+        self.client.login(username='testuser', password='12345')
+        candidate1 = Candidate.objects.create(name='test candidate 1', description='test candidate description 1',
+                                             area=self.area)
+        candidate2 = Candidate.objects.create(name='test candidate 2', description='test candidate description 2',
+                                              area=self.area)
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'test area')
+        self.assertContains(response, 'Available Candidate')
+        self.assertContains(response, 'test candidate 1')
+        self.assertContains(response, 'test candidate 2')
+        self.assertContains(response, 'Edit')
+        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate2.id}))
+        self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate2.id}))
+        self.assertNotContains(response, 'No available candidate in this area.')
+
+    def test_area_detail_view_not_found(self):
+        """Area not found must redirect to area list page."""
+        url = reverse('area_detail', kwargs={'area_id': 999})
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse('area_list'))
+        # Check that Django messages are set
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'This area does not exist.')
+
 
