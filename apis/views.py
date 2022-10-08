@@ -120,6 +120,31 @@ class AreasView(views.APIView):
                             status=status.HTTP_401_UNAUTHORIZED)
 
 
+class AreaDetailView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        404: serializers.ErrorSerializer(detail='Area does not exist.')
+    })
+    def get(self, request, area_id):
+        """
+        Get detail of an area.
+
+        Get the full detail of the target area with list of candidates in that area.
+        """
+        try:
+            area = Area.objects.get(id=area_id)
+            area_serializer = serializers.AreaSerializer(area, context={'request': self.request})
+            candidate_serializer = serializers.GetCandidateSerializer(Candidate.objects.filter(area=area), many=True, context={'request': self.request})
+            return Response({'detail': 'Get area detail successfully', 'result': {
+                'area': area_serializer.data,
+                'candidates': candidate_serializer.data
+            }}, status=status.HTTP_200_OK)
+        except Area.DoesNotExist:
+            return Response({'detail': 'Get area detail failed', 'errors': {'detail': 'Area does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
 class CandidatesView(views.APIView):
     permissions_classes = [permissions.AllowAny]
 
@@ -216,6 +241,29 @@ class CandidatesView(views.APIView):
                             status=status.HTTP_401_UNAUTHORIZED)
 
 
+class CandidateDetailView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.GetCandidateSerializer,
+        404: serializers.ErrorSerializer(detail='Candidate does not exist.')
+    })
+    def get(self, request, candidate_id):
+        """
+        Get a candidate detail.
+
+        Get the full detail of the target candidate.
+        """
+        try:
+            candidate = Candidate.objects.get(id=candidate_id)
+            serializer = serializers.GetCandidateSerializer(candidate, context={'request': self.request})
+            return Response({'detail': 'Get candidate detail successfully', 'candidate': serializer.data},
+                            status=status.HTTP_200_OK)
+        except Candidate.DoesNotExist:
+            return Response({'detail': 'Get candidate detail failed', 'errors': {'detail': 'Candidate does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
 class ElectionsView(views.APIView):
     permissions_classes = [permissions.AllowAny]
 
@@ -294,3 +342,26 @@ class ElectionsView(views.APIView):
             return Response({'detail': 'Update election failed',
                              'errors': {'detail': 'You do not have permission to perform this action.'}},
                             status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ElectionDetailView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.GetElectionSerializer,
+        404: serializers.ErrorSerializer(detail='Election does not exist.')
+    })
+    def get(self, request, election_id):
+        """
+        Get an election detail.
+
+        Get the full detail of the target election.
+        """
+        try:
+            election = Election.objects.get(id=election_id)
+            serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
+            return Response({'detail': 'Get election detail successfully', 'election': serializer.data},
+                            status=status.HTTP_200_OK)
+        except Election.DoesNotExist:
+            return Response({'detail': 'Get election detail failed', 'errors': {'detail': 'Election does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
