@@ -1,6 +1,6 @@
 from django import forms
 
-from apps.models import Area, Candidate, Election, Vote
+from apps.models import Area, Candidate, Election, Vote, Party
 
 
 class AreaForm(forms.ModelForm):
@@ -84,3 +84,22 @@ class VoteForm(forms.ModelForm):
     class Meta:
         model = Vote
         fields = ['candidate']
+
+
+class PartyForm(forms.ModelForm):
+    name = forms.CharField(label="Party Name", max_length=100, widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Party Name'}),
+        help_text="The name of the party.")
+    image = forms.ImageField(label="Party Image", required=False, widget=forms.FileInput(
+        attrs={'class': 'form-control-file', 'placeholder': 'Party Image'}),
+        help_text="The image of the party. This is not required but better if you have one.")
+    description = forms.CharField(label="Party Description", widget=forms.Textarea(
+        attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Description'}),
+        help_text="Short description of the party.")
+    candidates = forms.ModelMultipleChoiceField(label="Candidates", queryset=Candidate.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': Candidate.objects.all().count(), 'placeholder': 'Candidates'}),
+        help_text='The candidates that are in the party. Hold down “Control”, or “Command” on a Mac, to select more than one.')
+
+    class Meta:
+        model = Party
+        fields = ['name', 'image', 'description', 'candidates']

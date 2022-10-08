@@ -39,3 +39,13 @@ class Vote(models.Model):
 
     def __str__(self):
         return self.user.username + ' voted for ' + self.candidate.name + ' in ' + self.election.name
+
+
+class Party(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    image = models.ImageField(default='default_party.png', upload_to='parties')
+    candidates = models.ManyToManyField(Candidate)
+
+    def __str__(self):
+        return self.name

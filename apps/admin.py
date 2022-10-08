@@ -5,6 +5,7 @@ from .models import *
 admin.site.register(Candidate)
 admin.site.register(Election)
 admin.site.register(Vote)
+admin.site.register(Party)
 
 
 # Add candidate list who is in area in area admin page

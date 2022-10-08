@@ -4,8 +4,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 
-from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm
-from apps.models import Area, Candidate, Election, Vote
+from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
+from apps.models import Area, Candidate, Election, Vote, Party
 from apps.utils import check_election_status, get_sorted_election_result
 from users.models import ColourSettings
 
@@ -415,3 +415,83 @@ def detailed_election_result(request, election_id):
     else:
         messages.error(request, 'This election has not ended yet.')
         return redirect('election_detail', election_id=election_id)
+
+
+def party_list(request):
+    all_party = Party.objects.all()
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/party/party_list.html', {
+            'colour_settings': colour_settings,
+            'party_list': all_party
+        })
+    else:
+        return render(request, 'apps/party/party_list.html', {
+            'party_list': all_party
+        })
+
+
+def add_party(request):
+    if request.user.is_staff or request.user.is_superuser:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        if request.method == 'POST':
+            form = PartyForm(request.POST, request.FILES)
+            if form.is_valid():
+                party = form.save()
+                party.save()
+                messages.success(request, 'Party has been added!')
+                return redirect('party_list')
+        else:
+            form = PartyForm()
+        return render(request, 'apps/party/add_party.html', {
+            'colour_settings': colour_settings,
+            'form': form
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
+
+
+def edit_party(request, party_id):
+    if request.user.is_staff or request.user.is_superuser:
+        try:
+            party = Party.objects.get(id=party_id)
+        except Party.DoesNotExist:
+            messages.error(request, 'This party does not exist.')
+            return redirect('party_list')
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        if request.method == 'POST':
+            form = PartyForm(request.POST, request.FILES, instance=party)
+            if form.is_valid():
+                party = form.save()
+                party.save()
+                messages.success(request, 'Party has been updated!')
+                return redirect('party_list')
+        else:
+            form = PartyForm(instance=party)
+        return render(request, 'apps/party/edit_party.html', {
+            'colour_settings': colour_settings,
+            'form': form,
+            'party': party
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
+
+
+def party_detail(request, party_id):
+    try:
+        party = Party.objects.get(id=party_id)
+    except Party.DoesNotExist:
+        messages.error(request, 'This party does not exist.')
+        return redirect('party_list')
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/party/party_detail.html', {
+            'colour_settings': colour_settings,
+            'party': party
+        })
+    else:
+        return render(request, 'apps/party/party_detail.html', {
+            'party': party
+        })

@@ -21,4 +21,8 @@ urlpatterns = [
     path('election/<int:election_id>/history', views.vote_history, name='vote_history'),
     path('election/<int:election_id>/result', views.election_result, name='election_result'),
     path('election/<int:election_id>/detailed_result', views.detailed_election_result, name='detailed_election_result'),
+    path('party', views.party_list, name='party_list'),
+    path('party/add', views.add_party, name='add_party'),
+    path('party/<int:party_id>', views.party_detail, name='party_detail'),
+    path('party/<int:party_id>/edit', views.edit_party, name='edit_party'),
 ]
