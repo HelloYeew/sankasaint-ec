@@ -1,4 +1,4 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework import views
@@ -27,10 +27,29 @@ class LoginView(views.APIView):
         return Response({'detail': 'Login successfully.'}, status=status.HTTP_200_OK)
 
 
+class LogoutView(views.APIView):
+    # This view should be accessible only for authenticated users.
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema()
+    def post(self, request):
+        """
+        Logout a user.
+
+        Logout from the API. The response will remove the token cookie from the user.
+        All of this operations are handled by the Django authentication framework.
+        """
+        logout(request)
+        return Response({'detail': 'Logout successfully.'}, status=status.HTTP_200_OK)
+
+
 class UserProfileView(views.APIView):
     permissions_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(responses={200: serializers.UserProfileSerializer})
+    @swagger_auto_schema(responses={
+        200: serializers.UserProfileSerializer,
+        401: 'User is not authenticated.',
+    })
     def get(self, request):
         """
         Get the user profile of current user.
@@ -38,6 +57,8 @@ class UserProfileView(views.APIView):
         Get the user profile of the current user. The response will contain
         the user's username, email and other detail that's show in profile page.
         """
+        if not request.user.is_authenticated:
+            return Response({'detail': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = serializers.UserProfileSerializer(request.user.profile)
         return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data},
                         status=status.HTTP_200_OK)
