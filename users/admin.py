@@ -3,4 +3,4 @@ from .models import *
 
 # Register your models here.
 admin.site.register(ColourSettings)
-admin.site.register(Profile)
+admin.site.register(LegacyProfile)

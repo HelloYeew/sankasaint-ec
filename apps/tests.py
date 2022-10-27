@@ -4,8 +4,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.models import Area, Election, Candidate
-from users.models import Profile
+from apps.models import LegacyArea, LegacyElection, LegacyCandidate
+from users.models import LegacyProfile
 
 
 class HomepageTest(TestCase):
@@ -36,8 +36,8 @@ class HomepageTest(TestCase):
     def test_homepage_view_login_with_area(self):
         """User must see user's area information and blank list of ongoing election"""
         self.client.login(username='testuser', password='12345')
-        area = Area.objects.create(name='test area', description='test area description')
-        profile = Profile.objects.get(user=self.user)
+        area = LegacyArea.objects.create(name='test area', description='test area description')
+        profile = LegacyProfile.objects.get(user=self.user)
         profile.area = area
         profile.save()
         response = self.client.get(self.url)
@@ -49,14 +49,14 @@ class HomepageTest(TestCase):
     def test_homepage_view_login_with_area_and_ongoing_election(self):
         """User must see user's area information and ongoing election list"""
         self.client.login(username='testuser', password='12345')
-        area = Area.objects.create(name='test area', description='test area description')
-        profile = Profile.objects.get(user=self.user)
+        area = LegacyArea.objects.create(name='test area', description='test area description')
+        profile = LegacyProfile.objects.get(user=self.user)
         profile.area = area
         profile.save()
         # Setup date using django timezone
-        election = Election.objects.create(name='test election', description='test election description',
-                                            start_date=timezone.now() - timezone.timedelta(days=1),
-                                            end_date=timezone.now() + timezone.timedelta(days=1))
+        election = LegacyElection.objects.create(name='test election', description='test election description',
+                                                 start_date=timezone.now() - timezone.timedelta(days=1),
+                                                 end_date=timezone.now() + timezone.timedelta(days=1))
         response = self.client.get(self.url)
         self.assertContains(response, f'Hello, {self.user.username} !')
         self.assertContains(response, 'test area Detail')
@@ -73,9 +73,9 @@ class AreaListViewTest(TestCase):
         self.url = reverse('area_list')
         self.user = User.objects.create_user(username='testuser', password='12345')
         # Add 3 dummy area
-        self.area1 = Area.objects.create(name='test area 1', description='test area 1 description')
-        self.area2 = Area.objects.create(name='test area 2', description='test area 2 description')
-        self.area3 = Area.objects.create(name='test area 3', description='test area 3 description')
+        self.area1 = LegacyArea.objects.create(name='test area 1', description='test area 1 description')
+        self.area2 = LegacyArea.objects.create(name='test area 2', description='test area 2 description')
+        self.area3 = LegacyArea.objects.create(name='test area 3', description='test area 3 description')
 
     def test_area_list_view_rendering(self):
         """Area list must render correctly"""
@@ -135,7 +135,7 @@ class AreaDetailViewTest(TestCase):
     def setUp(self):
         """Set up dummy user and area"""
         self.user = User.objects.create_user(username='testuser', password='12345')
-        self.area = Area.objects.create(name='test area', description='test area description')
+        self.area = LegacyArea.objects.create(name='test area', description='test area description')
         self.url = reverse('area_detail', kwargs={'area_id': self.area.id})
 
     def test_area_detail_view_rendering(self):
@@ -178,10 +178,10 @@ class AreaDetailViewTest(TestCase):
 
     def test_area_detail_view_with_candidate_not_login(self):
         """User must see the candidate in the area detail."""
-        candidate1 = Candidate.objects.create(name='test candidate 1', description='test candidate description 1',
-                                             area=self.area)
-        candidate2 = Candidate.objects.create(name='test candidate 2', description='test candidate description 2',
-                                              area=self.area)
+        candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate description 1',
+                                                    area=self.area)
+        candidate2 = LegacyCandidate.objects.create(name='test candidate 2', description='test candidate description 2',
+                                                    area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
@@ -198,10 +198,10 @@ class AreaDetailViewTest(TestCase):
     def test_area_detail_view_with_candidate_login(self):
         """User that's not superuser and staff must see the candidate in the area detail like not login."""
         self.client.login(username='testuser', password='12345')
-        candidate1 = Candidate.objects.create(name='test candidate 1', description='test candidate description 1',
-                                             area=self.area)
-        candidate2 = Candidate.objects.create(name='test candidate 2', description='test candidate description 2',
-                                              area=self.area)
+        candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate description 1',
+                                                    area=self.area)
+        candidate2 = LegacyCandidate.objects.create(name='test candidate 2', description='test candidate description 2',
+                                                    area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
@@ -220,10 +220,10 @@ class AreaDetailViewTest(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username='testuser', password='12345')
-        candidate1 = Candidate.objects.create(name='test candidate 1', description='test candidate description 1',
-                                             area=self.area)
-        candidate2 = Candidate.objects.create(name='test candidate 2', description='test candidate description 2',
-                                              area=self.area)
+        candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate description 1',
+                                                    area=self.area)
+        candidate2 = LegacyCandidate.objects.create(name='test candidate 2', description='test candidate description 2',
+                                                    area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')

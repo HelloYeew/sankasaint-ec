@@ -3,9 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
 
-from apps.models import Vote
+from apps.models import LegacyVote
 from users.forms import UserCreationForms, UserSettingsForm, ProfileForm
-from users.models import ColourSettings, Profile
+from users.models import ColourSettings, LegacyProfile
 
 
 class LogoutAndRedirect(auth_views.LogoutView):
@@ -46,13 +46,13 @@ def settings(request):
 
 def profile(request, user_id):
     try:
-        user = Profile.objects.get(id=user_id)
-    except Profile.DoesNotExist:
+        user = LegacyProfile.objects.get(id=user_id)
+    except LegacyProfile.DoesNotExist:
         messages.error(request, 'This user does not exist.')
         return redirect('homepage')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes = Vote.objects.filter(user__id=user_id)
+        votes = LegacyVote.objects.filter(user__id=user_id)
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
@@ -66,7 +66,7 @@ def profile(request, user_id):
 
 @login_required
 def edit_profile(request):
-    user = Profile.objects.get(user=request.user)
+    user = LegacyProfile.objects.get(user=request.user)
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user)

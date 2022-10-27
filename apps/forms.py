@@ -1,6 +1,6 @@
 from django import forms
 
-from apps.models import Area, Candidate, Election, Vote, Party
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty
 
 
 class AreaForm(forms.ModelForm):
@@ -12,7 +12,7 @@ class AreaForm(forms.ModelForm):
         help_text="Short description of the area.")
 
     class Meta:
-        model = Area
+        model = LegacyArea
         fields = ['name', 'description']
 
 
@@ -26,12 +26,12 @@ class CandidateForm(forms.ModelForm):
     description = forms.CharField(label="Candidate Description", widget=forms.Textarea(
         attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Candidate Description'}),
         help_text="Short description of the candidate.")
-    area = forms.ModelChoiceField(label="Area", queryset=Area.objects.all().order_by('id'), widget=forms.Select(
+    area = forms.ModelChoiceField(label="Area", queryset=LegacyArea.objects.all().order_by('id'), widget=forms.Select(
         attrs={'class': 'form-control'}),
-        help_text="The area that the candidate is running for.")
+                                  help_text="The area that the candidate is running for.")
 
     class Meta:
-        model = Candidate
+        model = LegacyCandidate
         fields = ['name', 'image', 'description', 'area']
 
 
@@ -54,7 +54,7 @@ class StartElectionForm(forms.ModelForm):
         help_text="The end time of the election. (Format : YYYY-MM-DD HH:MM:SS e.g. 2022-10-03 00:19:46)")
 
     class Meta:
-        model = Election
+        model = LegacyElection
         fields = ['name', 'front_image', 'description', 'start_date', 'end_date']
 
 
@@ -67,22 +67,22 @@ class EditElectionForm(forms.ModelForm):
         help_text="Short description of the election.")
 
     class Meta:
-        model = Election
+        model = LegacyElection
         fields = ['front_image', 'description']
 
 
 class VoteForm(forms.ModelForm):
-    candidate = forms.ModelChoiceField(label="Candidate", queryset=Candidate.objects.all(), widget=forms.Select(
+    candidate = forms.ModelChoiceField(label="Candidate", queryset=LegacyCandidate.objects.all(), widget=forms.Select(
         attrs={'class': 'form-control'}),
-        help_text="The candidate that you want to vote for.")
+                                       help_text="The candidate that you want to vote for.")
 
     def __init__(self, *args, **kwargs):
         area = kwargs.pop('area')
         super(VoteForm, self).__init__(*args, **kwargs)
-        self.fields['candidate'].queryset = Candidate.objects.filter(area=area)
+        self.fields['candidate'].queryset = LegacyCandidate.objects.filter(area=area)
 
     class Meta:
-        model = Vote
+        model = LegacyVote
         fields = ['candidate']
 
 
@@ -96,10 +96,11 @@ class PartyForm(forms.ModelForm):
     description = forms.CharField(label="Party Description", widget=forms.Textarea(
         attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Description'}),
         help_text="Short description of the party.")
-    candidates = forms.ModelMultipleChoiceField(label="Candidates", queryset=Candidate.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': Candidate.objects.all().count(), 'placeholder': 'Candidates'}),
-        help_text='The candidates that are in the party. Hold down “Control”, or “Command” on a Mac, to select more than one.')
+    # TODO: Re-enable this after investigation on error on initialize the database
+    # candidates = forms.ModelMultipleChoiceField(label="Candidates", queryset=Candidate.objects.all(),
+    #     widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': Candidate.objects.all().count(), 'placeholder': 'Candidates'}),
+    #     help_text='The candidates that are in the party. Hold down “Control”, or “Command” on a Mac, to select more than one.')
 
     class Meta:
-        model = Party
-        fields = ['name', 'image', 'description', 'candidates']
+        model = LegacyParty
+        fields = ['name', 'image', 'description']

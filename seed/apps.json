@@ -1,6 +1,6 @@
 [
 {
-    "model": "apps.area",
+    "model": "apps.legacyarea",
     "pk": 1,
     "fields": {
         "name": "Mondstadt",
@@ -8,7 +8,7 @@
     }
 },
 {
-    "model": "apps.area",
+    "model": "apps.legacyarea",
     "pk": 2,
     "fields": {
         "name": "Sumeru",
@@ -16,7 +16,7 @@
     }
 },
 {
-    "model": "apps.area",
+    "model": "apps.legacyarea",
     "pk": 3,
     "fields": {
         "name": "Inazuma",
@@ -24,7 +24,7 @@
     }
 },
 {
-    "model": "apps.area",
+    "model": "apps.legacyarea",
     "pk": 4,
     "fields": {
         "name": "Liyue",
@@ -32,7 +32,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 1,
     "fields": {
         "name": "Barbara",
@@ -42,7 +42,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 2,
     "fields": {
         "name": "Klee",
@@ -52,7 +52,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 3,
     "fields": {
         "name": "Venti",
@@ -62,7 +62,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 4,
     "fields": {
         "name": "Mona",
@@ -72,7 +72,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 5,
     "fields": {
         "name": "Sucrose",
@@ -82,7 +82,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 6,
     "fields": {
         "name": "Keqing",
@@ -92,7 +92,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 7,
     "fields": {
         "name": "Zhongli",
@@ -102,7 +102,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 8,
     "fields": {
         "name": "Hu Tao",
@@ -112,7 +112,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 9,
     "fields": {
         "name": "Qiqi",
@@ -122,7 +122,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 10,
     "fields": {
         "name": "Beidou",
@@ -132,7 +132,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 11,
     "fields": {
         "name": "Kamisato Ayaka",
@@ -142,7 +142,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 12,
     "fields": {
         "name": "Sayu",
@@ -152,7 +152,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 13,
     "fields": {
         "name": "Raiden Shogun",
@@ -162,7 +162,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 14,
     "fields": {
         "name": "Yoimiya",
@@ -172,7 +172,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 15,
     "fields": {
         "name": "Sangonomiya Kokomi",
@@ -182,7 +182,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 16,
     "fields": {
         "name": "Tighnari",
@@ -192,7 +192,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 17,
     "fields": {
         "name": "Collei",
@@ -202,7 +202,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 18,
     "fields": {
         "name": "Dori",
@@ -212,7 +212,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 19,
     "fields": {
         "name": "Aranara",
@@ -222,7 +222,7 @@
     }
 },
 {
-    "model": "apps.candidate",
+    "model": "apps.legacycandidate",
     "pk": 20,
     "fields": {
         "name": "Nahida",
@@ -232,7 +232,7 @@
     }
 },
 {
-    "model": "apps.election",
+    "model": "apps.legacyelection",
     "pk": 1,
     "fields": {
         "name": "Teyvat 1st Prime Minister Election",
@@ -243,7 +243,7 @@
     }
 },
 {
-    "model": "apps.election",
+    "model": "apps.legacyelection",
     "pk": 2,
     "fields": {
         "name": "Teyvat Idol 1st Election",
@@ -254,7 +254,7 @@
     }
 },
 {
-    "model": "apps.party",
+    "model": "apps.legacyparty",
     "pk": 1,
     "fields": {
         "name": "We love Lumine",
@@ -267,7 +267,7 @@
     }
 },
 {
-    "model": "apps.party",
+    "model": "apps.legacyparty",
     "pk": 2,
     "fields": {
         "name": "แก๊งของเอ๋",

@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.models import Area, Candidate, Vote, Election
-from users.models import Profile
+from apps.models import LegacyArea, LegacyCandidate, LegacyVote, LegacyElection
+from users.models import LegacyProfile
 
 
 class ProfileViewTest(TestCase):
@@ -13,11 +13,11 @@ class ProfileViewTest(TestCase):
         """Create a dummy user"""
         self.user = User.objects.create_user(username='testuser', password='12345', email='testuser@test.com')
         self.user2 = User.objects.create_user(username='testuser2', password='12345', email='testuser2@test.com')
-        self.area = Area.objects.create(name='testarea', description='testarea')
-        self.candidate = Candidate.objects.create(name='testcandidate', description='testcandidate', area=self.area)
-        self.election = Election.objects.create(name='testelection', description='testelection', start_date=timezone.now(), end_date=timezone.now())
-        self.vote = Vote.objects.create(user=self.user, candidate=self.candidate, election=self.election)
-        self.profile = Profile.objects.get(user=self.user)
+        self.area = LegacyArea.objects.create(name='testarea', description='testarea')
+        self.candidate = LegacyCandidate.objects.create(name='testcandidate', description='testcandidate', area=self.area)
+        self.election = LegacyElection.objects.create(name='testelection', description='testelection', start_date=timezone.now(), end_date=timezone.now())
+        self.vote = LegacyVote.objects.create(user=self.user, candidate=self.candidate, election=self.election)
+        self.profile = LegacyProfile.objects.get(user=self.user)
         self.profile.area = self.area
         self.profile.save()
         self.url = reverse('profile', kwargs={'user_id': self.user.id})

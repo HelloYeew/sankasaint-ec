@@ -4,7 +4,7 @@ from rest_framework import permissions, status
 from rest_framework import views
 from rest_framework.response import Response
 
-from apps.models import Area, Candidate, Election
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection
 from . import serializers
 
 
@@ -74,7 +74,7 @@ class AreasView(views.APIView):
 
         Get a list of all areas.
         """
-        serializer = serializers.AreaSerializer(Area.objects.all(), many=True)
+        serializer = serializers.AreaSerializer(LegacyArea.objects.all(), many=True)
         return Response({'detail': 'Get all election area successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
 
@@ -119,8 +119,8 @@ class AreasView(views.APIView):
             serializer = serializers.UpdateAreaSerializer(data=request.data)
             if serializer.is_valid():
                 try:
-                    area = Area.objects.get(id=serializer.validated_data['area_id'])
-                except Area.DoesNotExist:
+                    area = LegacyArea.objects.get(id=serializer.validated_data['area_id'])
+                except LegacyArea.DoesNotExist:
                     return Response({'detail': 'Update area failed', 'errors': {'detail': 'Area does not exist.'}})
                 data_key_list = serializer.validated_data.keys()
                 if 'name' in data_key_list:
@@ -154,14 +154,14 @@ class AreaDetailView(views.APIView):
         Get the full detail of the target area with list of candidates in that area.
         """
         try:
-            area = Area.objects.get(id=area_id)
+            area = LegacyArea.objects.get(id=area_id)
             area_serializer = serializers.AreaSerializer(area, context={'request': self.request})
-            candidate_serializer = serializers.GetCandidateSerializer(Candidate.objects.filter(area=area), many=True, context={'request': self.request})
+            candidate_serializer = serializers.GetCandidateSerializer(LegacyCandidate.objects.filter(area=area), many=True, context={'request': self.request})
             return Response({'detail': 'Get area detail successfully', 'result': {
                 'area': area_serializer.data,
                 'candidates': candidate_serializer.data
             }}, status=status.HTTP_200_OK)
-        except Area.DoesNotExist:
+        except LegacyArea.DoesNotExist:
             return Response({'detail': 'Get area detail failed', 'errors': {'detail': 'Area does not exist.'}},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -176,7 +176,7 @@ class CandidatesView(views.APIView):
 
         Get a list of all candidates.
         """
-        serializer = serializers.GetCandidateSerializer(Candidate.objects.all(), many=True,
+        serializer = serializers.GetCandidateSerializer(LegacyCandidate.objects.all(), many=True,
                                                         context={'request': self.request})
         return Response({'detail': 'Get all candidates successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
@@ -197,13 +197,13 @@ class CandidatesView(views.APIView):
             if serializer.is_valid():
                 # Change area_id to area object
                 try:
-                    area = Area.objects.get(id=serializer.validated_data['area_id'])
+                    area = LegacyArea.objects.get(id=serializer.validated_data['area_id'])
                     serializer.validated_data['area'] = area
                     serializer.save()
                     return Response({'detail': 'Create new candidate successfully',
                                      'result': serializers.GetCandidateSerializer(serializer.instance, context={
                                          'request': self.request}).data}, status=status.HTTP_201_CREATED)
-                except Area.DoesNotExist:
+                except LegacyArea.DoesNotExist:
                     return Response(
                         {'detail': 'Create new candidate failed', 'errors': {'area_id': 'Area does not exist.'}},
                         status=status.HTTP_400_BAD_REQUEST)
@@ -231,8 +231,8 @@ class CandidatesView(views.APIView):
         if request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff):
             if serializer.is_valid():
                 try:
-                    candidate = Candidate.objects.get(id=serializer.validated_data['candidate_id'])
-                except Candidate.DoesNotExist:
+                    candidate = LegacyCandidate.objects.get(id=serializer.validated_data['candidate_id'])
+                except LegacyCandidate.DoesNotExist:
                     return Response({'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}})
                 data_key_list = serializer.validated_data.keys()
                 if 'name' in data_key_list:
@@ -244,9 +244,9 @@ class CandidatesView(views.APIView):
                 if 'area_id' in data_key_list:
                     if serializer.validated_data['area_id'] != '':
                         try:
-                            area = Area.objects.get(id=serializer.validated_data['area_id'])
+                            area = LegacyArea.objects.get(id=serializer.validated_data['area_id'])
                             candidate.area = area
-                        except Area.DoesNotExist:
+                        except LegacyArea.DoesNotExist:
                             return Response({'detail': 'Update candidate failed',
                                              'errors': {'area_id': 'Area does not exist.'}})
                 candidate.save()
@@ -276,11 +276,11 @@ class CandidateDetailView(views.APIView):
         Get the full detail of the target candidate.
         """
         try:
-            candidate = Candidate.objects.get(id=candidate_id)
+            candidate = LegacyCandidate.objects.get(id=candidate_id)
             serializer = serializers.GetCandidateSerializer(candidate, context={'request': self.request})
             return Response({'detail': 'Get candidate detail successfully', 'candidate': serializer.data},
                             status=status.HTTP_200_OK)
-        except Candidate.DoesNotExist:
+        except LegacyCandidate.DoesNotExist:
             return Response({'detail': 'Get candidate detail failed', 'errors': {'detail': 'Candidate does not exist.'}},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -295,7 +295,7 @@ class ElectionsView(views.APIView):
 
         Get a list of all elections.
         """
-        serializer = serializers.GetElectionSerializer(Election.objects.all(), many=True,
+        serializer = serializers.GetElectionSerializer(LegacyElection.objects.all(), many=True,
                                                        context={'request': self.request})
         return Response({'detail': 'Get all elections successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
@@ -345,8 +345,8 @@ class ElectionsView(views.APIView):
         if request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff):
             if serializer.is_valid():
                 try:
-                    election = Election.objects.get(id=serializer.validated_data['election_id'])
-                except Election.DoesNotExist:
+                    election = LegacyElection.objects.get(id=serializer.validated_data['election_id'])
+                except LegacyElection.DoesNotExist:
                     return Response({'detail': 'Update election failed', 'errors': {'detail': 'Election does not exist.'}})
                 data_key_list = serializer.validated_data.keys()
                 if 'description' in data_key_list:
@@ -379,10 +379,10 @@ class ElectionDetailView(views.APIView):
         Get the full detail of the target election.
         """
         try:
-            election = Election.objects.get(id=election_id)
+            election = LegacyElection.objects.get(id=election_id)
             serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
             return Response({'detail': 'Get election detail successfully', 'election': serializer.data},
                             status=status.HTTP_200_OK)
-        except Election.DoesNotExist:
+        except LegacyElection.DoesNotExist:
             return Response({'detail': 'Get election detail failed', 'errors': {'detail': 'Election does not exist.'}},
                             status=status.HTTP_404_NOT_FOUND)

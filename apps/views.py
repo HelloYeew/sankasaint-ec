@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
-from apps.models import Area, Candidate, Election, Vote, Party
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty
 from apps.utils import check_election_status, get_sorted_election_result
 from users.models import ColourSettings
 
@@ -24,7 +24,7 @@ def homepage(request):
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         ongoing_election = []
-        for election in Election.objects.all():
+        for election in LegacyElection.objects.all():
             if check_election_status(election) == 'Ongoing':
                 ongoing_election.append(election)
         return render(request, 'homepage.html', {
@@ -46,7 +46,7 @@ def documentation(request):
 
 
 def area_list(request):
-    all_area = Area.objects.all()
+    all_area = LegacyArea.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_list.html', {
@@ -84,8 +84,8 @@ def add_area(request):
 def edit_area(request, area_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            area = Area.objects.get(id=area_id)
-        except Area.DoesNotExist:
+            area = LegacyArea.objects.get(id=area_id)
+        except LegacyArea.DoesNotExist:
             messages.error(request, 'This area does not exist.')
             return redirect('area_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -109,11 +109,11 @@ def edit_area(request, area_id):
 
 def area_detail(request, area_id):
     try:
-        area = Area.objects.get(id=area_id)
-    except Area.DoesNotExist:
+        area = LegacyArea.objects.get(id=area_id)
+    except LegacyArea.DoesNotExist:
         messages.error(request, 'This area does not exist.')
         return redirect('area_list')
-    available_candidate = Candidate.objects.filter(area=area)
+    available_candidate = LegacyCandidate.objects.filter(area=area)
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_detail.html', {
@@ -129,7 +129,7 @@ def area_detail(request, area_id):
 
 
 def candidate_list(request):
-    all_candidate = Candidate.objects.all()
+    all_candidate = LegacyCandidate.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/candidate/candidate_list.html', {
@@ -167,8 +167,8 @@ def add_candidate(request):
 def edit_candidate(request, candidate_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            candidate = Candidate.objects.get(id=candidate_id)
-        except Candidate.DoesNotExist:
+            candidate = LegacyCandidate.objects.get(id=candidate_id)
+        except LegacyCandidate.DoesNotExist:
             messages.error(request, 'This candidate does not exist.')
             return redirect('candidate_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -191,10 +191,10 @@ def edit_candidate(request, candidate_id):
 
 
 def candidate_detail(request, candidate_id):
-    candidate = Candidate.objects.get(id=candidate_id)
+    candidate = LegacyCandidate.objects.get(id=candidate_id)
     try:
-        candidate = Candidate.objects.get(id=candidate_id)
-    except Candidate.DoesNotExist:
+        candidate = LegacyCandidate.objects.get(id=candidate_id)
+    except LegacyCandidate.DoesNotExist:
         messages.error(request, 'This candidate does not exist.')
         return redirect('candidate_list')
     if request.user.is_authenticated:
@@ -211,7 +211,7 @@ def candidate_detail(request, candidate_id):
 
 def election_list(request):
     rendered_election = []
-    for election in Election.objects.all():
+    for election in LegacyElection.objects.all():
         rendered_election.append({
             'election': election,
             'status': check_election_status(election)
@@ -230,13 +230,13 @@ def election_list(request):
 
 def election_detail(request, election_id):
     try:
-        election_object = Election.objects.get(id=election_id)
-    except Election.DoesNotExist:
+        election_object = LegacyElection.objects.get(id=election_id)
+    except LegacyElection.DoesNotExist:
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        vote_history = Vote.objects.filter(election=election_object, user=request.user).first()
+        vote_history = LegacyVote.objects.filter(election=election_object, user=request.user).first()
         return render(request, 'apps/election/election_detail.html', {
             'colour_settings': colour_settings,
             'election': election_object,
@@ -275,8 +275,8 @@ def start_election(request):
 def edit_election(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            election = Election.objects.get(id=election_id)
-        except Election.DoesNotExist:
+            election = LegacyElection.objects.get(id=election_id)
+        except LegacyElection.DoesNotExist:
             messages.error(request, 'This election does not exist.')
             return redirect('election_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -305,12 +305,12 @@ def vote(request, election_id):
         return redirect('election_detail', election_id=election_id)
     else:
         try:
-            election = Election.objects.get(id=election_id)
-        except Election.DoesNotExist:
+            election = LegacyElection.objects.get(id=election_id)
+        except LegacyElection.DoesNotExist:
             messages.error(request, 'This election does not exist.')
             return redirect('election_list')
         if check_election_status(election) == 'Ongoing':
-            if not Vote.objects.filter(election=election, user=request.user).exists():
+            if not LegacyVote.objects.filter(election=election, user=request.user).exists():
                 colour_settings = ColourSettings.objects.filter(user=request.user).first()
                 if request.method == 'POST':
                     form = VoteForm(request.POST, area=request.user.profile.area)
@@ -343,12 +343,12 @@ def vote(request, election_id):
 def vote_history(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            election = Election.objects.get(id=election_id)
-        except Election.DoesNotExist:
+            election = LegacyElection.objects.get(id=election_id)
+        except LegacyElection.DoesNotExist:
             messages.error(request, 'This election does not exist.')
             return redirect('election_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        election_vote_history = Vote.objects.filter(election=election)
+        election_vote_history = LegacyVote.objects.filter(election=election)
         return render(request, 'apps/vote/vote_history.html', {
             'colour_settings': colour_settings,
             'vote_history': election_vote_history,
@@ -361,8 +361,8 @@ def vote_history(request, election_id):
 
 def election_result(request, election_id):
     try:
-        election = Election.objects.get(id=election_id)
-    except Election.DoesNotExist:
+        election = LegacyElection.objects.get(id=election_id)
+    except LegacyElection.DoesNotExist:
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
     if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
@@ -394,8 +394,8 @@ def election_result(request, election_id):
 @login_required
 def detailed_election_result(request, election_id):
     try:
-        election = Election.objects.get(id=election_id)
-    except Election.DoesNotExist:
+        election = LegacyElection.objects.get(id=election_id)
+    except LegacyElection.DoesNotExist:
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
     if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
@@ -418,7 +418,7 @@ def detailed_election_result(request, election_id):
 
 
 def party_list(request):
-    all_party = Party.objects.all()
+    all_party = LegacyParty.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/party/party_list.html', {
@@ -455,8 +455,8 @@ def add_party(request):
 def edit_party(request, party_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            party = Party.objects.get(id=party_id)
-        except Party.DoesNotExist:
+            party = LegacyParty.objects.get(id=party_id)
+        except LegacyParty.DoesNotExist:
             messages.error(request, 'This party does not exist.')
             return redirect('party_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -481,8 +481,8 @@ def edit_party(request, party_id):
 
 def party_detail(request, party_id):
     try:
-        party = Party.objects.get(id=party_id)
-    except Party.DoesNotExist:
+        party = LegacyParty.objects.get(id=party_id)
+    except LegacyParty.DoesNotExist:
         messages.error(request, 'This party does not exist.')
         return redirect('party_list')
     if request.user.is_authenticated:

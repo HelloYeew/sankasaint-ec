@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from apps.models import Area, Candidate, Election
-from users.models import Profile
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection
+from users.models import LegacyProfile
 
 
 class LoginSerializer(serializers.Serializer):
@@ -62,7 +62,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     This serializer is used to serialize the user profile model.
     """
     class Meta:
-        model = Profile
+        model = LegacyProfile
         fields = ('image', 'area')
 
 
@@ -73,7 +73,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:
-        model = Profile
+        model = LegacyProfile
         fields = ('user', 'image', 'area')
         depth = 1
 
@@ -83,7 +83,7 @@ class AreaSerializer(serializers.ModelSerializer):
     This serializer is used to serialize the area model.
     """
     class Meta:
-        model = Area
+        model = LegacyArea
         fields = ('id', 'name', 'description')
 
 
@@ -97,7 +97,7 @@ class UpdateAreaSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
-        model = Area
+        model = LegacyArea
         fields = ('area_id', 'name', 'description')
 
 
@@ -110,7 +110,7 @@ class GetCandidateSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     class Meta:
-        model = Candidate
+        model = LegacyCandidate
         fields = ('id', 'name', 'description', 'image', 'area')
         depth = 1
 
@@ -127,7 +127,7 @@ class CreateCandidateSerializer(serializers.ModelSerializer):
     area_id = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model = Candidate
+        model = LegacyCandidate
         fields = ('name', 'description', 'area_id')
         depth = 1
 
@@ -143,7 +143,7 @@ class UpdateCandidateSerializer(serializers.ModelSerializer):
     area_id = serializers.IntegerField(required=False)
 
     class Meta:
-        model = Candidate
+        model = LegacyCandidate
         fields = ('candidate_id', 'name', 'description', 'area_id')
         depth = 1
 
@@ -156,7 +156,7 @@ class GetElectionSerializer(serializers.ModelSerializer):
     front_image = serializers.SerializerMethodField()
 
     class Meta:
-        model = Election
+        model = LegacyElection
         fields = ('id', 'name', 'description', 'start_date', 'end_date', 'front_image')
 
     def get_front_image(self, obj):
@@ -169,7 +169,7 @@ class CreateElectionSerializer(serializers.ModelSerializer):
     This serializer is used to serialize for creating an election.
     """
     class Meta:
-        model = Election
+        model = LegacyElection
         fields = ('name', 'description', 'start_date', 'end_date')
 
 
@@ -184,7 +184,7 @@ class UpdateElectionSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
-        model = Election
+        model = LegacyElection
         fields = ('election_id', 'description')
 
 
