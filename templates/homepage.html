@@ -26,7 +26,7 @@
                             <div class="card bg-dark text-white border-white">
                                 <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
                                 <div class="card-img-overlay">
-                                    <h5 class="card-title fw-bold">{{ election.name }}</h5>
+                                    <h5 class="card-title fw-bold">{{ election.name }} {% include "snippets/legacy-sign.html" %}</h5>
                                     <p class="card-text">{{ election.description }}</p>
                                     <small class="card-text">Started at {{ election.start_date }}</small>
                                 </div>
