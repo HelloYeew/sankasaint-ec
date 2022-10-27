@@ -10,6 +10,9 @@
     <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
+        <div class="px-3 pt-3">
+            {% include "snippets/legacy-item.html" %}
+        </div>
         <div class="p-3 d-flex">
             <div class="pe-3">
                 <p><img src="{{ party.image.url }}" alt="{{ party.name }}" style="width:300px; height:300px; border-radius:300px"></p>
@@ -37,7 +40,7 @@
                 <tr>
                     <th scope="row">{{ candidate.id }}</th>
                     <td><img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
-                    <td>{{ candidate.name }}</td>
+                    <td>{{ candidate.name }} {% include "snippets/legacy-sign.html" %}</td>
                     <td>
                         <a href="{% url 'candidate_detail' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                         {% if user.is_superuser or user.is_staff %}

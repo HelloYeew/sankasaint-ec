@@ -9,6 +9,8 @@
     <a href="{% url 'start_election' %}" class="btn btn-ayaka"><i class="mdi mdi-airplane-cog" aria-hidden="true" style="font-size: 20px"></i> Start a new election</a>
     {% endif %}
     <p></p>
+    {% include "snippets/legacy-description.html" %}
+    <p></p>
     <div style="overflow:hidden">
         <table class="table table-striped table-dark" style="vertical-align: middle;">
             <thead>
@@ -23,7 +25,7 @@
                 {% for election in all_election %}
                 <tr>
                     <th scope="row">{{ election.election.id }}</th>
-                    <td>{{ election.election.name }}</td>
+                    <td>{{ election.election.name }} {% include "snippets/legacy-sign.html" %}</td>
                     <td>{{ election.status }}</td>
                     <td>
                         <a href="{% url 'election_detail' election.election.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>

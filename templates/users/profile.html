@@ -41,7 +41,7 @@
                 <tbody>
                     {% for vote in vote_history %}
                     <tr>
-                        <th scope="row"><a href="{% url 'election_detail' vote.election.id %}">{{ vote.election.name }}</a></th>
+                        <th scope="row"><a href="{% url 'election_detail' vote.election.id %}">{{ vote.election.name }}  {% include "snippets/legacy-sign.html" %}</a></th>
                         <td><a href="{% url 'candidate_detail' vote.candidate.id %}"><img src="{{ vote.candidate.image.url }}" alt="{{ vote.candidate.name }}" style="width:50px; height:50px; border-radius:100px"> {{ vote.candidate.name }}</a></td>
                         <td>{{ vote.time }}</td>
                         <td>

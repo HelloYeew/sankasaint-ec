@@ -21,7 +21,7 @@
                 {% for result in vote_result %}
                 <tr>
                     <th scope="row">{{ result.rank }}</th>
-                    <th scope="row">{{ result.candidate.id }}</th>
+                    <th scope="row">{{ result.candidate.id }} {% include "snippets/legacy-sign.html" %}</th>
                     <td><a href="{% url 'candidate_detail' result.candidate.id %}"><img src="{{ result.candidate.image.url }}" alt="{{ result.candidate.name }}" style="width:50px; height:50px; border-radius:100px"> {{ result.candidate.name }}</a></td>
                     <td><a href="{% url 'area_detail' result.candidate.area.id %}">{{ result.candidate.area.name }}</a></td>
                     <td>{{ result.vote_count }}</td>

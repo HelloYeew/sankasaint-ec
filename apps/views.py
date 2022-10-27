@@ -300,7 +300,7 @@ def edit_election(request, election_id):
 
 @login_required
 def vote(request, election_id):
-    if request.user.profile.area is None:
+    if request.user.legacyprofile.area is None:
         messages.error(request, 'Please contact administrator to set your area.')
         return redirect('election_detail', election_id=election_id)
     else:
@@ -313,7 +313,7 @@ def vote(request, election_id):
             if not LegacyVote.objects.filter(election=election, user=request.user).exists():
                 colour_settings = ColourSettings.objects.filter(user=request.user).first()
                 if request.method == 'POST':
-                    form = VoteForm(request.POST, area=request.user.profile.area)
+                    form = VoteForm(request.POST, area=request.user.legacyprofile.area)
                     if form.is_valid():
                         vote = form.save(commit=False)
                         vote.election = election
@@ -322,7 +322,7 @@ def vote(request, election_id):
                         messages.success(request, 'Vote has been submitted!')
                         return redirect('election_detail', election_id=election_id)
                 else:
-                    form = VoteForm(area=request.user.profile.area)
+                    form = VoteForm(area=request.user.legacyprofile.area)
                 return render(request, 'apps/vote/vote.html', {
                     'colour_settings': colour_settings,
                     'form': form,
