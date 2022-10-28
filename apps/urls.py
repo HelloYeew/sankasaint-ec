@@ -25,4 +25,6 @@ urlpatterns = [
     path('party/add', views.add_party, name='add_party'),
     path('party/<int:party_id>', views.party_detail, name='party_detail'),
     path('party/<int:party_id>/edit', views.edit_party, name='edit_party'),
+    path('utils', views.utils, name='utils'),
+    path('utils/legacy-import', views.import_legacy_data, name='import_legacy_data'),
 ]

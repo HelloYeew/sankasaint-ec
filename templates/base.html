@@ -117,6 +117,7 @@
                             {% if user.is_authenticated %}
                             <li><a class="dropdown-item" href="{% url 'profile' user.id %}">Profile</a></li>
                             <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
+                            <li><a class="dropdown-item" href="{% url 'utils' %}">Utility</a></li>
                             {% if user.is_superuser %}
                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
                             {% endif %}

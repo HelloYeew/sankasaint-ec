@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 
+import users.seed
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty
 from apps.utils import check_election_status, get_sorted_election_result
@@ -495,3 +496,31 @@ def party_detail(request, party_id):
         return render(request, 'apps/party/party_detail.html', {
             'party': party
         })
+
+
+@login_required()
+def utils(request):
+    if request.user.is_staff or request.user.is_superuser:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/utils/utils.html', {
+            'colour_settings': colour_settings
+        })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
+
+
+@login_required()
+def import_legacy_data(request):
+    if request.user.is_staff or request.user.is_superuser:
+        try:
+            users.seed.seed_data()
+            messages.success(request, 'Legacy data has been imported!')
+            return redirect('utils')
+        except Exception as e:
+            messages.error(request, 'Legacy data import failed : ' + str(e))
+            print(e)
+            return redirect('utils')
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
