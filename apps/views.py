@@ -519,7 +519,6 @@ def import_legacy_data(request):
             return redirect('utils')
         except Exception as e:
             messages.error(request, 'Legacy data import failed : ' + str(e))
-            print(e)
             return redirect('utils')
     else:
         messages.error(request, 'You are not authorised to access this page.')

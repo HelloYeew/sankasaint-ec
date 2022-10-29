@@ -1,4 +1,3 @@
-# Open apps.json and collect it as a list of dictionaries
 import json
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
@@ -7,6 +6,7 @@ from apps.models import NewArea, NewElection, NewParty, NewCandidate
 
 
 def seed_data():
+    # Open apps.json and collect it as a list of dictionaries
     file = []
     with open('seed/apps.json') as json_file:
         data = json.load(json_file)
@@ -62,12 +62,24 @@ def seed_data():
     for i in election_for_import:
         NewElection.objects.create(**i)
     for i in party_for_import:
-        NewParty.objects.create(**i)
+        NewParty.objects.create(
+            # import everything except candidates
+            **{k: v for k, v in i.items() if k != 'candidates'}
+        )
     for i in candidate_for_import:
-        User.objects.create(**i)
+        User.objects.create(
+            # import everything except description and area
+            **{k: v for k, v in i.items() if k != 'description' and k != 'area'}
+        )
         NewCandidate.objects.create(
             user=User.objects.get(username=i['username']),
             image='default_candidate.png',
             description=i['description'],
             area=NewArea.objects.get(id=i['area'])
         )
+    # Connect candidate to party
+    for i in party_for_import:
+        for j in i['candidates']:
+            # Connect the list of candidate id in party_for_import to the candidate
+            # in NewCandidate with many-to-many relationship
+            NewParty.objects.get(name=i['name']).candidates.add(NewCandidate.objects.get(id=j))
