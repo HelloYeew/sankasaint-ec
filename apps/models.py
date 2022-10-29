@@ -10,7 +10,7 @@ class LegacyArea(models.Model):
         return self.name
 
 
-class Area(models.Model):
+class NewArea(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
 
@@ -28,11 +28,11 @@ class LegacyCandidate(models.Model):
         return self.name
 
 
-class Candidate(models.Model):
+class NewCandidate(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(default='default_candidate.png', upload_to='candidates')
     description = models.TextField()
-    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True)
+    area = models.ForeignKey(NewArea, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.user.username + ' - ' + self.area.name
@@ -49,7 +49,7 @@ class LegacyElection(models.Model):
         return self.name
 
 
-class Election(models.Model):
+class NewElection(models.Model):
     name = models.CharField(max_length=100)
     front_image = models.ImageField(default='default_election.png', upload_to='elections')
     description = models.TextField()
@@ -70,9 +70,9 @@ class LegacyVote(models.Model):
         return self.user.username + ' voted for ' + self.candidate.name + ' in ' + self.election.name
 
 
-class Vote(models.Model):
+class VoteCheck(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    election = models.ForeignKey(NewElection, on_delete=models.CASCADE)
     time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -80,8 +80,8 @@ class Vote(models.Model):
 
 
 class VoteResultParty(models.Model):
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
-    party = models.ForeignKey(Area, on_delete=models.CASCADE)
+    election = models.ForeignKey(NewElection, on_delete=models.CASCADE)
+    party = models.ForeignKey(NewArea, on_delete=models.CASCADE)
     vote = models.IntegerField(default=0)
 
     def __str__(self):
@@ -89,8 +89,8 @@ class VoteResultParty(models.Model):
 
 
 class VoteResultCandidate(models.Model):
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
-    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    election = models.ForeignKey(NewElection, on_delete=models.CASCADE)
+    candidate = models.ForeignKey(NewCandidate, on_delete=models.CASCADE)
     vote = models.IntegerField(default=0)
 
     def __str__(self):
@@ -107,11 +107,11 @@ class LegacyParty(models.Model):
         return self.name
 
 
-class Party(models.Model):
+class NewParty(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     image = models.ImageField(default='default_party.png', upload_to='parties')
-    candidates = models.ManyToManyField(Candidate)
+    candidates = models.ManyToManyField(NewCandidate)
 
     def __str__(self):
         return self.name

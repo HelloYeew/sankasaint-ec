@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
-from apps.models import Area, Election, Party, Candidate
+from apps.models import NewArea, NewElection, NewParty, NewCandidate
 
 
 def seed_data():
@@ -58,16 +58,16 @@ def seed_data():
         }
 
     for i in area_for_import:
-        Area.objects.create(**i)
+        NewArea.objects.create(**i)
     for i in election_for_import:
-        Election.objects.create(**i)
+        NewElection.objects.create(**i)
     for i in party_for_import:
-        Party.objects.create(**i)
+        NewParty.objects.create(**i)
     for i in candidate_for_import:
         User.objects.create(**i)
-        Candidate.objects.create(
+        NewCandidate.objects.create(
             user=User.objects.get(username=i['username']),
             image='default_candidate.png',
             description=i['description'],
-            area=Area.objects.get(id=i['area'])
+            area=NewArea.objects.get(id=i['area'])
         )
