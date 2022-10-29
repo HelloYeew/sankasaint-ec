@@ -39,7 +39,7 @@
             {% endif %}
         </div>
         <h4 style="font-weight: bold">Information about your area</h4>
-        <a href="{% url 'area_detail' user.legacyprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.legacyprofile.area.name }} Detail</a>
+        <a href="{% url 'area_detail_old' user.legacyprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.legacyprofile.area.name }} Detail</a>
         {% endif %}
     </div>
 </div>
