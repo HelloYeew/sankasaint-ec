@@ -6,7 +6,6 @@ from apps.models import NewArea, NewElection, NewParty, NewCandidate
 
 
 def seed_data():
-    # Open apps.json and collect it as a list of dictionaries
     file = []
     with open('seed/apps.json') as json_file:
         data = json.load(json_file)
