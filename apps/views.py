@@ -6,7 +6,7 @@ from django.views.decorators.http import require_GET
 
 import users.seed
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate
 from apps.utils import check_election_status, get_sorted_election_result
 from users.models import ColourSettings
 
@@ -47,16 +47,19 @@ def documentation(request):
 
 
 def area_list(request):
-    all_area = LegacyArea.objects.all()
+    all_area_legacy = LegacyArea.objects.all()
+    all_area_new = NewArea.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_list.html', {
             'colour_settings': colour_settings,
-            'all_area': all_area
+            'all_area_legacy': all_area_legacy,
+            'all_area_new': all_area_new
         })
     else:
         return render(request, 'apps/area/area_list.html', {
-            'all_area': all_area
+            'all_area_legacy': all_area_legacy,
+            'all_area_new': all_area_new
         })
 
 
@@ -108,7 +111,7 @@ def edit_area(request, area_id):
         return redirect('homepage')
 
 
-def area_detail(request, area_id):
+def area_detail_old(request, area_id):
     try:
         area = LegacyArea.objects.get(id=area_id)
     except LegacyArea.DoesNotExist:
@@ -117,13 +120,34 @@ def area_detail(request, area_id):
     available_candidate = LegacyCandidate.objects.filter(area=area)
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        return render(request, 'apps/area/area_detail.html', {
+        return render(request, 'apps/area/area_detail_old.html', {
             'colour_settings': colour_settings,
             'area': area,
             'available_candidate': available_candidate
         })
     else:
-        return render(request, 'apps/area/area_detail.html', {
+        return render(request, 'apps/area/area_detail_old.html', {
+            'area': area,
+            'available_candidate': available_candidate
+        })
+
+
+def area_detail_new(request, area_id):
+    try:
+        area = NewArea.objects.get(id=area_id)
+    except NewArea.DoesNotExist:
+        messages.error(request, 'This area does not exist.')
+        return redirect('area_list')
+    available_candidate = NewCandidate.objects.filter(area=area)
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/area/area_detail_new.html', {
+            'colour_settings': colour_settings,
+            'area': area,
+            'available_candidate': available_candidate
+        })
+    else:
+        return render(request, 'apps/area/area_detail_new.html', {
             'area': area,
             'available_candidate': available_candidate
         })

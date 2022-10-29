@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ area.name }} detail{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ area.name }}</h1>
+    {% if user.is_superuser or user.is_staff %}
+    <a href="{% url 'edit_area' area.id %}" class="btn btn-ayaka" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
+    {% endif %}
+    <div style="overflow:hidden; color: var(--color-primary);">
+        <div class="p-3">
+            <h2 style="font-weight: bold">Description</h2>
+            <p>{{ area.description }}</p>
+            <h2 style="padding-top: 1rem; font-weight: bold">Available Candidate</h2>
+            {% if available_candidate|length != 0 %}
+            <table class="table table-striped table-dark" style="vertical-align: middle;">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for candidate in available_candidate %}
+                    <tr>
+                        <th scope="row">{{ candidate.id }}</th>
+                        <td><img src="{{ candidate.image.url }}" alt="{{ candidate.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
+                        <td>{{ candidate.user.first_name }} {{ candidate.user.last_name }}</td>
+                        <td>
+                            <a href="{% url 'candidate_detail' candidate.id %}" class="btn btn-ayaka" disabled="true"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                            {% if user.is_superuser or user.is_staff %}
+                            <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka disabled" disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            No available candidate in this area.
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

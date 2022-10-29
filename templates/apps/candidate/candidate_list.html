@@ -32,7 +32,7 @@
                         {% if candidate.area.id == null %}
                         No registered area
                         {% else %}
-                        <a href="{% url 'area_detail' candidate.area.id %}">{{ candidate.area.name }}</a>
+                        <a href="{% url 'area_detail_old' candidate.area.id %}">{{ candidate.area.name }}</a>
                         {% endif %}
                     </td>
                     <td>

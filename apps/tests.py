@@ -142,7 +142,7 @@ class AreaDetailViewTest(TestCase):
         """Area detail must render correctly"""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'apps/area/area_detail.html')
+        self.assertTemplateUsed(response, 'apps/area/area_detail_old.html')
 
     def test_area_detail_view_not_login(self):
         """User must see the area detail but not have the edit button."""

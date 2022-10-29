@@ -21,7 +21,7 @@
                 <div>
                     <h2 style="font-weight: bold">Area</h2>
                     {% if candidate.area.id != null %}
-                    <a href="{% url 'area_detail' candidate.area.id %}">{{ candidate.area.name }}</a>
+                    <a href="{% url 'area_detail_old' candidate.area.id %}">{{ candidate.area.name }}</a>
                     {% else %}
                     <p>Not specified</p>
                     {% endif %}

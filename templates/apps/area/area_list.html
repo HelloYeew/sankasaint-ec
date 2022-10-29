@@ -6,7 +6,7 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Election area list</h1>
     {% if user.is_superuser or user.is_staff %}
-    <a href="{% url 'add_area' %}" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Add area</a>
+    <a href="{% url 'add_area' %}" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Add legacy area</a>
     {% endif %}
     <p></p>
     {% include "snippets/legacy-description.html" %}
@@ -22,15 +22,28 @@
                 </tr>
             </thead>
             <tbody>
-                {% for area in all_area %}
+                {% for area in all_area_legacy %}
                 <tr>
                     <th scope="row">{{ area.id }}</th>
                     <td>{{ area.name }} {% include "snippets/legacy-sign.html" %}</td>
                     <td>{{ area.description }}</td>
                     <td>
-                        <a href="{% url 'area_detail' area.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                        <a href="{% url 'area_detail_old' area.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                         {% if user.is_superuser or user.is_staff %}
                         <a href="{% url 'edit_area' area.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% for area in all_area_new %}
+                <tr>
+                    <th scope="row">{{ area.id }}</th>
+                    <td>{{ area.name }}</td>
+                    <td>{{ area.description }}</td>
+                    <td>
+                        <a href="{% url 'area_detail_new' area.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                        {% if user.is_superuser or user.is_staff %}
+                        <a href="{% url 'edit_area' area.id %}" class="btn btn-ayaka disabled" role="button" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
                         {% endif %}
                     </td>
                 </tr>
