@@ -1,0 +1,11 @@
+<tr>
+    <th scope="row">{{ area.id }}</th>
+    <td>{{ area.name }}</td>
+    <td>{{ area.description }}</td>
+    <td>
+        <a href="{% url 'area_detail_new' area.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+        {% if user.is_superuser or user.is_staff %}
+        <a href="{% url 'edit_area' area.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+        {% endif %}
+    </td>
+</tr>

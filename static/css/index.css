@@ -136,6 +136,12 @@ a:hover {
     filter: brightness(85%);
 }
 
+.btn-ayaka-disabled {
+    background-color: var(--color-accent)!important;
+    filter: brightness(85%)!important;
+    border: none!important;
+}
+
 .form-label {
     color: var(--color-primary);
 }

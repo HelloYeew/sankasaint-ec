@@ -154,16 +154,19 @@ def area_detail_new(request, area_id):
 
 
 def candidate_list(request):
-    all_candidate = LegacyCandidate.objects.all()
+    all_candidate_legacy = LegacyCandidate.objects.all()
+    all_candidate_new = NewCandidate.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/candidate/candidate_list.html', {
             'colour_settings': colour_settings,
-            'all_candidate': all_candidate
+            'all_candidate_legacy': all_candidate_legacy,
+            'all_candidate_new': all_candidate_new
         })
     else:
         return render(request, 'apps/candidate/candidate_list.html', {
-            'all_candidate': all_candidate
+            'all_candidate_legacy': all_candidate_legacy,
+            'all_candidate_new': all_candidate_new
         })
 
 
