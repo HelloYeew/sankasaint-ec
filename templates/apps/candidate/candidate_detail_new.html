@@ -5,14 +5,11 @@
 
 {% block content %}
 <div class="container" style="padding: 5rem;">
-    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ candidate.name }}</h1>
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ candidate.user.first_name }} {{ candidate.user.last_name }}</h1>
     {% if user.is_superuser or user.is_staff %}
     <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
-        <div class="px-3 pt-3">
-            {% include "snippets/legacy-item.html" %}
-        </div>
         <div class="p-3 d-flex">
             <div class="pe-3">
                 <p><img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width:300px; height:300px; border-radius:300px"></p>

@@ -1,6 +1,7 @@
 from django import forms
+from django.contrib.auth.models import User
 
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate
 
 
 class AreaForm(forms.ModelForm):
@@ -12,14 +13,13 @@ class AreaForm(forms.ModelForm):
         help_text="Short description of the area.")
 
     class Meta:
-        model = LegacyArea
+        model = NewArea
         fields = ['name', 'description']
 
 
 class CandidateForm(forms.ModelForm):
-    name = forms.CharField(label="Candidate Name", max_length=100, widget=forms.TextInput(
-        attrs={'class': 'form-control', 'placeholder': 'Candidate Name'}),
-        help_text="The name of the candidate.")
+    user = forms.ModelChoiceField(queryset=User.objects.all().order_by('id'), label="Citizen", widget=forms.Select(
+        attrs={'class': 'form-control'}), help_text="The citizen that will be the candidate.")
     image = forms.ImageField(label="Candidate Image", required=False, widget=forms.FileInput(
         attrs={'class': 'form-control-file', 'placeholder': 'Candidate Image'}),
         help_text="The image of the candidate. This is not required but better if you have one.")
@@ -31,8 +31,8 @@ class CandidateForm(forms.ModelForm):
                                   help_text="The area that the candidate is running for.")
 
     class Meta:
-        model = LegacyCandidate
-        fields = ['name', 'image', 'description', 'area']
+        model = NewCandidate
+        fields = ['user', 'image', 'description', 'area']
 
 
 class StartElectionForm(forms.ModelForm):

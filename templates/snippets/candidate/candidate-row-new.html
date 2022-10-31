@@ -1,16 +1,16 @@
 <tr>
     <th scope="row">{{ candidate.id }}</th>
-    <td><img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
-    <td>{{ candidate.name }} {% include "snippets/legacy-sign.html" %}</td>
+    <td><img src="{{ candidate.image.url }}" alt="{{ candidate.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
+    <td>{{ candidate.user.first_name }} {{ candidate.user.last_name }}</td>
     <td>
         {% if candidate.area.id == null %}
         No registered area
         {% else %}
-        <a href="{% url 'area_detail_old' candidate.area.id %}">{{ candidate.area.name }}</a>
+        <a href="{% url 'area_detail_new' candidate.area.id %}">{{ candidate.area.name }}</a>
         {% endif %}
     </td>
     <td>
-        <a href="{% url 'candidate_detail' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+        <a href="{% url 'candidate_detail_new' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
         {% if user.is_superuser or user.is_staff %}
         <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
         {% endif %}

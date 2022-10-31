@@ -88,8 +88,8 @@ def add_area(request):
 def edit_area(request, area_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            area = LegacyArea.objects.get(id=area_id)
-        except LegacyArea.DoesNotExist:
+            area = NewArea.objects.get(id=area_id)
+        except NewArea.DoesNotExist:
             messages.error(request, 'This area does not exist.')
             return redirect('area_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -195,8 +195,8 @@ def add_candidate(request):
 def edit_candidate(request, candidate_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            candidate = LegacyCandidate.objects.get(id=candidate_id)
-        except LegacyCandidate.DoesNotExist:
+            candidate = NewCandidate.objects.get(id=candidate_id)
+        except NewCandidate.DoesNotExist:
             messages.error(request, 'This candidate does not exist.')
             return redirect('candidate_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -218,8 +218,7 @@ def edit_candidate(request, candidate_id):
         return redirect('homepage')
 
 
-def candidate_detail(request, candidate_id):
-    candidate = LegacyCandidate.objects.get(id=candidate_id)
+def candidate_detail_old(request, candidate_id):
     try:
         candidate = LegacyCandidate.objects.get(id=candidate_id)
     except LegacyCandidate.DoesNotExist:
@@ -227,12 +226,30 @@ def candidate_detail(request, candidate_id):
         return redirect('candidate_list')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        return render(request, 'apps/candidate/candidate_detail.html', {
+        return render(request, 'apps/candidate/candidate_detail_old.html', {
             'colour_settings': colour_settings,
             'candidate': candidate
         })
     else:
-        return render(request, 'apps/candidate/candidate_detail.html', {
+        return render(request, 'apps/candidate/candidate_detail_old.html', {
+            'candidate': candidate
+        })
+
+
+def candidate_detail_new(request, candidate_id):
+    try:
+        candidate = NewCandidate.objects.get(id=candidate_id)
+    except NewCandidate.DoesNotExist:
+        messages.error(request, 'This candidate does not exist.')
+        return redirect('candidate_list')
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/candidate/candidate_detail_new.html', {
+            'colour_settings': colour_settings,
+            'candidate': candidate
+        })
+    else:
+        return render(request, 'apps/candidate/candidate_detail_new.html', {
             'candidate': candidate
         })
 

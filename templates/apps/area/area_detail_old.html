@@ -7,7 +7,7 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ area.name }}</h1>
     {% if user.is_superuser or user.is_staff %}
-    <a href="{% url 'edit_area' area.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
+    <a href="{% url 'edit_area' area.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
         <div class="p-3">
@@ -34,7 +34,7 @@
                         <td>
                             <a href="{% url 'candidate_detail' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                             {% if user.is_superuser or user.is_staff %}
-                            <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+                            <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
                             {% endif %}
                         </td>
                     </tr>
