@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
+    NewElection
 
 
 class AreaForm(forms.ModelForm):
@@ -67,7 +68,7 @@ class EditElectionForm(forms.ModelForm):
         help_text="Short description of the election.")
 
     class Meta:
-        model = LegacyElection
+        model = NewElection
         fields = ['front_image', 'description']
 
 

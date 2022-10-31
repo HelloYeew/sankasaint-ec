@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ election.name }} detail{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ election.name }}</h1>
+    {% if user.is_superuser or user.is_staff %}
+    <a href="{% url 'edit_election' election.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
+    <a href="{% url 'vote_history' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-history" aria-hidden="true" style="font-size: 20px"></i> Vote History</a>
+    {% endif %}
+    {% if status != 'Finished' and user.is_superuser or user.is_staff or status == 'Finished' %}
+    <a href="{% url 'election_result' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-account-check" aria-hidden="true" style="font-size: 20px"></i> Election Result</a>
+    {% endif %}
+    {% if vote_history != None %}
+    <p style="padding-top: 1rem;"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> You have voted <a href="{% url 'candidate_detail' vote_history.candidate.id %}">{{ vote_history.candidate.name }}</a> at {{ vote_history.time }}</p>
+    {% elif user.is_authenticated and status == 'Ongoing' %}
+    <a href="{% url 'vote' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> Vote</a>
+    {% endif %}
+    <div style="overflow:hidden; color: var(--color-primary);">
+        <div class="p-3">
+            {% include "snippets/legacy-item.html" %}
+            <div>
+                <p><img src="{{ election.front_image.url }}" alt="election image" style="width: 100%; height: 450px; object-fit: cover; border-radius: 10px;"></p>
+            </div>
+            <h2 style="font-weight: bold">Duration</h2>
+            <p>{{ election.start_date }} - {{ election.end_date }}</p>
+            <h2 style="font-weight: bold">Status</h2>
+            <p>{{ status }}</p>
+            <h2 style="font-weight: bold">Description</h2>
+            <p>{{ election.description }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

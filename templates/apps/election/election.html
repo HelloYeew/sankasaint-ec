@@ -22,18 +22,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for election in all_election %}
-                <tr>
-                    <th scope="row">{{ election.election.id }}</th>
-                    <td>{{ election.election.name }} {% include "snippets/legacy-sign.html" %}</td>
-                    <td>{{ election.status }}</td>
-                    <td>
-                        <a href="{% url 'election_detail' election.election.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
-                        {% if user.is_superuser or user.is_staff %}
-                        <a href="{% url 'edit_election' election.election.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
-                        {% endif %}
-                    </td>
-                </tr>
+                {% for election in all_election_new %}
+                {% include "snippets/election/election-row-new.html" %}
+                {% endfor %}
+                {% for election in all_election_legacy %}
+                {% include "snippets/election/election-row-old.html" %}
                 {% endfor %}
             </tbody>
         </table>

@@ -6,7 +6,8 @@ from django.views.decorators.http import require_GET
 
 import users.seed
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
+    NewElection
 from apps.utils import check_election_status, get_sorted_election_result
 from users.models import ColourSettings
 
@@ -24,13 +25,18 @@ def robots_txt(request):
 def homepage(request):
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        ongoing_election = []
+        ongoing_election_old = []
+        ongoing_election_new = []
         for election in LegacyElection.objects.all():
             if check_election_status(election) == 'Ongoing':
-                ongoing_election.append(election)
+                ongoing_election_old.append(election)
+        for election in NewElection.objects.all():
+            if check_election_status(election) == 'Ongoing':
+                ongoing_election_new.append(election)
         return render(request, 'homepage.html', {
             'colour_settings': colour_settings,
-            'ongoing_election': ongoing_election
+            'ongoing_election_old': ongoing_election_old,
+            'ongoing_election_new': ongoing_election_new,
         })
     else:
         return render(request, 'homepage.html')
@@ -255,9 +261,15 @@ def candidate_detail_new(request, candidate_id):
 
 
 def election_list(request):
-    rendered_election = []
+    rendered_legacy_election = []
+    rendered_new_election = []
     for election in LegacyElection.objects.all():
-        rendered_election.append({
+        rendered_legacy_election.append({
+            'election': election,
+            'status': check_election_status(election)
+        })
+    for election in NewElection.objects.all():
+        rendered_new_election.append({
             'election': election,
             'status': check_election_status(election)
         })
@@ -265,15 +277,17 @@ def election_list(request):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election.html', {
             'colour_settings': colour_settings,
-            'all_election': rendered_election
+            'all_election_legacy': rendered_legacy_election,
+            'all_election_new': rendered_new_election
         })
     else:
         return render(request, 'apps/election/election.html', {
-            'all_election': rendered_election
+            'all_election_legacy': rendered_legacy_election,
+            'all_election_new': rendered_new_election
         })
 
 
-def election_detail(request, election_id):
+def election_detail_old(request, election_id):
     try:
         election_object = LegacyElection.objects.get(id=election_id)
     except LegacyElection.DoesNotExist:
@@ -282,14 +296,34 @@ def election_detail(request, election_id):
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         vote_history = LegacyVote.objects.filter(election=election_object, user=request.user).first()
-        return render(request, 'apps/election/election_detail.html', {
+        return render(request, 'apps/election/election_detail_old.html', {
             'colour_settings': colour_settings,
             'election': election_object,
             'status': check_election_status(election_object),
             'vote_history': vote_history
         })
     else:
-        return render(request, 'apps/election/election_detail.html', {
+        return render(request, 'apps/election/election_detail_old.html', {
+            'election': election_object,
+            'status': check_election_status(election_object),
+        })
+
+
+def election_detail_new(request, election_id):
+    try:
+        election_object = NewElection.objects.get(id=election_id)
+    except LegacyElection.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/election/election_detail_new.html', {
+            'colour_settings': colour_settings,
+            'election': election_object,
+            'status': check_election_status(election_object)
+        })
+    else:
+        return render(request, 'apps/election/election_detail_new.html', {
             'election': election_object,
             'status': check_election_status(election_object),
         })
@@ -320,7 +354,7 @@ def start_election(request):
 def edit_election(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            election = LegacyElection.objects.get(id=election_id)
+            election = NewElection.objects.get(id=election_id)
         except LegacyElection.DoesNotExist:
             messages.error(request, 'This election does not exist.')
             return redirect('election_list')

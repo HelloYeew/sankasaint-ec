@@ -15,14 +15,28 @@
         {% else %}
         <div style="padding-top: 1rem; padding-bottom: 1rem">
             <h4 style="font-weight: bold">Ongoing election</h4>
-            {% if ongoing_election|length == 0 %}
+            {% if ongoing_election_old|length == 0 and ongoing_election_new|length == 0 %}
             No ongoing election.
             {% else %}
             <div class="container">
                 <div class="row">
-                    {% for election in ongoing_election %}
+                    {% for election in ongoing_election_new %}
                     <div class="col-4">
-                        <a href="{% url 'election_detail' election.id %}">
+                        <a href="{% url 'election_detail_new' election.id %}">
+                            <div class="card bg-dark text-white border-white">
+                                <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
+                                <div class="card-img-overlay">
+                                    <h5 class="card-title fw-bold">{{ election.name }}</h5>
+                                    <p class="card-text">{{ election.description }}</p>
+                                    <small class="card-text">Started at {{ election.start_date }}</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                    {% for election in ongoing_election_old %}
+                    <div class="col-4">
+                        <a href="{% url 'election_detail_old' election.id %}">
                             <div class="card bg-dark text-white border-white">
                                 <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
                                 <div class="card-img-overlay">
@@ -38,7 +52,7 @@
             </div>
             {% endif %}
         </div>
-        <h4 style="font-weight: bold">Information about your area</h4>
+        <h4 style="font-weight: bold">Information about your area (deprecated)</h4>
         <a href="{% url 'area_detail_old' user.legacyprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.legacyprofile.area.name }} Detail</a>
         {% endif %}
     </div>
