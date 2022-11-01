@@ -30,7 +30,7 @@
                     <td>
                         <a href="{% url 'party_detail' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
                         {% if user.is_superuser or user.is_staff %}
-                        <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
+                        <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
                         {% endif %}
                     </td>
                 </tr>
