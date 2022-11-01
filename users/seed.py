@@ -53,7 +53,8 @@ def seed_data():
             'last_name': "Irido",
             'password': make_password(candidate_for_import[i]['fields']['name'], salt=None, hasher='default'),
             'description': candidate_for_import[i]['fields']['description'],
-            'area': candidate_for_import[i]['fields']['area']
+            'area': candidate_for_import[i]['fields']['area'],
+            'image': candidate_for_import[i]['fields']['image']
         }
 
     for i in area_for_import:
@@ -68,11 +69,11 @@ def seed_data():
     for i in candidate_for_import:
         User.objects.create(
             # import everything except description and area
-            **{k: v for k, v in i.items() if k != 'description' and k != 'area'}
+            **{k: v for k, v in i.items() if k != 'description' and k != 'area' and k != 'image'}
         )
         NewCandidate.objects.create(
             user=User.objects.get(username=i['username']),
-            image='default_candidate.png',
+            image=i['image'],
             description=i['description'],
             area=NewArea.objects.get(id=i['area'])
         )
