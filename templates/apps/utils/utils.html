@@ -6,10 +6,38 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Utility</h1>
     <p style="color: yellow"><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> This action has direct access to the database, before use please ask other member before use this !</p>
+    {% if import_legacy_data %}
+    <a href="{% url 'import_legacy_data' %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-open-in-new" aria-hidden="true" style="font-size: 20px"></i> Import legacy data</a>
+    {% else %}
     <a href="{% url 'import_legacy_data' %}" class="btn btn-ayaka"><i class="mdi mdi-open-in-new" aria-hidden="true" style="font-size: 20px"></i> Import legacy data</a>
+    {% endif %}
     <p></p>
     <div style="overflow:hidden">
-
+        <h2>Utility Log</h2>
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Field name</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Done</th>
+                    <th scope="col">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in utility_log %}
+                <tr>
+                    <th scope="row">{{ log.id }}</th>
+                    <td>{{ log.user.username }}</td>
+                    <td>{{ log.field }}</td>
+                    <td>{{ log.time }}</td>
+                    <td>{{ log.done }}</td>
+                    <td>{{ log.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

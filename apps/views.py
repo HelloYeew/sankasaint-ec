@@ -9,7 +9,7 @@ from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionF
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
     NewElection
 from apps.utils import check_election_status, get_sorted_election_result
-from users.models import ColourSettings
+from users.models import ColourSettings, UtilityMissionLog
 
 
 @require_GET
@@ -580,8 +580,11 @@ def party_detail(request, party_id):
 def utils(request):
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        utility_log = UtilityMissionLog.objects.all()
         return render(request, 'apps/utils/utils.html', {
-            'colour_settings': colour_settings
+            'colour_settings': colour_settings,
+            'import_legacy_data': len(UtilityMissionLog.objects.filter(field='import_legacy_data',done=True)) > 0,
+            'utility_log': utility_log
         })
     else:
         messages.error(request, 'You are not authorised to access this page.')
@@ -594,10 +597,22 @@ def import_legacy_data(request):
         try:
             users.seed.seed_data()
             messages.success(request, 'Legacy data has been imported!')
+            UtilityMissionLog.objects.create(
+                user=request.user,
+                field = 'import_legacy_data',
+                done = True,
+                description = 'Import legacy data successfully.'
+            )
             return redirect('utils')
         except Exception as e:
             messages.error(request, 'Legacy data import failed : ' + str(e))
+            users.models.UtilityMissionLog.objects.create(
+                user=request.user,
+                field = 'import_legacy_data',
+                done = False,
+                description = 'Import legacy data failed : ' + str(e)
+            )
             return redirect('utils')
     else:
-        messages.error(request, 'You are not authorised to access this page.')
+        messages.error(request, 'You are not authorised to access this function.')
         return redirect('homepage')

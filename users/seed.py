@@ -7,7 +7,7 @@ from apps.models import NewArea, NewElection, NewParty, NewCandidate
 
 def seed_data():
     file = []
-    with open('seed/apps.json') as json_file:
+    with open('seed/apps.json', encoding='utf-8') as json_file:
         data = json.load(json_file)
         for p in data:
             file.append(p)
