@@ -7,7 +7,7 @@
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ party.name }}</h1>
     {% if user.is_superuser or user.is_staff %}
-    <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
+    <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
         <div class="px-3 pt-3">
@@ -38,17 +38,6 @@
             </thead>
             <tbody>
                 {% for candidate in party.candidates.all %}
-{#                <tr>#}
-{#                    <th scope="row">{{ candidate.id }}</th>#}
-{#                    <td><img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width:50px; height: 50px; border-radius: 100px;"></td>#}
-{#                    <td>{{ candidate.name }} {% include "snippets/legacy-sign.html" %}</td>#}
-{#                    <td>#}
-{#                        <a href="{% url 'candidate_detail_old' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>#}
-{#                        {% if user.is_superuser or user.is_staff %}#}
-{#                        <a href="{% url 'edit_candidate' candidate.id %}" class="btn btn-ayaka-disabled disabled"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>#}
-{#                        {% endif %}#}
-{#                    </td>#}
-{#                </tr>#}
                     {% include "snippets/candidate/candidate-row-old.html" %}
                 {% endfor %}
             </tbody>
