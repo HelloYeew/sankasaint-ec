@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
 class LegacyArea(models.Model):
@@ -42,7 +43,7 @@ class LegacyElection(models.Model):
     name = models.CharField(max_length=100)
     front_image = models.ImageField(default='default_election.png', upload_to='elections')
     description = models.TextField()
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField()
 
     def __str__(self):
@@ -53,7 +54,7 @@ class NewElection(models.Model):
     name = models.CharField(max_length=100)
     front_image = models.ImageField(default='default_election.png', upload_to='elections')
     description = models.TextField()
-    start_date = models.DateTimeField()
+    start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField()
 
     def __str__(self):

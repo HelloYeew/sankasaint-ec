@@ -55,7 +55,7 @@ class StartElectionForm(forms.ModelForm):
         help_text="The end time of the election. (Format : YYYY-MM-DD HH:MM:SS e.g. 2022-10-03 00:19:46)")
 
     class Meta:
-        model = LegacyElection
+        model = NewElection
         fields = ['name', 'front_image', 'description', 'start_date', 'end_date']
 
 

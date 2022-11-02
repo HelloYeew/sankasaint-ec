@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 import users.seed
@@ -336,7 +337,11 @@ def start_election(request):
         if request.method == 'POST':
             form = StartElectionForm(request.POST, request.FILES)
             if form.is_valid():
-                form.save()
+                # to prevent error from database, if start_date is not set, set it to today
+                election = form.save(commit=False)
+                if not election.start_date:
+                    election.start_date = timezone.now()
+                election.save()
                 messages.success(request, 'Election has been added!')
                 return redirect('election_list')
         else:
