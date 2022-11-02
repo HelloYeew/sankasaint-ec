@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
 
-from apps.models import LegacyVote
+from apps.models import LegacyVote, VoteCheck
 from users.forms import UserCreationForms, UserSettingsForm, ProfileForm
 from users.models import ColourSettings, LegacyProfile
 
@@ -52,11 +52,13 @@ def profile(request, user_id):
         return redirect('homepage')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes = LegacyVote.objects.filter(user__id=user_id)
+        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
+        votes_new = VoteCheck.objects.filter(user__id=user_id)
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
-            'vote_history': votes
+            'vote_history': votes_new,
+            'vote_history_legacy': votes_legacy
         })
     else:
         return render(request, 'users/profile.html', {

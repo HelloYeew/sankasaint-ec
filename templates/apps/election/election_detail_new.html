@@ -8,7 +8,7 @@
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ election.name }}</h1>
     {% if user.is_superuser or user.is_staff %}
     <a href="{% url 'edit_election' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
-    <a href="{% url 'vote_history' election.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-history" aria-hidden="true" style="font-size: 20px"></i> Vote History</a>
+    <a href="{% url 'vote_history' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-history" aria-hidden="true" style="font-size: 20px"></i> Vote History</a>
     {% endif %}
     {% if status != 'Finished' and user.is_superuser or user.is_staff or status == 'Finished' %}
     <a href="{% url 'election_result' election.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-account-check" aria-hidden="true" style="font-size: 20px"></i> Election Result</a>

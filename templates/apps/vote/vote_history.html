@@ -10,26 +10,24 @@
         <table class="table table-striped table-dark" style="vertical-align: middle;">
             <thead>
                 <tr>
-                    <th scope="col">History ID</th>
+                    <th scope="col">Check ID</th>
                     <th scope="col">User</th>
                     <th scope="col">Area</th>
-                    <th scope="col">Candidate</th>
                     <th scope="col">Time</th>
                 </tr>
             </thead>
             <tbody>
                 {% for history in vote_history %}
                 <tr>
-                    <th scope="row">{{ history.id }} {% include "snippets/legacy-sign.html" %}</th>
-                    <td><a href="{% url 'profile' history.user.id %}"><img src="{{ history.user.profile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</a></td>
+                    <th scope="row">{{ history.id }}</th>
+                    <td><a href="{% url 'profile' history.user.id %}"><img src="{{ history.user.legacyprofile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</a></td>
                     <td>
-                        {% if history.user.profile.area.id == null %}
+                        {% if history.user.legacyprofile.area.id == null %}
                         No registered area
                         {% else %}
-                        <a href="{% url 'area_detail' history.user.profile.area.id %}">{{ history.user.profile.area.name }}</a>
+                        <a href="{% url 'area_detail_new' history.user.legacyprofile.area.id %}">{{ history.user.legacyprofile.area.name }}</a>
                         {% endif %}
                     </td>
-                    <td><a href="{% url 'candidate_detail' history.candidate.id %}"><img src="{{ history.candidate.image.url }}" alt="{{ history.candidate.name }}" style="width:50px; height:50px; border-radius:100px"> {{ history.candidate.name }}</a></td>
                     <td>{{ history.time }}</td>
                 </tr>
                 {% endfor %}

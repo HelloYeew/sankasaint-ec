@@ -449,12 +449,12 @@ def vote(request, election_id):
 def vote_history(request, election_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            election = LegacyElection.objects.get(id=election_id)
-        except LegacyElection.DoesNotExist:
+            election = NewElection.objects.get(id=election_id)
+        except NewElection.DoesNotExist:
             messages.error(request, 'This election does not exist.')
             return redirect('election_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        election_vote_history = LegacyVote.objects.filter(election=election)
+        election_vote_history = VoteCheck.objects.filter(election=election)
         return render(request, 'apps/vote/vote_history.html', {
             'colour_settings': colour_settings,
             'vote_history': election_vote_history,
