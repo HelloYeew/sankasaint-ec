@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -449,7 +450,8 @@ def election_result(request, election_id):
     except LegacyElection.DoesNotExist:
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
-    if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
+    if check_election_status(election) != 'Finished' and (
+            request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
         sorted_result = get_sorted_election_result(election)
         first_candidate = sorted_result[0]
         second_candidate = sorted_result[1]
@@ -482,7 +484,8 @@ def detailed_election_result(request, election_id):
     except LegacyElection.DoesNotExist:
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
-    if check_election_status(election) != 'Finished' and (request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
+    if check_election_status(election) != 'Finished' and (
+            request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
         vote_result = get_sorted_election_result(election)
         if request.user.is_authenticated:
             colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -610,8 +613,9 @@ def utils(request):
         utility_log = UtilityMissionLog.objects.all()
         return render(request, 'apps/utils/utils.html', {
             'colour_settings': colour_settings,
-            'import_legacy_data': len(UtilityMissionLog.objects.filter(field='import_legacy_data',done=True)) > 0,
-            'utility_log': utility_log
+            'import_legacy_data': len(UtilityMissionLog.objects.filter(field='import_legacy_data', done=True)) > 0,
+            'utility_log': utility_log,
+            'users_list': User.objects.all()
         })
     else:
         messages.error(request, 'You are not authorised to access this page.')
@@ -626,18 +630,18 @@ def import_legacy_data(request):
             messages.success(request, 'Legacy data has been imported!')
             UtilityMissionLog.objects.create(
                 user=request.user,
-                field = 'import_legacy_data',
-                done = True,
-                description = 'Import legacy data successfully.'
+                field='import_legacy_data',
+                done=True,
+                description='Import legacy data successfully.'
             )
             return redirect('utils')
         except Exception as e:
             messages.error(request, 'Legacy data import failed : ' + str(e))
             users.models.UtilityMissionLog.objects.create(
                 user=request.user,
-                field = 'import_legacy_data',
-                done = False,
-                description = 'Import legacy data failed : ' + str(e)
+                field='import_legacy_data',
+                done=False,
+                description='Import legacy data failed : ' + str(e)
             )
             return redirect('utils')
     else:
