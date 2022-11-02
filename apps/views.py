@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET
 import users.seed
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
-    NewElection
+    NewElection, NewParty
 from apps.utils import check_election_status, get_sorted_election_result
 from users.models import ColourSettings, UtilityMissionLog
 
@@ -502,19 +502,23 @@ def detailed_election_result(request, election_id):
 
 
 def party_list(request):
-    all_party = LegacyParty.objects.all()
+    all_party_old = LegacyParty.objects.all()
+    all_party_new = NewParty.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/party/party_list.html', {
             'colour_settings': colour_settings,
-            'party_list': all_party
+            'party_list_old': all_party_old,
+            'party_list_new': all_party_new
         })
     else:
         return render(request, 'apps/party/party_list.html', {
-            'party_list': all_party
+            'party_list_old': all_party_old,
+            'party_list_new': all_party_new
         })
 
 
+@login_required
 def add_party(request):
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -539,8 +543,8 @@ def add_party(request):
 def edit_party(request, party_id):
     if request.user.is_staff or request.user.is_superuser:
         try:
-            party = LegacyParty.objects.get(id=party_id)
-        except LegacyParty.DoesNotExist:
+            party = NewParty.objects.get(id=party_id)
+        except NewParty.DoesNotExist:
             messages.error(request, 'This party does not exist.')
             return redirect('party_list')
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -563,7 +567,7 @@ def edit_party(request, party_id):
         return redirect('homepage')
 
 
-def party_detail(request, party_id):
+def party_detail_old(request, party_id):
     try:
         party = LegacyParty.objects.get(id=party_id)
     except LegacyParty.DoesNotExist:
@@ -571,12 +575,30 @@ def party_detail(request, party_id):
         return redirect('party_list')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        return render(request, 'apps/party/party_detail.html', {
+        return render(request, 'apps/party/party_detail_old.html', {
             'colour_settings': colour_settings,
             'party': party
         })
     else:
-        return render(request, 'apps/party/party_detail.html', {
+        return render(request, 'apps/party/party_detail_old.html', {
+            'party': party
+        })
+
+
+def party_detail_new(request, party_id):
+    try:
+        party = NewParty.objects.get(id=party_id)
+    except NewParty.DoesNotExist:
+        messages.error(request, 'This party does not exist.')
+        return redirect('party_list')
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/party/party_detail_new.html', {
+            'colour_settings': colour_settings,
+            'party': party
+        })
+    else:
+        return render(request, 'apps/party/party_detail_new.html', {
             'party': party
         })
 

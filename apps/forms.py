@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
-    NewElection
+from apps.models import LegacyCandidate, LegacyVote, NewArea, NewCandidate, \
+    NewElection, NewParty
 
 
 class AreaForm(forms.ModelForm):
@@ -103,5 +103,5 @@ class PartyForm(forms.ModelForm):
     #     help_text='The candidates that are in the party. Hold down “Control”, or “Command” on a Mac, to select more than one.')
 
     class Meta:
-        model = LegacyParty
+        model = NewParty
         fields = ['name', 'image', 'description']

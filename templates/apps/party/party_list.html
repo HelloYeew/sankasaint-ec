@@ -22,18 +22,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for party in party_list %}
-                <tr>
-                    <th scope="row">{{ party.id }}</th>
-                    <td><img src="{{ party.image.url }}" alt="{{ party.name }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
-                    <td>{{ party.name }} {% include "snippets/legacy-sign.html" %}</td>
-                    <td>
-                        <a href="{% url 'party_detail' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
-                        {% if user.is_superuser or user.is_staff %}
-                        <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size:15px"></i> Edit</a>
-                        {% endif %}
-                    </td>
-                </tr>
+                {% for party in party_list_new %}
+                {% include "snippets/party/party-row-new.html" %}
+                {% endfor %}
+                {% for party in party_list_old %}
+                {% include "snippets/party/party-row-old.html" %}
                 {% endfor %}
             </tbody>
         </table>
