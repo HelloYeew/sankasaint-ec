@@ -72,19 +72,26 @@ class EditElectionForm(forms.ModelForm):
         fields = ['front_image', 'description']
 
 
-class VoteForm(forms.ModelForm):
-    candidate = forms.ModelChoiceField(label="Candidate", queryset=LegacyCandidate.objects.all(), widget=forms.Select(
+class CandidateVoteForm(forms.Form):
+    candidate = forms.ModelChoiceField(label="Candidate", queryset=NewCandidate.objects.all(), widget=forms.Select(
         attrs={'class': 'form-control'}),
                                        help_text="The candidate that you want to vote for.")
 
     def __init__(self, *args, **kwargs):
         area = kwargs.pop('area')
-        super(VoteForm, self).__init__(*args, **kwargs)
-        self.fields['candidate'].queryset = LegacyCandidate.objects.filter(area=area)
+        super(CandidateVoteForm, self).__init__(*args, **kwargs)
+        self.fields['candidate'].queryset = NewCandidate.objects.filter(area=area)
 
     class Meta:
-        model = LegacyVote
         fields = ['candidate']
+
+
+class PartyVoteForm(forms.Form):
+    party = forms.ModelChoiceField(label="Party", queryset=NewParty.objects.all(), widget=forms.Select(
+        attrs={'class': 'form-control'}),
+                                   help_text="The party that you want to vote for.")
+    class Meta:
+        fields = ['party']
 
 
 class PartyForm(forms.ModelForm):

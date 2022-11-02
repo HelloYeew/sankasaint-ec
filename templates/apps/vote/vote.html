@@ -9,9 +9,9 @@
     <p><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> The vote cannot be change later so please choose carefully!</p>
     <form method="POST">
         {% csrf_token %}
-        {{ form | crispy }}
+        {{ candidate_form | crispy }}
+        {{ party_form | crispy }}
         <button class="btn btn-ayaka" type="submit">Submit</button>
     </form>
 </div>
 {% endblock %}
-

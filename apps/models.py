@@ -39,6 +39,26 @@ class NewCandidate(models.Model):
         return self.user.username + ' - ' + self.area.name
 
 
+class LegacyParty(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    image = models.ImageField(default='default_party.png', upload_to='parties')
+    candidates = models.ManyToManyField(LegacyCandidate)
+
+    def __str__(self):
+        return self.name
+
+
+class NewParty(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    image = models.ImageField(default='default_party.png', upload_to='parties')
+    candidates = models.ManyToManyField(NewCandidate)
+
+    def __str__(self):
+        return self.name
+
+
 class LegacyElection(models.Model):
     name = models.CharField(max_length=100)
     front_image = models.ImageField(default='default_election.png', upload_to='elections')
@@ -82,7 +102,7 @@ class VoteCheck(models.Model):
 
 class VoteResultParty(models.Model):
     election = models.ForeignKey(NewElection, on_delete=models.CASCADE)
-    party = models.ForeignKey(NewArea, on_delete=models.CASCADE)
+    party = models.ForeignKey(NewParty, on_delete=models.CASCADE)
     vote = models.IntegerField(default=0)
 
     def __str__(self):
@@ -96,23 +116,3 @@ class VoteResultCandidate(models.Model):
 
     def __str__(self):
         return self.election.name + ' - ' + self.candidate.user.username + ' - ' + str(self.vote)
-
-
-class LegacyParty(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    image = models.ImageField(default='default_party.png', upload_to='parties')
-    candidates = models.ManyToManyField(LegacyCandidate)
-
-    def __str__(self):
-        return self.name
-
-
-class NewParty(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    image = models.ImageField(default='default_party.png', upload_to='parties')
-    candidates = models.ManyToManyField(NewCandidate)
-
-    def __str__(self):
-        return self.name

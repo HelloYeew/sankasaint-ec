@@ -7,9 +7,10 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 import users.seed
-from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, VoteForm, PartyForm
+from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, CandidateVoteForm, PartyForm, \
+    PartyVoteForm
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
-    NewElection, NewParty
+    NewElection, NewParty, VoteCheck, VoteResultCandidate, VoteResultParty
 from apps.utils import check_election_status, get_sorted_election_result
 from users.models import ColourSettings, UtilityMissionLog
 
@@ -322,7 +323,8 @@ def election_detail_new(request, election_id):
         return render(request, 'apps/election/election_detail_new.html', {
             'colour_settings': colour_settings,
             'election': election_object,
-            'status': check_election_status(election_object)
+            'status': check_election_status(election_object),
+            'vote_history': VoteCheck.objects.filter(election=election_object, user=request.user).first()
         })
     else:
         return render(request, 'apps/election/election_detail_new.html', {
@@ -385,43 +387,62 @@ def edit_election(request, election_id):
 
 @login_required
 def vote(request, election_id):
+    # TODO: Since we are using LegacyArea in user's LegacyProfiles that's not currently migrate
+    #  to NewArea, after we migrate all the data, we need to change the area=<match_by_id_area> to
+    #  using NewArea directly
     if request.user.legacyprofile.area is None:
         messages.error(request, 'Please contact administrator to set your area.')
-        return redirect('election_detail', election_id=election_id)
+        return redirect('election_detail_new', election_id=election_id)
     else:
         try:
-            election = LegacyElection.objects.get(id=election_id)
-        except LegacyElection.DoesNotExist:
+            election = NewElection.objects.get(id=election_id)
+        except NewElection.DoesNotExist:
             messages.error(request, 'This election does not exist.')
             return redirect('election_list')
         if check_election_status(election) == 'Ongoing':
-            if not LegacyVote.objects.filter(election=election, user=request.user).exists():
+            if not VoteCheck.objects.filter(election=election, user=request.user).exists():
                 colour_settings = ColourSettings.objects.filter(user=request.user).first()
                 if request.method == 'POST':
-                    form = VoteForm(request.POST, area=request.user.legacyprofile.area)
-                    if form.is_valid():
-                        vote = form.save(commit=False)
-                        vote.election = election
-                        vote.user = request.user
-                        vote.save()
+                    candidate_form = CandidateVoteForm(request.POST, area=NewArea.objects.get(id=request.user.legacyprofile.area.id))
+                    party_form = PartyVoteForm(request.POST)
+                    if candidate_form.is_valid() and party_form.is_valid():
+                        # tally the candidate
+                        if VoteResultCandidate.objects.filter(election=election, candidate=candidate_form.cleaned_data['candidate']).exists():
+                            candidate = VoteResultCandidate.objects.get(election=election, candidate=candidate_form.cleaned_data['candidate'])
+                            candidate.vote += 1
+                            candidate.save()
+                        else:
+                            candidate = VoteResultCandidate.objects.create(election=election, candidate=candidate_form.cleaned_data['candidate'], vote=1)
+                            candidate.save()
+                        if VoteResultParty.objects.filter(election=election, party=party_form.cleaned_data['party']).exists():
+                            party = VoteResultParty.objects.get(election=election, party=party_form.cleaned_data['party'])
+                            party.vote += 1
+                            party.save()
+                        else:
+                            party = VoteResultParty.objects.create(election=election, party=party_form.cleaned_data['party'], vote=1)
+                            party.save()
+                        # register this user as voted for this election
+                        VoteCheck.objects.create(election=election, user=request.user)
                         messages.success(request, 'Vote has been submitted!')
-                        return redirect('election_detail', election_id=election_id)
+                        return redirect('election_detail_new', election_id=election_id)
                 else:
-                    form = VoteForm(area=request.user.legacyprofile.area)
+                    candidate_form = CandidateVoteForm(area=NewArea.objects.get(id=request.user.legacyprofile.area.id))
+                    party_form = PartyVoteForm()
                 return render(request, 'apps/vote/vote.html', {
                     'colour_settings': colour_settings,
-                    'form': form,
+                    'candidate_form': candidate_form,
+                    'party_form': party_form,
                     'election': election
                 })
             else:
                 messages.error(request, 'You have already voted in this election.')
-                return redirect('election_detail', election_id=election_id)
+                return redirect('election_detail_new', election_id=election_id)
         elif check_election_status(election) == 'Upcoming':
             messages.error(request, 'This election has not started yet.')
-            return redirect('election_detail', election_id=election_id)
+            return redirect('election_detail_new', election_id=election_id)
         else:
             messages.error(request, 'This election has ended.')
-            return redirect('election_detail', election_id=election_id)
+            return redirect('election_detail_new', election_id=election_id)
 
 
 @login_required
