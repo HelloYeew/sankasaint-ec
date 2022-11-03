@@ -10,7 +10,7 @@
     <div style="overflow:hidden; color:var(--color-primary); padding-top: 1rem; padding-bottom: 1rem;">
         {% if not user.is_authenticated %}
         <h4 style="padding-bottom: 1rem;"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> <a href="{% url 'login' %}" style="font-size: calc(1.275rem + .3vw);">Sign in</a> to start a voting process!</h4>
-        {% elif user.is_authenticated and user.legacyprofile.area.id == null %}
+        {% elif user.is_authenticated and user.newprofile.area.id == null %}
         <h4 style="padding-bottom: 1rem;"><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> You are not registered in any area. Please contact system administrator to assign your area.</h4>
         {% else %}
         <div style="padding-top: 1rem; padding-bottom: 1rem">
@@ -53,7 +53,7 @@
             {% endif %}
         </div>
         <h4 style="font-weight: bold">Information about your area (deprecated)</h4>
-        <a href="{% url 'area_detail_old' user.legacyprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.legacyprofile.area.name }} Detail</a>
+        <a href="{% url 'area_detail_old' user.newprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.newprofile.area.name }} Detail</a>
         {% endif %}
     </div>
 </div>

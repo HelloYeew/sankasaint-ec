@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import ColourSettings
+from .models import ColourSettings, NewProfile
 
 
 class UserCreationForms(UserCreationForm):
@@ -48,5 +48,5 @@ class ProfileForm(forms.ModelForm):
                              widget=forms.FileInput(attrs={'class': 'form-control-file'}))
 
     class Meta:
-        model = ColourSettings
+        model = NewProfile
         fields = ['image']

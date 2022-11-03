@@ -2,7 +2,8 @@ import json
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
-from apps.models import NewArea, NewElection, NewParty, NewCandidate
+from apps.models import NewArea, NewElection, NewParty, NewCandidate, LegacyArea
+from users.models import NewProfile, LegacyProfile
 
 
 def seed_data():
@@ -77,6 +78,15 @@ def seed_data():
             description=i['description'],
             area=NewArea.objects.get(id=i['area'])
         )
+        # Update the user's area in the old and new profile
+        user = User.objects.get(username=i['username'])
+        new_profile = NewProfile.objects.get(user=user)
+        legacy_profile = LegacyProfile.objects.get(user=user)
+        new_profile.area = NewArea.objects.get(id=i['area'])
+        legacy_profile.area = LegacyArea.objects.get(id=i['area'])
+        new_profile.save()
+        legacy_profile.save()
+
     # Connect candidate to party
     for i in party_for_import:
         for j in i['candidates']:

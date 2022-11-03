@@ -20,7 +20,7 @@
                     {% if profile.area.id == null %}
                     No registered area
                     {% else %}
-                    <a href="{% url 'area_detail_old' profile.area.id %}">{{ profile.area.name }}</a>
+                    <a href="{% url 'area_detail_new' profile.area.id %}">{{ profile.area.name }}</a>
                     {% endif %}
                 </p>
             </div>

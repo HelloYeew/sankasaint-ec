@@ -5,7 +5,7 @@ from django.contrib.auth import views as auth_views
 
 from apps.models import LegacyVote, VoteCheck
 from users.forms import UserCreationForms, UserSettingsForm, ProfileForm
-from users.models import ColourSettings, LegacyProfile
+from users.models import ColourSettings, LegacyProfile, NewProfile
 
 
 class LogoutAndRedirect(auth_views.LogoutView):
@@ -46,8 +46,8 @@ def settings(request):
 
 def profile(request, user_id):
     try:
-        user = LegacyProfile.objects.get(id=user_id)
-    except LegacyProfile.DoesNotExist:
+        user = NewProfile.objects.get(id=user_id)
+    except NewProfile.DoesNotExist:
         messages.error(request, 'This user does not exist.')
         return redirect('homepage')
     if request.user.is_authenticated:
@@ -68,7 +68,7 @@ def profile(request, user_id):
 
 @login_required
 def edit_profile(request):
-    user = LegacyProfile.objects.get(user=request.user)
+    user = NewProfile.objects.get(user=request.user)
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user)

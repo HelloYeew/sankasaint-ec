@@ -20,12 +20,12 @@
                 {% for history in vote_history %}
                 <tr>
                     <th scope="row">{{ history.id }}</th>
-                    <td><a href="{% url 'profile' history.user.id %}"><img src="{{ history.user.legacyprofile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</a></td>
+                    <td><a href="{% url 'profile' history.user.id %}"><img src="{{ history.user.newprofile.image.url }}" alt="{{ history.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"> {{ history.user.username }}</a></td>
                     <td>
-                        {% if history.user.legacyprofile.area.id == null %}
+                        {% if history.user.newprofile.area.id == null %}
                         No registered area
                         {% else %}
-                        <a href="{% url 'area_detail_new' history.user.legacyprofile.area.id %}">{{ history.user.legacyprofile.area.name }}</a>
+                        <a href="{% url 'area_detail_new' history.user.newprofile.area.id %}">{{ history.user.newprofile.area.name }}</a>
                         {% endif %}
                     </td>
                     <td>{{ history.time }}</td>

@@ -387,10 +387,7 @@ def edit_election(request, election_id):
 
 @login_required
 def vote(request, election_id):
-    # TODO: Since we are using LegacyArea in user's LegacyProfiles that's not currently migrate
-    #  to NewArea, after we migrate all the data, we need to change the area=<match_by_id_area> to
-    #  using NewArea directly
-    if request.user.legacyprofile.area is None:
+    if request.user.newprofile.area is None:
         messages.error(request, 'Please contact administrator to set your area.')
         return redirect('election_detail_new', election_id=election_id)
     else:
@@ -403,7 +400,7 @@ def vote(request, election_id):
             if not VoteCheck.objects.filter(election=election, user=request.user).exists():
                 colour_settings = ColourSettings.objects.filter(user=request.user).first()
                 if request.method == 'POST':
-                    candidate_form = CandidateVoteForm(request.POST, area=NewArea.objects.get(id=request.user.legacyprofile.area.id))
+                    candidate_form = CandidateVoteForm(request.POST, area=request.user.newprofile.area)
                     party_form = PartyVoteForm(request.POST)
                     if candidate_form.is_valid() and party_form.is_valid():
                         # tally the candidate
@@ -426,7 +423,7 @@ def vote(request, election_id):
                         messages.success(request, 'Vote has been submitted!')
                         return redirect('election_detail_new', election_id=election_id)
                 else:
-                    candidate_form = CandidateVoteForm(area=NewArea.objects.get(id=request.user.legacyprofile.area.id))
+                    candidate_form = CandidateVoteForm(area=request.user.newprofile.area)
                     party_form = PartyVoteForm()
                 return render(request, 'apps/vote/vote.html', {
                     'colour_settings': colour_settings,

@@ -2,7 +2,7 @@ from django.db import models
 from colorfield.fields import ColorField
 from django.contrib.auth.models import User
 
-from apps.models import LegacyArea
+from apps.models import LegacyArea, NewArea
 
 
 class ColourSettings(models.Model):
@@ -19,6 +19,15 @@ class ColourSettings(models.Model):
 class LegacyProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     area = models.ForeignKey(LegacyArea, on_delete=models.SET_NULL, null=True, blank=True)
+    image = models.ImageField(default='default_profile.png', upload_to='profile_pics')
+
+    def __str__(self):
+        return self.user.username + '\'s profile'
+
+
+class NewProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    area = models.ForeignKey(NewArea, on_delete=models.SET_NULL, null=True, blank=True)
     image = models.ImageField(default='default_profile.png', upload_to='profile_pics')
 
     def __str__(self):
