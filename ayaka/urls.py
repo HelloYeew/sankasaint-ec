@@ -30,7 +30,7 @@ from drf_yasg import openapi
 schema_view = get_schema_view(
    openapi.Info(
       title="Sankasaint EC API",
-      default_version='v1',
+      default_version='v2',
       description="API for manage an election to select James Brucker as the next president of the United States of Sankasaint.",
       terms_of_service="https://youtu.be/eN6jkWxxm2Y?t=24",
       contact=openapi.Contact(email="me@helloyeew.dev"),
