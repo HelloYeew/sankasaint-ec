@@ -56,19 +56,30 @@ def documentation(request):
 
 
 def area_list(request):
-    all_area_legacy = LegacyArea.objects.all()
     all_area_new = NewArea.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_list.html', {
             'colour_settings': colour_settings,
-            'all_area_legacy': all_area_legacy,
             'all_area_new': all_area_new
         })
     else:
         return render(request, 'apps/area/area_list.html', {
-            'all_area_legacy': all_area_legacy,
             'all_area_new': all_area_new
+        })
+
+
+def legacy_area_list(request):
+    all_area_legacy = LegacyArea.objects.all()
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/area/area_list_legacy.html', {
+            'colour_settings': colour_settings,
+            'all_area_legacy': all_area_legacy,
+        })
+    else:
+        return render(request, 'apps/area/area_list_legacy.html', {
+            'all_area_legacy': all_area_legacy,
         })
 
 
@@ -163,19 +174,30 @@ def area_detail_new(request, area_id):
 
 
 def candidate_list(request):
-    all_candidate_legacy = LegacyCandidate.objects.all()
     all_candidate_new = NewCandidate.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/candidate/candidate_list.html', {
             'colour_settings': colour_settings,
-            'all_candidate_legacy': all_candidate_legacy,
             'all_candidate_new': all_candidate_new
         })
     else:
         return render(request, 'apps/candidate/candidate_list.html', {
-            'all_candidate_legacy': all_candidate_legacy,
             'all_candidate_new': all_candidate_new
+        })
+
+
+def legacy_candidate_list(request):
+    all_candidate_legacy = LegacyCandidate.objects.all()
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/candidate/candidate_list_legacy.html', {
+            'colour_settings': colour_settings,
+            'all_candidate_legacy': all_candidate_legacy,
+        })
+    else:
+        return render(request, 'apps/candidate/candidate_list_legacy.html', {
+            'all_candidate_legacy': all_candidate_legacy,
         })
 
 
@@ -264,13 +286,7 @@ def candidate_detail_new(request, candidate_id):
 
 
 def election_list(request):
-    rendered_legacy_election = []
     rendered_new_election = []
-    for election in LegacyElection.objects.all():
-        rendered_legacy_election.append({
-            'election': election,
-            'status': check_election_status(election)
-        })
     for election in NewElection.objects.all():
         rendered_new_election.append({
             'election': election,
@@ -280,13 +296,30 @@ def election_list(request):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election.html', {
             'colour_settings': colour_settings,
-            'all_election_legacy': rendered_legacy_election,
             'all_election_new': rendered_new_election
         })
     else:
         return render(request, 'apps/election/election.html', {
-            'all_election_legacy': rendered_legacy_election,
             'all_election_new': rendered_new_election
+        })
+
+
+def legacy_election_list(request):
+    rendered_legacy_election = []
+    for election in LegacyElection.objects.all():
+        rendered_legacy_election.append({
+            'election': election,
+            'status': check_election_status(election)
+        })
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/election/election_legacy.html', {
+            'colour_settings': colour_settings,
+            'all_election_legacy': rendered_legacy_election,
+        })
+    else:
+        return render(request, 'apps/election/election_legacy.html', {
+            'all_election_legacy': rendered_legacy_election,
         })
 
 
@@ -523,19 +556,30 @@ def detailed_election_result(request, election_id):
 
 
 def party_list(request):
-    all_party_old = LegacyParty.objects.all()
     all_party_new = NewParty.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/party/party_list.html', {
             'colour_settings': colour_settings,
-            'party_list_old': all_party_old,
             'party_list_new': all_party_new
         })
     else:
         return render(request, 'apps/party/party_list.html', {
-            'party_list_old': all_party_old,
             'party_list_new': all_party_new
+        })
+
+
+def legacy_party_list(request):
+    all_party_old = LegacyParty.objects.all()
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/party/party_list_legacy.html', {
+            'colour_settings': colour_settings,
+            'party_list_old': all_party_old,
+        })
+    else:
+        return render(request, 'apps/party/party_list_legacy.html', {
+            'party_list_old': all_party_old
         })
 
 

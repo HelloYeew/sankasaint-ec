@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Election list{% endblock %}
+{% block title %}Legacy election list{% endblock %}
 
 {% block content %}
 <div class="container" style="padding: 5rem;">
-    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Election list</h1>
-    {% if user.is_superuser or user.is_staff %}
-    <a href="{% url 'start_election' %}" class="btn btn-ayaka"><i class="mdi mdi-airplane-cog" aria-hidden="true" style="font-size: 20px"></i> Start a new election</a>
-    {% endif %}
-    <a href="{% url 'legacy_election_list' %}" class="btn btn-ayaka"><i class="mdi mdi-backup-restore" aria-hidden="true" style="font-size: 20px"></i> View legacy election list</a>
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Legacy election list</h1>
     <p></p>
     {% include "snippets/legacy-description.html" %}
     <p></p>

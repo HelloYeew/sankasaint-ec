@@ -34,26 +34,12 @@
                         </a>
                     </div>
                     {% endfor %}
-                    {% for election in ongoing_election_old %}
-                    <div class="col-4">
-                        <a href="{% url 'election_detail_old' election.id %}">
-                            <div class="card bg-dark text-white border-white">
-                                <img src="{{ election.front_image.url }}" class="card-img" alt="{{ election.name }}" style="filter: brightness(40%); height: 300px; width: 100%; object-fit: cover;">
-                                <div class="card-img-overlay">
-                                    <h5 class="card-title fw-bold">{{ election.name }} {% include "snippets/legacy-sign.html" %}</h5>
-                                    <p class="card-text">{{ election.description }}</p>
-                                    <small class="card-text">Started at {{ election.start_date }}</small>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    {% endfor %}
                 </div>
             </div>
             {% endif %}
         </div>
-        <h4 style="font-weight: bold">Information about your area (deprecated)</h4>
-        <a href="{% url 'area_detail_old' user.newprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.newprofile.area.name }} Detail</a>
+        <h4 style="font-weight: bold">Information about your area</h4>
+        <a href="{% url 'area_detail_new' user.newprofile.area.id %}" class="btn btn-ayaka"><i class="mdi mdi-chart-areaspline-variant" aria-hidden="true" style="font-size: 20px"></i> {{ user.newprofile.area.name }} Detail</a>
         {% endif %}
     </div>
 </div>

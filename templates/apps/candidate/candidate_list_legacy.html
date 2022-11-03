@@ -1,14 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Candidate list{% endblock %}
+{% block title %}Legacy candidate list{% endblock %}
 
 {% block content %}
 <div class="container" style="padding: 5rem;">
-    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Candidate list</h1>
-    {% if user.is_superuser or user.is_staff %}
-    <a href="{% url 'add_candidate' %}" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Add candidate</a>
-    {% endif %}
-    <a href="{% url 'legacy_candidate_list' %}" class="btn btn-ayaka"><i class="mdi mdi-backup-restore" aria-hidden="true" style="font-size: 20px"></i> View legacy candidate list</a>
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Legacy candidate list</h1>
+    {% include "snippets/legacy-description.html" %}
     <p></p>
     <div style="overflow:hidden">
         <table class="table table-striped table-dark" style="vertical-align: middle;">
@@ -22,8 +19,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for candidate in all_candidate_new %}
-                {% include "snippets/candidate/candidate-row-new.html" %}
+                {% for candidate in all_candidate_legacy %}
+                {% include "snippets/candidate/candidate-row-old.html" %}
                 {% endfor %}
             </tbody>
         </table>

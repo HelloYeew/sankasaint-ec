@@ -1,14 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Election area list{% endblock %}
+{% block title %}Legacy election area list{% endblock %}
 
 {% block content %}
 <div class="container" style="padding: 5rem;">
-    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Election area list</h1>
-    {% if user.is_superuser or user.is_staff %}
-    <a href="{% url 'add_area' %}" class="btn btn-ayaka"><i class="mdi mdi-plus" aria-hidden="true" style="font-size: 20px"></i> Add area</a>
-    {% endif %}
-    <a href="{% url 'legacy_area_list' %}" class="btn btn-ayaka"><i class="mdi mdi-backup-restore" aria-hidden="true" style="font-size: 20px"></i> View legacy area list</a>
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Legacy election area list</h1>
+    {% include "snippets/legacy-description.html" %}
     <p></p>
     <div style="overflow:hidden">
         <table class="table table-striped table-dark" style="vertical-align: middle;">
@@ -21,8 +18,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for area in all_area_new %}
-                {% include "snippets/area/area-row-new.html" %}
+                {% for area in all_area_legacy %}
+                {% include "snippets/area/area-row-old.html" %}
                 {% endfor %}
             </tbody>
         </table>
