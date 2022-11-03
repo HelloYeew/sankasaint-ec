@@ -5,12 +5,13 @@
 {% block content %}
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">Utility</h1>
-    <p style="color: yellow"><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> This action has direct access to the database, before use please ask other member before use this !</p>
+    <p style="color: yellow"><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> Some action can damage the database, please use it carefully!</p>
     {% if import_legacy_data %}
     <a href="{% url 'import_legacy_data' %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-open-in-new" aria-hidden="true" style="font-size: 20px"></i> Import legacy data</a>
     {% else %}
     <a href="{% url 'import_legacy_data' %}" class="btn btn-ayaka"><i class="mdi mdi-open-in-new" aria-hidden="true" style="font-size: 20px"></i> Import legacy data</a>
     {% endif %}
+    <a href="{% url 'create_user' %}" class="btn btn-ayaka"><i class="mdi mdi-account-plus" aria-hidden="true" style="font-size: 20px"></i> Create user</a>
     <p></p>
     <div style="overflow:hidden">
         <h2>Utility Log</h2>

@@ -48,6 +48,7 @@ urlpatterns = [
     path('settings/', users_views.settings, name='settings'),
     path('profile/<int:user_id>/', users_views.profile, name='profile'),
     path('profile/edit', users_views.edit_profile, name='edit_profile'),
+    path('utils/create-user', users_views.create_user_utility, name='create_user'),
     path('', include('apps.urls')),
     path('api/', include('apis.urls')),
     # Swagger path

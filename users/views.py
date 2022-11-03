@@ -82,3 +82,22 @@ def edit_profile(request):
         'form': form,
         'colour_settings': colour_settings
     })
+
+
+@login_required
+def create_user_utility(request):
+    colour_settings = ColourSettings.objects.filter(user=request.user).first()
+    if request.user.is_superuser or request.user.is_staff:
+        if request.method == 'POST':
+            form = UserCreationForms(request.POST)
+            if form.is_valid():
+                form.save()
+                username = form.cleaned_data.get('username')
+                messages.success(request, f'Account created successfully for {username}! Now you can login.')
+                return redirect('utils')
+        else:
+            form = UserCreationForms()
+        return render(request, 'apps/utils/create_user.html', {'form': form, 'colour_settings': colour_settings})
+    else:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('homepage')
