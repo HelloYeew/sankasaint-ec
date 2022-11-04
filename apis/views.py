@@ -2,13 +2,14 @@ from http.client import INTERNAL_SERVER_ERROR
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework import views
 from rest_framework.response import Response
 
-from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty
+from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
 from apps.utils import check_election_status
 from . import serializers
 from .serializers import VoteSerializer
@@ -437,20 +438,30 @@ class ElectionVoteView(views.APIView):
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Already voted'}},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            election_status = check_election_status(election)
-            if election_status == 'Finished':
-                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election is already ended.'}})
-            if election_status == 'Upcoming':
-                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election is not open yet.'}})
+            if timezone.now() > election.end_date:
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election is already ended.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if timezone.now() < election.start_date:
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election is not open yet.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             # TODO: Area check
+
+            candidate_id = vote_data.data['candidate_id']
+            party_id = vote_data.data['party_id']
+            if not NewCandidate.objects.filter(id=candidate_id).exists():
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Candidate does not exist.'}},
+                                status=status.HTTP_404_NOT_FOUND)
+            if not NewParty.objects.filter(id=party_id).exists():
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Party does not exist.'}},
+                                status=status.HTTP_404_NOT_FOUND)
+
             vote_result_candidate, _ = VoteResultCandidate.objects.get_or_create(election=election,
-                                                                                 candidate_id=vote_data.data[
-                                                                                     'candidate_id'])
+                                                                                 candidate_id=candidate_id)
             vote_result_candidate.vote += 1
             vote_result_candidate.save()
             vote_result_party, _ = VoteResultParty.objects.get_or_create(election=election,
-                                                                         party_id=vote_data.data['party_id'])
+                                                                         party_id=party_id)
             vote_result_party.vote += 1
             vote_result_party.save()
             VoteCheck.objects.create(election=election, user=request.user)

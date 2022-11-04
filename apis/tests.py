@@ -15,7 +15,7 @@ class VoteApiTest(APITestCase):
         """Create election for testing."""
         self.election = NewElection.objects.create(name="Test election",
                                                    start_date=timezone.now(),
-                                                   end_date=timezone.now() + timedelta(days=90))
+                                                   end_date=timezone.now() + timedelta(days=1))
 
         self.users = [
             # Candidates
@@ -91,3 +91,49 @@ class VoteApiTest(APITestCase):
             'party_id': self.parties[0].id
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_vote_invalid_party(self):
+        """Voting invalid party should not be possible"""
+        self.client.force_login(self.users[1])
+        response = self.client.post(self.test_url, {
+            'candidate_id': self.candidates[0].id,
+            'party_id': 99999999
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_vote_invalid_candidate(self):
+        """Voting invalid candidate should not be possileb."""
+        self.client.force_login(self.users[1])
+        response = self.client.post(self.test_url, {
+            'candidate_id': 9999999,
+            'party_id': self.parties[0].id
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_vote_wrong_time(self):
+        """Both upcoming and ended elections cannot be voted."""
+        self.client.force_login(self.users[0])
+
+        # Ended
+        self.election.start_date -= timedelta(days=9)
+        self.election.end_date -= timedelta(days=2)
+        self.election.save()
+
+        response = self.client.post(self.test_url, {
+            'candidate_id': self.candidates[0].id,
+            'party_id': self.parties[0].id
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg="Ended election should not be voted")
+
+        # Upcoming
+        self.election.end_date += timedelta(days=21)
+        self.election.start_date += timedelta(days=10)
+        self.election.save()
+        response = self.client.post(self.test_url, {
+            'candidate_id': self.candidates[0].id,
+            'party_id': self.parties[0].id
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg="Upcoming election should not be voted")
+
