@@ -7,6 +7,9 @@ from users.models import NewProfile, LegacyProfile
 
 
 def seed_data():
+    """
+    Seed the old dump data into the new database.
+    """
     file = []
     with open('seed/apps.json', encoding='utf-8') as json_file:
         data = json.load(json_file)

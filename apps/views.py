@@ -17,6 +17,9 @@ from users.models import ColourSettings, UtilityMissionLog
 
 @require_GET
 def robots_txt(request):
+    """
+    Return the robots.txt file to tell the search engine crawlers not to index the site.
+    """
     lines = [
         # Disallowed all robots
         "User-agent: *",
@@ -26,6 +29,9 @@ def robots_txt(request):
 
 
 def homepage(request):
+    """
+    Homepage view that's normally show the current election information.
+    """
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         ongoing_election_old = []
@@ -46,6 +52,9 @@ def homepage(request):
 
 
 def documentation(request):
+    """
+    A page that's include the link to API documentation.
+    """
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'documentation.html', {
@@ -56,6 +65,9 @@ def documentation(request):
 
 
 def area_list(request):
+    """
+    List all the NewArea objects in the database.
+    """
     all_area_new = NewArea.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -70,6 +82,11 @@ def area_list(request):
 
 
 def legacy_area_list(request):
+    """
+    A fallback page that's list all the LegacyArea objects in the database.
+
+    We are not allowed to do the CRUD operation on the LegacyArea objects anymore, but we still need to show them.
+    """
     all_area_legacy = LegacyArea.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -85,6 +102,11 @@ def legacy_area_list(request):
 
 @login_required
 def add_area(request):
+    """
+    Add a new area to the database.
+
+    This view is only accessible to the staff or superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
@@ -101,11 +123,16 @@ def add_area(request):
         })
     else:
         messages.error(request, 'You are not authorised to access this page.')
-        return redirect('homepage')
+        return redirect('area_list')
 
 
 @login_required
 def edit_area(request, area_id):
+    """
+    Edit an existing NewArea in the database.
+
+    This view is only accessible to the staff or superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         try:
             area = NewArea.objects.get(id=area_id)
@@ -128,10 +155,13 @@ def edit_area(request, area_id):
         })
     else:
         messages.error(request, 'You are not authorised to access this page.')
-        return redirect('homepage')
+        return redirect('area_list')
 
 
 def area_detail_old(request, area_id):
+    """
+    Show the detail of a LegacyArea object.
+    """
     try:
         area = LegacyArea.objects.get(id=area_id)
     except LegacyArea.DoesNotExist:
@@ -153,6 +183,9 @@ def area_detail_old(request, area_id):
 
 
 def area_detail_new(request, area_id):
+    """
+    Show the detail of a NewArea object.
+    """
     try:
         area = NewArea.objects.get(id=area_id)
     except NewArea.DoesNotExist:
@@ -174,6 +207,9 @@ def area_detail_new(request, area_id):
 
 
 def candidate_list(request):
+    """
+    List all the NewCandidate objects in the database.
+    """
     all_candidate_new = NewCandidate.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -188,6 +224,11 @@ def candidate_list(request):
 
 
 def legacy_candidate_list(request):
+    """
+    A fallback page that's list all the LegacyCandidate objects in the database.
+
+    We are not allowed to do the CRUD operation on the LegacyCandidate objects anymore, but we still need to show them.
+    """
     all_candidate_legacy = LegacyCandidate.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -203,6 +244,11 @@ def legacy_candidate_list(request):
 
 @login_required
 def add_candidate(request):
+    """
+    Add a new candidate to the database.
+
+    This view is only accessible to the staff or superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
@@ -224,6 +270,11 @@ def add_candidate(request):
 
 @login_required
 def edit_candidate(request, candidate_id):
+    """
+    Edit an existing NewCandidate in the database.
+
+    This view is only accessible to the staff or superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         try:
             candidate = NewCandidate.objects.get(id=candidate_id)
@@ -250,6 +301,9 @@ def edit_candidate(request, candidate_id):
 
 
 def candidate_detail_old(request, candidate_id):
+    """
+    Show the detail of a LegacyCandidate object.
+    """
     try:
         candidate = LegacyCandidate.objects.get(id=candidate_id)
     except LegacyCandidate.DoesNotExist:
@@ -268,6 +322,9 @@ def candidate_detail_old(request, candidate_id):
 
 
 def candidate_detail_new(request, candidate_id):
+    """
+    Show the detail of a NewCandidate object.
+    """
     try:
         candidate = NewCandidate.objects.get(id=candidate_id)
     except NewCandidate.DoesNotExist:
@@ -286,6 +343,9 @@ def candidate_detail_new(request, candidate_id):
 
 
 def election_list(request):
+    """
+    List all the NewElection objects in the database.
+    """
     rendered_new_election = []
     for election in NewElection.objects.all():
         rendered_new_election.append({
@@ -305,6 +365,11 @@ def election_list(request):
 
 
 def legacy_election_list(request):
+    """
+    A fallback page that's list all the LegacyElection objects in the database.
+
+    We are not allowed to do the CRUD operation on the LegacyElection objects anymore, but we still need to show them.
+    """
     rendered_legacy_election = []
     for election in LegacyElection.objects.all():
         rendered_legacy_election.append({
@@ -324,6 +389,9 @@ def legacy_election_list(request):
 
 
 def election_detail_old(request, election_id):
+    """
+    Show the detail of a LegacyElection object.
+    """
     try:
         election_object = LegacyElection.objects.get(id=election_id)
     except LegacyElection.DoesNotExist:
@@ -346,6 +414,9 @@ def election_detail_old(request, election_id):
 
 
 def election_detail_new(request, election_id):
+    """
+    Show the detail of a NewElection object.
+    """
     try:
         election_object = NewElection.objects.get(id=election_id)
     except LegacyElection.DoesNotExist:
@@ -368,6 +439,11 @@ def election_detail_new(request, election_id):
 
 @login_required
 def start_election(request):
+    """
+    Start a new election by creating a NewElection object.
+
+    This function is only accessible to the staff or superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
@@ -393,6 +469,11 @@ def start_election(request):
 
 @login_required
 def edit_election(request, election_id):
+    """
+    Edit an existing election.
+
+    To make the election fair, we are only allowed to edit some non-essential fields only.
+    """
     if request.user.is_staff or request.user.is_superuser:
         try:
             election = NewElection.objects.get(id=election_id)
@@ -420,6 +501,9 @@ def edit_election(request, election_id):
 
 @login_required
 def vote(request, election_id):
+    """
+    Vote for a candidate for an election.
+    """
     if request.user.newprofile.area is None:
         messages.error(request, 'Please contact administrator to set your area.')
         return redirect('election_detail_new', election_id=election_id)
@@ -477,6 +561,12 @@ def vote(request, election_id):
 
 @login_required
 def vote_history(request, election_id):
+    """
+    Show the vote history of a user for an election.
+
+    This page only show who already voted for this election, but not show what they voted for since we followed
+    the black box voting system, and we are not collecting any information about who they voted for.
+    """
     if request.user.is_staff or request.user.is_superuser:
         try:
             election = NewElection.objects.get(id=election_id)
@@ -496,6 +586,11 @@ def vote_history(request, election_id):
 
 
 def election_result(request, election_id):
+    """
+    Show the election result of an election.
+
+    TODO: Move this page to NewElection model.
+    """
     try:
         election = LegacyElection.objects.get(id=election_id)
     except LegacyElection.DoesNotExist:
@@ -530,6 +625,11 @@ def election_result(request, election_id):
 
 @login_required
 def detailed_election_result(request, election_id):
+    """
+    Show the detailed election result of an election.
+
+    TODO: Move this page to NewElection model.
+    """
     try:
         election = LegacyElection.objects.get(id=election_id)
     except LegacyElection.DoesNotExist:
@@ -556,6 +656,9 @@ def detailed_election_result(request, election_id):
 
 
 def party_list(request):
+    """
+    Show the list of NewParty objects.
+    """
     all_party_new = NewParty.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -570,6 +673,11 @@ def party_list(request):
 
 
 def legacy_party_list(request):
+    """
+    A fallback page that's list all the LegacyParty objects in the database.
+
+    We are not allowed to do the CRUD operation on the LegacyParty objects anymore, but we still need to show them.
+    """
     all_party_old = LegacyParty.objects.all()
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
@@ -585,6 +693,9 @@ def legacy_party_list(request):
 
 @login_required
 def add_party(request):
+    """
+    Add a new party to the database.
+    """
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
@@ -606,6 +717,9 @@ def add_party(request):
 
 
 def edit_party(request, party_id):
+    """
+    Edit an existing party in the database.
+    """
     if request.user.is_staff or request.user.is_superuser:
         try:
             party = NewParty.objects.get(id=party_id)
@@ -633,6 +747,9 @@ def edit_party(request, party_id):
 
 
 def party_detail_old(request, party_id):
+    """
+    Show the detail of a LegacyParty object.
+    """
     try:
         party = LegacyParty.objects.get(id=party_id)
     except LegacyParty.DoesNotExist:
@@ -651,6 +768,9 @@ def party_detail_old(request, party_id):
 
 
 def party_detail_new(request, party_id):
+    """
+    Show the detail of a NewParty object.
+    """
     try:
         party = NewParty.objects.get(id=party_id)
     except NewParty.DoesNotExist:
@@ -670,6 +790,9 @@ def party_detail_new(request, party_id):
 
 @login_required()
 def utils(request):
+    """
+    A utility menu for the staff and superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         utility_log = UtilityMissionLog.objects.all()
@@ -686,6 +809,11 @@ def utils(request):
 
 @login_required()
 def import_legacy_data(request):
+    """
+    Import the legacy data from the old dump file to the new database.
+
+    This menu normally can be accessed only once in the lifetime of the website and only can be accessed by the staff and superuser.
+    """
     if request.user.is_staff or request.user.is_superuser:
         try:
             users.seed.seed_data()

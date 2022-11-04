@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container" style="padding: 5rem;">
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} Edit {{ election.name }}</h1>
-    <p><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> To make the election fair, the system will only allow to make some change on not essential information of the election only.</p>
+    <p><i class="mdi mdi-information" aria-hidden="true" style="font-size: 20px"></i> To make the election fair, the system will only allow to make some change on non-essential information of the election only.</p>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form | crispy }}

@@ -3,6 +3,13 @@ from apps.models import LegacyElection, LegacyCandidate, LegacyVote
 
 
 def check_election_status(election: LegacyElection) -> str:
+    """
+    Check the status of an election.
+
+    :param election: The election to check.
+    :return: The status of the election in string.
+    :rtype: str
+    """
     if election.start_date <= timezone.now():
         if election.end_date >= timezone.now():
             return 'Ongoing'
@@ -13,6 +20,13 @@ def check_election_status(election: LegacyElection) -> str:
 
 
 def get_sorted_election_result(election: LegacyElection) -> list:
+    """
+    Get the election result in a sorted list.
+
+    :param election: The election to get the result.
+    :return: The election result in a sorted list.
+    :rtype: list
+    """
     vote_result = []
     for candidate in LegacyCandidate.objects.all():
         vote_result.append({

@@ -9,7 +9,9 @@ from users.models import ColourSettings, LegacyProfile, NewProfile
 
 
 class LogoutAndRedirect(auth_views.LogoutView):
-    # Redirect to / after logout
+    """
+    A view that logs a user out and redirects to the homepage.
+    """
     def get_next_page(self):
         messages.success(self.request, 'You have been logged out.')
         return '/'
@@ -29,6 +31,9 @@ def signup(request):
 
 
 def settings(request):
+    """
+    An ayaka's settings page.
+    """
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.method == 'POST':
         form = UserSettingsForm(request.POST, instance=colour_settings)
@@ -45,6 +50,9 @@ def settings(request):
 
 
 def profile(request, user_id):
+    """
+    Show a user's profile.
+    """
     try:
         user = NewProfile.objects.get(id=user_id)
     except NewProfile.DoesNotExist:
@@ -68,6 +76,9 @@ def profile(request, user_id):
 
 @login_required
 def edit_profile(request):
+    """
+    Edit current logged in user's profile.
+    """
     user = NewProfile.objects.get(user=request.user)
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.method == 'POST':
@@ -86,6 +97,11 @@ def edit_profile(request):
 
 @login_required
 def create_user_utility(request):
+    """
+    A utility to create a new user like signup.
+
+    This menu can be only accessed by staff and superuser for some testing purposes.
+    """
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.user.is_superuser or request.user.is_staff:
         if request.method == 'POST':
