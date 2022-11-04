@@ -52,6 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the user model.
     """
+
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name')
@@ -61,6 +62,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the user profile model.
     """
+
     class Meta:
         model = NewProfile
         fields = ('image', 'area')
@@ -82,6 +84,7 @@ class AreaSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the area model.
     """
+
     class Meta:
         model = NewArea
         fields = ('id', 'name', 'description')
@@ -170,6 +173,7 @@ class CreateElectionSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize for creating an election.
     """
+
     class Meta:
         model = NewElection
         fields = ('name', 'description', 'start_date', 'end_date')
@@ -199,3 +203,11 @@ class ErrorSerializer(serializers.Serializer):
     def __init__(self, detail, *args, **kwargs):
         super(ErrorSerializer, self).__init__(*args, **kwargs)
         self.fields['detail'] = serializers.CharField(default=detail)
+
+
+class VoteSerializer(serializers.Serializer):
+    """
+    This serializer is used for vote API request.
+    """
+    party_id = serializers.IntegerField()
+    candidate_id = serializers.IntegerField()
