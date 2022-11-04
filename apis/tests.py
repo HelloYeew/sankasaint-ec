@@ -100,6 +100,7 @@ class VoteApiTest(APITestCase):
             'party_id': 99999999
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(VoteCheck.objects.filter(user=self.users[1], election=self.election))
 
     def test_vote_invalid_candidate(self):
         """Voting invalid candidate should not be possileb."""
@@ -109,6 +110,7 @@ class VoteApiTest(APITestCase):
             'party_id': self.parties[0].id
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(VoteCheck.objects.filter(user=self.users[1], election=self.election))
 
     def test_vote_wrong_time(self):
         """Both upcoming and ended elections cannot be voted."""
@@ -125,6 +127,7 @@ class VoteApiTest(APITestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg="Ended election should not be voted")
+        self.assertFalse(VoteCheck.objects.filter(user=self.users[0], election=self.election))
 
         # Upcoming
         self.election.end_date += timedelta(days=21)
@@ -136,4 +139,17 @@ class VoteApiTest(APITestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg="Upcoming election should not be voted")
+        self.assertFalse(VoteCheck.objects.filter(user=self.users[0], election=self.election))
+
+    def test_vote_outside_area(self):
+        """Voting candidate is only allowed in the same area."""
+        self.client.force_login(self.users[3])
+        response = self.client.post(self.test_url, {
+            'candidate_id': self.candidates[0].id,
+            'party_id': self.parties[1].id
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         msg="Cannot vote outside area")
+        self.assertFalse(VoteCheck.objects.filter(user=self.users[3], election=self.election))
+
 
