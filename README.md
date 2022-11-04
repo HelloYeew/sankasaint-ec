@@ -37,6 +37,13 @@ python manage.py dumpdata apps > seed/apps.json --indent 4
 python manage.py loaddata seed/apps.json
 ```
 
+## Import legacy data to new database tables
+
+1. Run `load database data` section
+2. Get in utility page `/utils` and run `Import legacy data` button
+
+Note : If you are not loading the data from the dump file, the migration will fail and you need to reset the database and do it again.
+
 ## Run tests
 
 ```bash
