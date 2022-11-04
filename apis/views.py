@@ -401,7 +401,8 @@ class ElectionDetailView(views.APIView):
 
     @swagger_auto_schema(responses={
         200: serializers.GetElectionSerializer,
-        404: serializers.ErrorSerializer(detail='Election does not exist.')
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Invalid election info')
     })
     def get(self, request, election_id):
         """
