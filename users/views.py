@@ -49,19 +49,22 @@ def settings(request):
     })
 
 
+# all user -> login first
+# all use -> use
+
 def profile(request, user_id):
     """
     Show a user's profile.
     """
     try:
-        user = NewProfile.objects.get(id=user_id)
+        user = NewProfile.objects.get(id=request.user.id)
     except NewProfile.DoesNotExist:
         messages.error(request, 'This user does not exist.')
         return redirect('homepage')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
-        votes_new = VoteCheck.objects.filter(user__id=user_id)
+        votes_legacy = LegacyVote.objects.filter(user__id=request.user.id)
+        votes_new = VoteCheck.objects.filter(user__id=request.user.id)
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
@@ -73,6 +76,29 @@ def profile(request, user_id):
             'profile': user
         })
 
+
+@login_required
+def profile_with_id(request, user_id):
+    """
+    Show a user's profile.
+    """
+    try:
+        user = NewProfile.objects.get(id=user_id)
+    except NewProfile.DoesNotExist:
+        messages.error(request, 'This user does not exist.')
+        return redirect('homepage')
+    if request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff):
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
+        votes_new = VoteCheck.objects.filter(user__id=user_id)
+        return render(request, 'users/profile.html', {
+            'colour_settings': colour_settings,
+            'profile': user,
+            'vote_history': votes_new,
+            'vote_history_legacy': votes_legacy
+        })
+    else:
+        return redirect('profile')
 
 @login_required
 def edit_profile(request):

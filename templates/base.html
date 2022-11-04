@@ -115,7 +115,8 @@
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">{% if user.username %}<img src="{{ user.newprofile.image.url }}" alt="{{ user.username }}'s profile" style="width:30px; height:30px; border-radius:100px; object-fit:cover;"> {{ user.username }}{% else %}Guest{% endif %}</a>
                         <ul class="dropdown-menu">
                             {% if user.is_authenticated %}
-                            <li><a class="dropdown-item" href="{% url 'profile' user.id %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
                             <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
                             <li><a class="dropdown-item" href="{% url 'utils' %}">Utility</a></li>
                             {% if user.is_superuser %}
