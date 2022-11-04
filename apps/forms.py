@@ -40,7 +40,7 @@ class StartElectionForm(forms.ModelForm):
     name = forms.CharField(label="Election Name", max_length=100, widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Election Name'}),
         help_text="The name of the election.")
-    front_image = forms.ImageField(label="Election Image", widget=forms.FileInput(
+    front_image = forms.ImageField(required=False, label="Election Image", widget=forms.FileInput(
         attrs={'class': 'form-control-file', 'placeholder': 'Election Front Image'}),
         help_text="The image showing at the front of the election.")
     description = forms.CharField(label="Election Description", widget=forms.Textarea(
