@@ -62,7 +62,7 @@ class VoteApiTest(APITestCase):
             'candidate_id': self.candidates[0].id,
             'party_id': self.parties[0].id
         }, format='json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         party_result = VoteResultParty.objects.get(election=self.election, party=self.parties[0])
         self.assertEqual(party_result.vote, 1)
         candidate_result = VoteResultCandidate.objects.get(election=self.election, candidate=self.candidates[0])
@@ -99,7 +99,7 @@ class VoteApiTest(APITestCase):
             'candidate_id': self.candidates[0].id,
             'party_id': 99999999
         }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_vote_invalid_candidate(self):
         """Voting invalid candidate should not be possileb."""
@@ -108,7 +108,7 @@ class VoteApiTest(APITestCase):
             'candidate_id': 9999999,
             'party_id': self.parties[0].id
         }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_vote_wrong_time(self):
         """Both upcoming and ended elections cannot be voted."""

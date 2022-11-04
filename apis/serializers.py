@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, NewArea, NewCandidate, NewElection
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, NewArea, NewCandidate, NewElection, VoteCheck
 from users.models import LegacyProfile, NewProfile
 
 
@@ -211,3 +211,9 @@ class VoteSerializer(serializers.Serializer):
     """
     party_id = serializers.IntegerField()
     candidate_id = serializers.IntegerField()
+
+
+class VoteCheckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VoteCheck
+        fields = ('user_id', 'election_id')

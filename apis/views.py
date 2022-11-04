@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
 from apps.utils import check_election_status
 from . import serializers
-from .serializers import VoteSerializer
+from .serializers import VoteSerializer, VoteCheckSerializer
 
 
 class LoginView(views.APIView):
@@ -423,7 +423,8 @@ class ElectionVoteView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(responses={
-        404: serializers.ErrorSerializer(detail='Election does not exist.')
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        201: serializers.VoteCheckSerializer
     })
     def post(self, request, election_id):
         """
@@ -451,10 +452,10 @@ class ElectionVoteView(views.APIView):
             party_id = vote_data.data['party_id']
             if not NewCandidate.objects.filter(id=candidate_id).exists():
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Candidate does not exist.'}},
-                                status=status.HTTP_404_NOT_FOUND)
+                                status=status.HTTP_400_BAD_REQUEST)
             if not NewParty.objects.filter(id=party_id).exists():
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Party does not exist.'}},
-                                status=status.HTTP_404_NOT_FOUND)
+                                status=status.HTTP_400_BAD_REQUEST)
 
             vote_result_candidate, _ = VoteResultCandidate.objects.get_or_create(election=election,
                                                                                  candidate_id=candidate_id)
@@ -464,10 +465,11 @@ class ElectionVoteView(views.APIView):
                                                                          party_id=party_id)
             vote_result_party.vote += 1
             vote_result_party.save()
-            VoteCheck.objects.create(election=election, user=request.user)
+            vote_check = VoteCheck.objects.create(election=election, user=request.user)
 
             # Success
-            return Response({'detail': 'Vote successfully'})
+            return Response({'detail': 'Vote successfully', 'vote_check': VoteCheckSerializer(vote_check).data},
+                            status=status.HTTP_201_CREATED)
 
         except NewElection.DoesNotExist:
             return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election does not exist.'}})
