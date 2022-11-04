@@ -450,10 +450,16 @@ class ElectionVoteView(views.APIView):
             # TODO: Area check
 
             candidate_id = vote_data.data['candidate_id']
-            party_id = vote_data.data['party_id']
+
             if not NewCandidate.objects.filter(id=candidate_id).exists():
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Candidate does not exist.'}},
                                 status=status.HTTP_400_BAD_REQUEST)
+
+            if NewCandidate.objects.get(id=candidate_id).area.id != request.user.newprofile.area.id:
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Cannot vote candidate outside area'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            party_id = vote_data.data['party_id']
             if not NewParty.objects.filter(id=party_id).exists():
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Party does not exist.'}},
                                 status=status.HTTP_400_BAD_REQUEST)
