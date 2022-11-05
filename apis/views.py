@@ -19,7 +19,7 @@ class LoginView(views.APIView):
     # This view should be accessible also for unauthenticated users.
     permission_classes = [permissions.AllowAny]
 
-    @swagger_auto_schema(request_body=serializers.LoginSerializer, responses={200: serializers.LoginSerializer})
+    @swagger_auto_schema(request_body=serializers.LoginSerializer, responses={200: serializers.UserProfileSerializer})
     def post(self, request):
         """
         Login a user.
