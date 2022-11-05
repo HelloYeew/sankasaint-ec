@@ -1,13 +1,18 @@
+from http.client import INTERNAL_SERVER_ERROR
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework import views
 from rest_framework.response import Response
 
-from apps.models import NewArea, NewCandidate, NewElection
+from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
+from apps.utils import check_election_status
 from . import serializers
+from .serializers import VoteSerializer, VoteCheckSerializer
 
 
 class LoginView(views.APIView):
@@ -158,7 +163,8 @@ class AreaDetailView(views.APIView):
         try:
             area = NewArea.objects.get(id=area_id)
             area_serializer = serializers.AreaSerializer(area, context={'request': self.request})
-            candidate_serializer = serializers.GetCandidateSerializer(NewCandidate.objects.filter(area=area), many=True, context={'request': self.request})
+            candidate_serializer = serializers.GetCandidateSerializer(NewCandidate.objects.filter(area=area), many=True,
+                                                                      context={'request': self.request})
             return Response({'detail': 'Get area detail successfully', 'result': {
                 'area': area_serializer.data,
                 'candidates': candidate_serializer.data
@@ -245,15 +251,17 @@ class CandidatesView(views.APIView):
                 try:
                     candidate = NewCandidate.objects.get(id=serializer.validated_data['candidate_id'])
                 except NewCandidate.DoesNotExist:
-                    return Response({'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}})
+                    return Response(
+                        {'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}})
                 data_key_list = serializer.validated_data.keys()
                 if 'user_id' in data_key_list:
                     try:
                         user = User.objects.get(id=serializer.validated_data['user_id'])
                         candidate.user = user
                     except User.DoesNotExist:
-                        return Response({'detail': 'Update candidate failed', 'errors': {'user_id': 'User does not exist.'}}
-                                        , status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            {'detail': 'Update candidate failed', 'errors': {'user_id': 'User does not exist.'}}
+                            , status=status.HTTP_400_BAD_REQUEST)
                 if 'description' in data_key_list:
                     if serializer.validated_data['description'] != '':
                         candidate.description = serializer.validated_data['description']
@@ -302,8 +310,9 @@ class CandidateDetailView(views.APIView):
             return Response({'detail': 'Get candidate detail successfully', 'candidate': serializer.data},
                             status=status.HTTP_200_OK)
         except NewCandidate.DoesNotExist:
-            return Response({'detail': 'Get candidate detail failed', 'errors': {'detail': 'Candidate does not exist.'}},
-                            status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'detail': 'Get candidate detail failed', 'errors': {'detail': 'Candidate does not exist.'}},
+                status=status.HTTP_404_NOT_FOUND)
 
 
 class ElectionsView(views.APIView):
@@ -368,7 +377,8 @@ class ElectionsView(views.APIView):
                 try:
                     election = NewElection.objects.get(id=serializer.validated_data['election_id'])
                 except NewElection.DoesNotExist:
-                    return Response({'detail': 'Update election failed', 'errors': {'detail': 'Election does not exist.'}})
+                    return Response(
+                        {'detail': 'Update election failed', 'errors': {'detail': 'Election does not exist.'}})
                 data_key_list = serializer.validated_data.keys()
                 if 'description' in data_key_list:
                     if serializer.validated_data['description'] != '':
@@ -391,7 +401,8 @@ class ElectionDetailView(views.APIView):
 
     @swagger_auto_schema(responses={
         200: serializers.GetElectionSerializer,
-        404: serializers.ErrorSerializer(detail='Election does not exist.')
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Invalid election info')
     })
     def get(self, request, election_id):
         """
@@ -407,3 +418,72 @@ class ElectionDetailView(views.APIView):
         except NewElection.DoesNotExist:
             return Response({'detail': 'Get election detail failed', 'errors': {'detail': 'Election does not exist.'}},
                             status=status.HTTP_404_NOT_FOUND)
+
+
+class ElectionVoteView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(request_body=serializers.VoteSerializer, responses={
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        201: serializers.VoteCheckSerializer
+    })
+    def post(self, request, election_id):
+        """
+        Vote candidate and party in the election
+
+        Post the vote using given `candidate_id` and `party_id`
+        """
+        vote_data = VoteSerializer(data=request.data)
+        if not vote_data.is_valid():
+            return Response({'detail': 'Vote failed', 'errors': vote_data.errors}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            election = NewElection.objects.get(id=election_id)
+            if VoteCheck.objects.filter(user=request.user, election=election).exists():
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Already voted'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if timezone.now() > election.end_date:
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election is already ended.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if timezone.now() < election.start_date:
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election is not open yet.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # TODO: Area check
+
+            candidate_id = vote_data.data['candidate_id']
+
+            if not NewCandidate.objects.filter(id=candidate_id).exists():
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Candidate does not exist.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if request.user.newprofile.area is None:
+                return Response({'detail': 'Vote failed',
+                                 'errors': {'detail': 'Please contact administrator to set area.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if NewCandidate.objects.get(id=candidate_id).area.id != request.user.newprofile.area.id:
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Cannot vote candidate outside area'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            party_id = vote_data.data['party_id']
+            if not NewParty.objects.filter(id=party_id).exists():
+                return Response({'detail': 'Vote failed', 'errors': {'detail': 'Party does not exist.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            vote_result_candidate, _ = VoteResultCandidate.objects.get_or_create(election=election,
+                                                                                 candidate_id=candidate_id)
+            vote_result_candidate.vote += 1
+            vote_result_candidate.save()
+            vote_result_party, _ = VoteResultParty.objects.get_or_create(election=election,
+                                                                         party_id=party_id)
+            vote_result_party.vote += 1
+            vote_result_party.save()
+            vote_check = VoteCheck.objects.create(election=election, user=request.user)
+
+            # Success
+            return Response({'detail': 'Vote successfully', 'vote_check': VoteCheckSerializer(vote_check).data},
+                            status=status.HTTP_201_CREATED)
+
+        except NewElection.DoesNotExist:
+            return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election does not exist.'}})
