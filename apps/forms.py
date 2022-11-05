@@ -58,6 +58,14 @@ class StartElectionForm(forms.ModelForm):
         model = NewElection
         fields = ['name', 'front_image', 'description', 'start_date', 'end_date']
 
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
+        if start_date and end_date:
+            if start_date >= end_date:
+                raise forms.ValidationError("Start date must be before end date.")
+
 
 class EditElectionForm(forms.ModelForm):
     front_image = forms.ImageField(label="Election Image", widget=forms.FileInput(

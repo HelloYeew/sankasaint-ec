@@ -452,11 +452,8 @@ def start_election(request):
                 election = form.save(commit=False)
                 if not election.start_date:
                     election.start_date = timezone.now()
-                if election.start_date >= election.end_date or election.end_date < timezone.now():
-                    messages.error(request, 'Start date must more than End date!!!')
-                if election.start_date < election.end_date:
-                    election.save()
-                    messages.success(request, 'Election has been added!')
+                election.save()
+                messages.success(request, 'Election has been added!')
                 return redirect('election_list')
         else:
             form = StartElectionForm()
