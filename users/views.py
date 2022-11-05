@@ -12,6 +12,7 @@ class LogoutAndRedirect(auth_views.LogoutView):
     """
     A view that logs a user out and redirects to the homepage.
     """
+
     def get_next_page(self):
         messages.success(self.request, 'You have been logged out.')
         return '/'
@@ -49,19 +50,20 @@ def settings(request):
     })
 
 
-def profile(request, user_id):
+@login_required
+def profile(request):
     """
     Show a user's profile.
     """
     try:
-        user = NewProfile.objects.get(id=user_id)
+        user = NewProfile.objects.get(id=request.user.id)
     except NewProfile.DoesNotExist:
         messages.error(request, 'This user does not exist.')
         return redirect('homepage')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
-        votes_new = VoteCheck.objects.filter(user__id=user_id)
+        votes_legacy = LegacyVote.objects.filter(user__id=request.user.id)
+        votes_new = VoteCheck.objects.filter(user__id=request.user.id)
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
@@ -75,10 +77,35 @@ def profile(request, user_id):
 
 
 @login_required
+def profile_with_id(request, user_id):
+    """
+    Show a user's profile.
+    """
+    try:
+        user = NewProfile.objects.get(id=user_id)
+    except NewProfile.DoesNotExist:
+        messages.error(request, 'This user does not exist.')
+        return redirect('homepage')
+    if request.user.is_superuser or request.user.is_staff:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
+        votes_new = VoteCheck.objects.filter(user__id=user_id)
+        return render(request, 'users/profile.html', {
+            'colour_settings': colour_settings,
+            'profile': user,
+            'vote_history': votes_new,
+            'vote_history_legacy': votes_legacy
+        })
+    else:
+        return redirect('profile')
+
+
+@login_required
 def edit_profile(request):
     """
     Edit current logged in user's profile.
     """
+
     user = NewProfile.objects.get(user=request.user)
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.method == 'POST':
