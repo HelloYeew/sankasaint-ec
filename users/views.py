@@ -104,7 +104,6 @@ def edit_profile(request):
     """
     Edit current logged in user's profile.
     """
-
     user = NewProfile.objects.get(user=request.user)
     colour_settings = ColourSettings.objects.filter(user=request.user).first()
     if request.method == 'POST':

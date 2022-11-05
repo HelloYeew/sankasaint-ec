@@ -118,9 +118,9 @@
                             <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
                             <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
                             <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
-                            <li><a class="dropdown-item" href="{% url 'utils' %}">Utility</a></li>
-                            {% if user.is_superuser %}
+                            {% if user.is_superuser or user.is_staff %}
                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'utils' %}">Utility</a></li>
                             {% endif %}
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                             {% else %}
