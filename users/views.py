@@ -62,8 +62,8 @@ def profile(request):
         return redirect('homepage')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes_legacy = LegacyVote.objects.filter(user__id=request.user.id)
-        votes_new = VoteCheck.objects.filter(user__id=request.user.id)
+        votes_legacy = LegacyVote.objects.filter(user__id=request.user.id).order_by('id')
+        votes_new = VoteCheck.objects.filter(user__id=request.user.id).order_by('id')
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
@@ -88,8 +88,8 @@ def profile_with_id(request, user_id):
         return redirect('homepage')
     if request.user.is_superuser or request.user.is_staff:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
-        votes_new = VoteCheck.objects.filter(user__id=user_id)
+        votes_legacy = LegacyVote.objects.filter(user__id=user_id).order_by('id')
+        votes_new = VoteCheck.objects.filter(user__id=user_id).order_by('id')
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
