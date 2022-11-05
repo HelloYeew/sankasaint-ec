@@ -457,6 +457,11 @@ class ElectionVoteView(views.APIView):
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Candidate does not exist.'}},
                                 status=status.HTTP_400_BAD_REQUEST)
 
+            if request.user.newprofile.area is None:
+                return Response({'detail': 'Vote failed',
+                                 'errors': {'detail': 'Please contact administrator to set area.'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+
             if NewCandidate.objects.get(id=candidate_id).area.id != request.user.newprofile.area.id:
                 return Response({'detail': 'Vote failed', 'errors': {'detail': 'Cannot vote candidate outside area'}},
                                 status=status.HTTP_400_BAD_REQUEST)
