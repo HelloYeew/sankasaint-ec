@@ -113,7 +113,7 @@ def edit_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully!')
-            return redirect('profile', user_id=request.user.id)
+            return redirect('profile')
     else:
         form = ProfileForm(instance=user)
     return render(request, 'users/edit_profile.html', {
