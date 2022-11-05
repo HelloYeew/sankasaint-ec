@@ -36,10 +36,10 @@ def homepage(request):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         ongoing_election_old = []
         ongoing_election_new = []
-        for election in LegacyElection.objects.all():
+        for election in LegacyElection.objects.all().order_by('end_date'):
             if check_election_status(election) == 'Ongoing':
                 ongoing_election_old.append(election)
-        for election in NewElection.objects.all():
+        for election in NewElection.objects.all().order_by('end_date'):
             if check_election_status(election) == 'Ongoing':
                 ongoing_election_new.append(election)
         return render(request, 'homepage.html', {
