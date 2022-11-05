@@ -25,7 +25,8 @@ class LoginView(views.APIView):
         Login a user.
 
         Login to the API using a username and password. The response will assign a token as a cookie to the user.
-        All of this operations are handled by the Django authentication framework.
+        All of this operations are handled by the Django authentication framework. The response is user profile
+        so there is no need to do redundant request to profile API.
         """
         serializer = serializers.LoginSerializer(data=self.request.data, context={'request': self.request})
         serializer.is_valid(raise_exception=True)
