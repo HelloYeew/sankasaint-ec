@@ -1,18 +1,17 @@
 from django.contrib import messages
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import views as auth_views
 
 from apps.models import LegacyVote, VoteCheck
 from users.forms import UserCreationForms, UserSettingsForm, ProfileForm
-from users.models import ColourSettings, LegacyProfile, NewProfile
+from users.models import ColourSettings, NewProfile
 
 
 class LogoutAndRedirect(auth_views.LogoutView):
     """
     A view that logs a user out and redirects to the homepage.
     """
-
     def get_next_page(self):
         messages.success(self.request, 'You have been logged out.')
         return '/'
@@ -62,8 +61,8 @@ def profile(request):
         return redirect('homepage')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes_legacy = LegacyVote.objects.filter(user__id=request.user.id)
-        votes_new = VoteCheck.objects.filter(user__id=request.user.id)
+        votes_legacy = LegacyVote.objects.filter(user__id=request.user.id).order_by('id')
+        votes_new = VoteCheck.objects.filter(user__id=request.user.id).order_by('id')
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
@@ -88,8 +87,8 @@ def profile_with_id(request, user_id):
         return redirect('homepage')
     if request.user.is_superuser or request.user.is_staff:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        votes_legacy = LegacyVote.objects.filter(user__id=user_id)
-        votes_new = VoteCheck.objects.filter(user__id=user_id)
+        votes_legacy = LegacyVote.objects.filter(user__id=user_id).order_by('id')
+        votes_new = VoteCheck.objects.filter(user__id=user_id).order_by('id')
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
