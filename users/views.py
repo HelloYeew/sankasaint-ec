@@ -1,18 +1,17 @@
 from django.contrib import messages
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import views as auth_views
 
 from apps.models import LegacyVote, VoteCheck
 from users.forms import UserCreationForms, UserSettingsForm, ProfileForm
-from users.models import ColourSettings, LegacyProfile, NewProfile
+from users.models import ColourSettings, NewProfile
 
 
 class LogoutAndRedirect(auth_views.LogoutView):
     """
     A view that logs a user out and redirects to the homepage.
     """
-
     def get_next_page(self):
         messages.success(self.request, 'You have been logged out.')
         return '/'
