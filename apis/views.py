@@ -423,7 +423,7 @@ class ElectionDetailView(views.APIView):
 class ElectionVoteView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(responses={
+    @swagger_auto_schema(request_body=serializers.VoteSerializer, responses={
         404: serializers.ErrorSerializer(detail='Election does not exist.'),
         201: serializers.VoteCheckSerializer
     })
