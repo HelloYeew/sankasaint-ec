@@ -50,9 +50,6 @@ def settings(request):
     })
 
 
-# all user -> login first
-# all use -> use
-
 @login_required
 def profile(request):
     """
@@ -89,7 +86,7 @@ def profile_with_id(request, user_id):
     except NewProfile.DoesNotExist:
         messages.error(request, 'This user does not exist.')
         return redirect('homepage')
-    if request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff):
+    if request.user.is_superuser or request.user.is_staff:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         votes_legacy = LegacyVote.objects.filter(user__id=user_id)
         votes_new = VoteCheck.objects.filter(user__id=user_id)
