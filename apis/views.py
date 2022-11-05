@@ -429,7 +429,9 @@ class ElectionVoteView(views.APIView):
     })
     def post(self, request, election_id):
         """
-        Post the vote
+        Vote candidate and party in the election
+
+        Post the vote using given `candidate_id` and `party_id`
         """
         vote_data = VoteSerializer(data=request.data)
         if not vote_data.is_valid():
