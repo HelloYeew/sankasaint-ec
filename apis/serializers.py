@@ -73,11 +73,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
     This serializer is used to serialize the user profile model.
     """
     user = UserSerializer()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = NewProfile
         fields = ('user', 'image', 'area')
         depth = 1
+
+    def get_image(self, obj):
+        """Add website URL to image path."""
+        return self.context['request'].build_absolute_uri(obj.image.url)
 
 
 class AreaSerializer(serializers.ModelSerializer):

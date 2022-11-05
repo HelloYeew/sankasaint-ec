@@ -32,7 +32,7 @@ class LoginView(views.APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
-        serializer = serializers.UserProfileSerializer(request.user.newprofile)
+        serializer = serializers.UserProfileSerializer(request.user.newprofile, context={'request': self.request})
         return Response({'detail': 'Login successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
 
@@ -69,7 +69,7 @@ class UserProfileView(views.APIView):
         """
         if not request.user.is_authenticated:
             return Response({'detail': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
-        serializer = serializers.UserProfileSerializer(request.user.newprofile)
+        serializer = serializers.UserProfileSerializer(request.user.newprofile, context={'request': self.request})
         return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data},
                         status=status.HTTP_200_OK)
 
