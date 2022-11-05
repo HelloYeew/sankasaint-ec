@@ -19,19 +19,22 @@ class LoginView(views.APIView):
     # This view should be accessible also for unauthenticated users.
     permission_classes = [permissions.AllowAny]
 
-    @swagger_auto_schema(request_body=serializers.LoginSerializer, responses={200: serializers.LoginSerializer})
+    @swagger_auto_schema(request_body=serializers.LoginSerializer, responses={200: serializers.UserProfileSerializer})
     def post(self, request):
         """
         Login a user.
 
         Login to the API using a username and password. The response will assign a token as a cookie to the user.
-        All of this operations are handled by the Django authentication framework.
+        All of this operations are handled by the Django authentication framework. The response is user profile
+        so there is no need to do redundant request to profile API.
         """
         serializer = serializers.LoginSerializer(data=self.request.data, context={'request': self.request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
-        return Response({'detail': 'Login successfully.'}, status=status.HTTP_200_OK)
+        serializer = serializers.UserProfileSerializer(request.user.newprofile)
+        return Response({'detail': 'Login successfully', 'result': serializer.data},
+                        status=status.HTTP_200_OK)
 
 
 class LogoutView(views.APIView):
