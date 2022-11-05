@@ -36,10 +36,10 @@ def homepage(request):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         ongoing_election_old = []
         ongoing_election_new = []
-        for election in LegacyElection.objects.all():
+        for election in LegacyElection.objects.all().order_by('end_date'):
             if check_election_status(election) == 'Ongoing':
                 ongoing_election_old.append(election)
-        for election in NewElection.objects.all():
+        for election in NewElection.objects.all().order_by('end_date'):
             if check_election_status(election) == 'Ongoing':
                 ongoing_election_new.append(election)
         return render(request, 'homepage.html', {
@@ -68,7 +68,7 @@ def area_list(request):
     """
     List all the NewArea objects in the database.
     """
-    all_area_new = NewArea.objects.all()
+    all_area_new = NewArea.objects.all().order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_list.html', {
@@ -87,7 +87,7 @@ def legacy_area_list(request):
 
     We are not allowed to do the CRUD operation on the LegacyArea objects anymore, but we still need to show them.
     """
-    all_area_legacy = LegacyArea.objects.all()
+    all_area_legacy = LegacyArea.objects.all().order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_list_legacy.html', {
@@ -167,7 +167,7 @@ def area_detail_old(request, area_id):
     except LegacyArea.DoesNotExist:
         messages.error(request, 'This area does not exist.')
         return redirect('area_list')
-    available_candidate = LegacyCandidate.objects.filter(area=area)
+    available_candidate = LegacyCandidate.objects.filter(area=area).order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_detail_old.html', {
@@ -191,7 +191,7 @@ def area_detail_new(request, area_id):
     except NewArea.DoesNotExist:
         messages.error(request, 'This area does not exist.')
         return redirect('area_list')
-    available_candidate = NewCandidate.objects.filter(area=area)
+    available_candidate = NewCandidate.objects.filter(area=area).order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/area/area_detail_new.html', {
@@ -210,7 +210,7 @@ def candidate_list(request):
     """
     List all the NewCandidate objects in the database.
     """
-    all_candidate_new = NewCandidate.objects.all()
+    all_candidate_new = NewCandidate.objects.all().order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/candidate/candidate_list.html', {
@@ -229,7 +229,7 @@ def legacy_candidate_list(request):
 
     We are not allowed to do the CRUD operation on the LegacyCandidate objects anymore, but we still need to show them.
     """
-    all_candidate_legacy = LegacyCandidate.objects.all()
+    all_candidate_legacy = LegacyCandidate.objects.all().order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/candidate/candidate_list_legacy.html', {
@@ -347,7 +347,7 @@ def election_list(request):
     List all the NewElection objects in the database.
     """
     rendered_new_election = []
-    for election in NewElection.objects.all():
+    for election in NewElection.objects.all().order_by('id'):
         rendered_new_election.append({
             'election': election,
             'status': check_election_status(election)
@@ -371,7 +371,7 @@ def legacy_election_list(request):
     We are not allowed to do the CRUD operation on the LegacyElection objects anymore, but we still need to show them.
     """
     rendered_legacy_election = []
-    for election in LegacyElection.objects.all():
+    for election in LegacyElection.objects.all().order_by('id'):
         rendered_legacy_election.append({
             'election': election,
             'status': check_election_status(election)
@@ -658,7 +658,7 @@ def party_list(request):
     """
     Show the list of NewParty objects.
     """
-    all_party_new = NewParty.objects.all()
+    all_party_new = NewParty.objects.all().order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/party/party_list.html', {
@@ -677,7 +677,7 @@ def legacy_party_list(request):
 
     We are not allowed to do the CRUD operation on the LegacyParty objects anymore, but we still need to show them.
     """
-    all_party_old = LegacyParty.objects.all()
+    all_party_old = LegacyParty.objects.all().order_by('id')
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/party/party_list_legacy.html', {
@@ -794,12 +794,12 @@ def utils(request):
     """
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
-        utility_log = UtilityMissionLog.objects.all()
+        utility_log = UtilityMissionLog.objects.all().order_by('id')
         return render(request, 'apps/utils/utils.html', {
             'colour_settings': colour_settings,
             'import_legacy_data': len(UtilityMissionLog.objects.filter(field='import_legacy_data', done=True)) > 0,
             'utility_log': utility_log,
-            'users_list': User.objects.all()
+            'users_list': User.objects.all().order_by('id')
         })
     else:
         messages.error(request, 'You are not authorised to access this page.')

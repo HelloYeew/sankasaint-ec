@@ -37,7 +37,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for candidate in party.candidates.all %}
+                {% for candidate in party.candidates.all|dictsort:"id" %}
                     {% include "snippets/candidate/candidate-row-old.html" %}
                 {% endfor %}
             </tbody>
