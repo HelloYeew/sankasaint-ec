@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET
 
 import users.seed
 from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionForm, CandidateVoteForm, PartyForm, \
-    PartyVoteForm
+    PartyVoteForm, AddCandidateToPartyForm
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
     NewElection, NewParty, VoteCheck, VoteResultCandidate, VoteResultParty
 from apps.utils import check_election_status, get_sorted_election_result
@@ -779,12 +779,71 @@ def party_detail_new(request, party_id):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/party/party_detail_new.html', {
             'colour_settings': colour_settings,
-            'party': party
+            'party': party,
+            'candidates': NewCandidate.objects.filter(party=party)
         })
     else:
         return render(request, 'apps/party/party_detail_new.html', {
+            'party': party,
+            'candidates': NewCandidate.objects.filter(party=party)
+        })
+
+
+@login_required()
+def add_candidate_to_party(request, party_id):
+    """
+    Add candidate to party
+    """
+    if request.user.is_staff or request.user.is_superuser:
+        try:
+            party = NewParty.objects.get(id=party_id)
+        except NewParty.DoesNotExist:
+            messages.error(request, 'This party does not exist.')
+            return redirect('party_list')
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        if request.method == 'POST':
+            form = AddCandidateToPartyForm(request.POST)
+            if form.is_valid():
+                candidate = form.cleaned_data['candidate']
+                candidate.party = party
+                candidate.save()
+                messages.success(request, f'Candidate has been added to {party.name}!')
+                return redirect('party_detail_new', party_id=party_id)
+        else:
+            form = AddCandidateToPartyForm()
+        return render(request, 'apps/party/add_candidate_to_party.html', {
+            'colour_settings': colour_settings,
+            'form': form,
             'party': party
         })
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
+
+
+@login_required()
+def remove_candidate_from_party(request, party_id, candidate_id):
+    """
+    Remove candidate from party
+    """
+    if request.user.is_staff or request.user.is_superuser:
+        try:
+            party = NewParty.objects.get(id=party_id)
+        except NewParty.DoesNotExist:
+            messages.error(request, 'This party does not exist.')
+            return redirect('party_list')
+        try:
+            candidate = NewCandidate.objects.get(id=candidate_id)
+        except NewCandidate.DoesNotExist:
+            messages.error(request, 'This candidate does not exist.')
+            return redirect('party_detail_new', party_id=party_id)
+        candidate.party = None
+        candidate.save()
+        messages.success(request, f'Candidate has been removed from {party.name}!')
+        return redirect('party_detail_new', party_id=party_id)
+    else:
+        messages.error(request, 'You are not authorised to access this page.')
+        return redirect('homepage')
 
 
 @login_required()

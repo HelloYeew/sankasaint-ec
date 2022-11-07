@@ -8,6 +8,7 @@
     <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ party.name }}</h1>
     {% if user.is_superuser or user.is_staff %}
     <a href="{% url 'edit_party' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-pencil" aria-hidden="true" style="font-size: 20px"></i> Edit</a>
+    <a href="{% url 'add_candidate_to_party' party.id %}" class="btn btn-ayaka"><i class="mdi mdi-account-plus" aria-hidden="true" style="font-size: 20px"></i> Add candidate</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
         <div class="p-3 d-flex">
@@ -22,7 +23,7 @@
             </div>
         </div>
         <h2 style="padding-top: 1rem; font-weight: bold">Available Candidate</h2>
-        {% if party.candidates.all|length != 0 %}
+        {% if candidates|length != 0 %}
         <table class="table table-striped table-dark" style="vertical-align: middle;">
             <thead>
                 <tr>
@@ -34,7 +35,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for candidate in party.candidates.all|dictsort:"id" %}
+                {% for candidate in candidates|dictsort:"id" %}
                     {% include "snippets/candidate/candidate-row-new.html" %}
                 {% endfor %}
             </tbody>

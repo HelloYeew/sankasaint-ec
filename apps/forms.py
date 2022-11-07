@@ -97,7 +97,8 @@ class CandidateVoteForm(forms.Form):
 class PartyVoteForm(forms.Form):
     party = forms.ModelChoiceField(label="Party", queryset=NewParty.objects.all(), widget=forms.Select(
         attrs={'class': 'form-control'}),
-                                   help_text="The party that you want to vote for.")
+        help_text="The party that you want to vote for.")
+
     class Meta:
         fields = ['party']
 
@@ -112,11 +113,16 @@ class PartyForm(forms.ModelForm):
     description = forms.CharField(label="Party Description", widget=forms.Textarea(
         attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Description'}),
         help_text="Short description of the party.")
-    # TODO: Re-enable this after investigation on error on initialize the database
-    # candidates = forms.ModelMultipleChoiceField(label="Candidates", queryset=Candidate.objects.all(),
-    #     widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': Candidate.objects.all().count(), 'placeholder': 'Candidates'}),
-    #     help_text='The candidates that are in the party. Hold down “Control”, or “Command” on a Mac, to select more than one.')
 
     class Meta:
         model = NewParty
         fields = ['name', 'image', 'description']
+
+
+class AddCandidateToPartyForm(forms.Form):
+    candidate = forms.ModelChoiceField(label="Candidate", queryset=NewCandidate.objects.filter(party=None), widget=forms.Select(
+        attrs={'class': 'form-control'}),
+        help_text="The candidate that you want to add to the party.")
+
+    class Meta:
+        fields = ['candidate']

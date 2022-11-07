@@ -33,6 +33,8 @@ urlpatterns = [
     path('party/legacy/<int:party_id>', views.party_detail_old, name='party_detail_old'),
     path('party/<int:party_id>', views.party_detail_new, name='party_detail_new'),
     path('party/<int:party_id>/edit', views.edit_party, name='edit_party'),
+    path('party/<int:party_id>/add', views.add_candidate_to_party, name='add_candidate_to_party'),
+    path('party/<int:party_id>/remove/<int:candidate_id>', views.remove_candidate_from_party, name='remove_candidate_from_party'),
     path('utils', views.utils, name='utils'),
     path('utils/legacy-import', views.import_legacy_data, name='import_legacy_data'),
 ]

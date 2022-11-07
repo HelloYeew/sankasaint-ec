@@ -34,6 +34,7 @@ class NewCandidate(models.Model):
     image = models.ImageField(default='default_candidate.png', upload_to='candidates')
     description = models.TextField()
     area = models.ForeignKey(NewArea, on_delete=models.SET_NULL, null=True, blank=True)
+    party = models.ForeignKey('NewParty', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.user.username + ' - ' + self.area.name
@@ -53,7 +54,6 @@ class NewParty(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     image = models.ImageField(default='default_party.png', upload_to='parties')
-    candidates = models.ManyToManyField(NewCandidate)
 
     def __str__(self):
         return self.name
