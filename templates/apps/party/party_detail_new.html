@@ -36,7 +36,7 @@
             </thead>
             <tbody>
                 {% for candidate in candidates|dictsort:"id" %}
-                    {% include "snippets/candidate/candidate-row-new.html" %}
+                    {% include "snippets/candidate/candidate-row-new-party.html" %}
                 {% endfor %}
             </tbody>
         </table>

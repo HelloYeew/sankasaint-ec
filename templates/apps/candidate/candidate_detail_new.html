@@ -16,12 +16,23 @@
             </div>
             <div class="d-flex flex-column">
                 <div>
-                    <h2 style="font-weight: bold">Area</h2>
-                    {% if candidate.area.id != null %}
-                    <a href="{% url 'area_detail_new' candidate.area.id %}">{{ candidate.area.name }}</a>
-                    {% else %}
-                    <p>Not specified</p>
-                    {% endif %}
+                    <h2 style="font-weight: bold">Detail</h2>
+                    <p>
+                        <i class="mdi mdi-town-hall" aria-hidden="true" style="font-size: 20px"></i>
+                        {% if candidate.area.id != null %}
+                        <a href="{% url 'area_detail_new' candidate.area.id %}">{{ candidate.area.name }}</a>
+                        {% else %}
+                        Not in election area
+                        {% endif %}
+                    </p>
+                    <p>
+                        <i class="mdi mdi-account-group" aria-hidden="true" style="font-size: 20px"></i>
+                        {% if candidate.party.id != null %}
+                        <a href="{% url 'party_detail_new' candidate.party.id %}">{{ candidate.party.name }}</a>
+                        {% else %}
+                        Not in party
+                        {% endif %}
+                    </p>
                 </div>
                 <div>
                     <h2 style="font-weight: bold">Description</h2>
