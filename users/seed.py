@@ -89,10 +89,4 @@ def seed_data():
         legacy_profile.area = LegacyArea.objects.get(id=i['area'])
         new_profile.save()
         legacy_profile.save()
-
-    # Connect candidate to party
-    for i in party_for_import:
-        for j in i['candidates']:
-            # Connect the list of candidate id in party_for_import to the candidate
-            # in NewCandidate with many-to-many relationship
-            NewParty.objects.get(name=i['name']).candidates.add(NewCandidate.objects.get(id=j))
+    
