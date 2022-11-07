@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, NewArea, NewCandidate, NewElection, VoteCheck
+from apps.models import LegacyArea, LegacyCandidate, LegacyElection, NewArea, NewCandidate, NewElection, VoteCheck, \
+    NewParty
 from users.models import LegacyProfile, NewProfile
 
 
@@ -85,6 +86,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return self.context['request'].build_absolute_uri(obj.image.url)
 
 
+class PartySerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize the party model.
+    """
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = NewParty
+        fields = ('id', 'name', 'description', 'image')
+
+    def get_image(self, obj):
+        """Add website URL to image path."""
+        return self.context['request'].build_absolute_uri(obj.image.url)
+
+
 class AreaSerializer(serializers.ModelSerializer):
     """
     This serializer is used to serialize the area model.
@@ -110,6 +126,26 @@ class UpdateAreaSerializer(serializers.ModelSerializer):
 
 
 class GetCandidateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize the candidate model.
+    This serializer need request context to get the website URL.
+    """
+    area = AreaSerializer()
+    user = UserSerializer()
+    party = PartySerializer()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = NewCandidate
+        fields = ('id', 'user', 'description', 'image', 'area', 'party')
+        depth = 1
+
+    def get_image(self, obj):
+        """Add website URL to image path."""
+        return self.context['request'].build_absolute_uri(obj.image.url)
+
+
+class GetCandidateSerializerWithoutParty(serializers.ModelSerializer):
     """
     This serializer is used to serialize the candidate model.
     This serializer need request context to get the website URL.
@@ -222,3 +258,23 @@ class VoteCheckSerializer(serializers.ModelSerializer):
     class Meta:
         model = VoteCheck
         fields = ('user_id', 'election_id')
+
+
+class PartyWithCandidateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize the party model.
+    """
+    image = serializers.SerializerMethodField()
+    candidates = serializers.SerializerMethodField()
+
+    class Meta:
+        model = NewParty
+        fields = ('id', 'name', 'description', 'image', 'candidates')
+
+    def get_image(self, obj):
+        """Add website URL to image path."""
+        return self.context['request'].build_absolute_uri(obj.image.url)
+
+    def get_candidates(self, obj):
+        candidates = NewCandidate.objects.filter(party=obj)
+        return GetCandidateSerializerWithoutParty(candidates, many=True, context=self.context).data

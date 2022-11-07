@@ -490,3 +490,44 @@ class ElectionVoteView(views.APIView):
 
         except NewElection.DoesNotExist:
             return Response({'detail': 'Vote failed', 'errors': {'detail': 'Election does not exist.'}})
+
+
+class PartyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.PartySerializer(many=True)
+    })
+    def get(self, request):
+        """
+        Get all party list.
+
+        Get the list of all party.
+        """
+        party = NewParty.objects.all()
+        serializer = serializers.PartySerializer(party, many=True, context={'request': self.request})
+        return Response({'detail': 'Get party list successfully', 'party': serializer.data},
+                        status=status.HTTP_200_OK)
+
+
+class PartyDetailView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.PartyWithCandidateSerializer,
+        404: serializers.ErrorSerializer(detail='Party does not exist.')
+    })
+    def get(self, request, party_id):
+        """
+        Get a party detail.
+
+        Get the full detail of the target party.
+        """
+        try:
+            party = NewParty.objects.get(id=party_id)
+            serializer = serializers.PartyWithCandidateSerializer(party, context={'request': self.request})
+            return Response({'detail': 'Get party detail successfully', 'party': serializer.data},
+                            status=status.HTTP_200_OK)
+        except NewParty.DoesNotExist:
+            return Response({'detail': 'Get party detail failed', 'errors': {'detail': 'Party does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
