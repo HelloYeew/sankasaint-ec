@@ -4,6 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework import views
@@ -19,6 +20,7 @@ class LoginView(views.APIView):
     # This view should be accessible also for unauthenticated users.
     permission_classes = [permissions.AllowAny]
 
+    @csrf_exempt
     @swagger_auto_schema(request_body=serializers.LoginSerializer, responses={200: serializers.UserProfileSerializer})
     def post(self, request):
         """
