@@ -1,8 +1,6 @@
-from http.client import INTERNAL_SERVER_ERROR
-
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg.utils import swagger_auto_schema
@@ -11,7 +9,6 @@ from rest_framework import views
 from rest_framework.response import Response
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
-from apps.utils import check_election_status
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
 
@@ -86,7 +83,7 @@ class AreasView(views.APIView):
 
         Get a list of all areas.
         """
-        serializer = serializers.AreaSerializer(NewArea.objects.all(), many=True)
+        serializer = serializers.AreaSerializer(NewArea.objects.all().order_by('id'), many=True)
         return Response({'detail': 'Get all election area successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
 
@@ -168,7 +165,7 @@ class AreaDetailView(views.APIView):
         try:
             area = NewArea.objects.get(id=area_id)
             area_serializer = serializers.AreaSerializer(area, context={'request': self.request})
-            candidate_serializer = serializers.GetCandidateSerializer(NewCandidate.objects.filter(area=area), many=True,
+            candidate_serializer = serializers.GetCandidateSerializer(NewCandidate.objects.filter(area=area).order_by('id'), many=True,
                                                                       context={'request': self.request})
             return Response({'detail': 'Get area detail successfully', 'result': {
                 'area': area_serializer.data,
@@ -189,7 +186,7 @@ class CandidatesView(views.APIView):
 
         Get a list of all candidates.
         """
-        serializer = serializers.GetCandidateSerializer(NewCandidate.objects.all(), many=True,
+        serializer = serializers.GetCandidateSerializer(NewCandidate.objects.all().order_by('id'), many=True,
                                                         context={'request': self.request})
         return Response({'detail': 'Get all candidates successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
@@ -330,7 +327,7 @@ class ElectionsView(views.APIView):
 
         Get a list of all elections.
         """
-        serializer = serializers.GetElectionSerializer(NewElection.objects.all(), many=True,
+        serializer = serializers.GetElectionSerializer(NewElection.objects.all().order_by('id'), many=True,
                                                        context={'request': self.request})
         return Response({'detail': 'Get all elections successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
@@ -506,7 +503,7 @@ class PartyView(views.APIView):
 
         Get the list of all party.
         """
-        party = NewParty.objects.all()
+        party = NewParty.objects.all().order_by('id')
         serializer = serializers.PartySerializer(party, many=True, context={'request': self.request})
         return Response({'detail': 'Get party list successfully', 'party': serializer.data},
                         status=status.HTTP_200_OK)

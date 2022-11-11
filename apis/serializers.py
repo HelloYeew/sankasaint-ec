@@ -276,5 +276,5 @@ class PartyWithCandidateSerializer(serializers.ModelSerializer):
         return self.context['request'].build_absolute_uri(obj.image.url)
 
     def get_candidates(self, obj):
-        candidates = NewCandidate.objects.filter(party=obj)
+        candidates = NewCandidate.objects.filter(party=obj).order_by('id')
         return GetCandidateSerializerWithoutParty(candidates, many=True, context=self.context).data
