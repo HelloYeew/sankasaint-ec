@@ -89,4 +89,3 @@ def seed_data():
         legacy_profile.area = LegacyArea.objects.get(id=i['area'])
         new_profile.save()
         legacy_profile.save()
-    
