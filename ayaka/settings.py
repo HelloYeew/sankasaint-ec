@@ -191,8 +191,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.helloyeew.dev',
-    'http://*.127.0.0.1'
+    'https://skdue-voter.helloyeew.dev',
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + ['Set-Cookie']
