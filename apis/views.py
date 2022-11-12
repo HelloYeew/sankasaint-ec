@@ -43,6 +43,7 @@ class LogoutView(views.APIView):
     # This view should be accessible only for authenticated users.
     permission_classes = [permissions.IsAuthenticated]
 
+    @csrf_exempt
     @swagger_auto_schema()
     def post(self, request):
         """
