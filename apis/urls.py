@@ -19,4 +19,5 @@ urlpatterns = [
     path('election/<int:election_id>/vote', ElectionVoteView.as_view(), name='api_election_vote' ),
     path('party', PartyView.as_view(), name='api_party_list'),
     path('party/<int:party_id>', PartyDetailView.as_view(), name='api_party_detail'),
+    path('csrf', CSRFTokenView.as_view(), name='api_csrf')
 ]

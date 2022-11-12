@@ -3,6 +3,7 @@ from http.client import INTERNAL_SERVER_ERROR
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from django.middleware.csrf import get_token
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
@@ -531,3 +532,8 @@ class PartyDetailView(views.APIView):
         except NewParty.DoesNotExist:
             return Response({'detail': 'Get party detail failed', 'errors': {'detail': 'Party does not exist.'}},
                             status=status.HTTP_404_NOT_FOUND)
+
+
+class CSRFTokenView(views.APIView):
+    def get(self, request):
+        return Response({'token': get_token(request)})
