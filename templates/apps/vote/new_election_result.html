@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.name }} result{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include 'snippets/back-button.html' %} {{ election.name }} result</h1>
+    <p></p>
+    <div style="overflow:hidden">
+        <h3>Result by area</h3>
+        {% for area in area_list %}
+        <a href="{% url 'new_election_result_by_area' election.id area.id  %}" class="btn btn-ayaka"><i class="mdi mdi-lan" aria-hidden="true" style="font-size: 20px"></i> {{ area.name }} result</a>
+        {% endfor %}
+        <p></p>
+        <h3>Partylist result</h3>
+        <a href="{% url 'new_election_result_by_party' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-seat-recline-extra" aria-hidden="true" style="font-size: 20px"></i> Partylist result</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
