@@ -576,24 +576,3 @@ class ElectionResultByAreaView(views.APIView):
         else:
             return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
                             status=status.HTTP_400_BAD_REQUEST)
-
-
-# class ElectionResultByPartyView(views.APIView):
-#     permission_classes = [permissions.AllowAny]
-#
-#     @swagger_auto_schema(responses={
-#         200: serializers.VotePartyResultSerializer,
-#         404: serializers.ErrorSerializer(detail='Election does not exist.'),
-#         400: serializers.ErrorSerializer(detail='Election has not ended.')
-#     })
-#     def get(self, request, election_id):
-#         """
-#         Get an election result by party.
-#
-#         Get the result of party vote sort by vote count.
-#         """
-#         try:
-#             election = NewElection.objects.get(id=election_id)
-#         except NewElection.DoesNotExist:
-#             return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Election does not exist.'}},
-#                             status=status.HTTP_404_NOT_FOUND)
