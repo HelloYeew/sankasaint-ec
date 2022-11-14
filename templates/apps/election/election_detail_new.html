@@ -11,12 +11,12 @@
     <a href="{% url 'vote_history' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-history" aria-hidden="true" style="font-size: 20px"></i> Vote History</a>
     {% endif %}
     {% if status != 'Finished' and user.is_superuser or user.is_staff or status == 'Finished' %}
-    <a href="{% url 'election_result' election.id %}" class="btn btn-ayaka-disabled disabled" aria-disabled="true"><i class="mdi mdi-account-check" aria-hidden="true" style="font-size: 20px"></i> Election Result</a>
+    <a href="{% url 'new_election_result' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-account-check" aria-hidden="true" style="font-size: 20px"></i> Election Result</a>
     {% endif %}
     {% if vote_history != None %}
     <p style="padding-top: 1rem;"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> You have voted at {{ vote_history.time }}</p>
     {% elif user.is_authenticated and status == 'Ongoing' and vote_history == None %}
-    <a href="{% url 'vote' election.id %}" class="btn btn-ayaka" aria-disabled="true"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> Vote</a>
+    <a href="{% url 'vote' election.id %}" class="btn btn-ayaka"><i class="mdi mdi-vote" aria-hidden="true" style="font-size: 20px"></i> Vote</a>
     {% endif %}
     <div style="overflow:hidden; color: var(--color-primary);">
         <div class="p-3">

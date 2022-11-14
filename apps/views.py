@@ -1,3 +1,6 @@
+import copy
+import math
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -588,7 +591,7 @@ def election_result(request, election_id):
     """
     Show the election result of an election.
 
-    TODO: Move this page to NewElection model.
+    This page is for legacy election only.
     """
     try:
         election = LegacyElection.objects.get(id=election_id)
@@ -627,7 +630,7 @@ def detailed_election_result(request, election_id):
     """
     Show the detailed election result of an election.
 
-    TODO: Move this page to NewElection model.
+    This page is for legacy election only.
     """
     try:
         election = LegacyElection.objects.get(id=election_id)
@@ -653,6 +656,151 @@ def detailed_election_result(request, election_id):
         messages.error(request, 'This election has not ended yet.')
         return redirect('election_detail', election_id=election_id)
 
+
+def new_election_result(request, election_id):
+    """
+    Show the election result of an election.
+
+    This page is for new election only.
+    """
+    try:
+        election = NewElection.objects.get(id=election_id)
+    except NewElection.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
+    if check_election_status(election) != 'Finished' and (
+            request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
+        if request.user.is_authenticated:
+            colour_settings = ColourSettings.objects.filter(user=request.user).first()
+            return render(request, 'apps/vote/new_election_result.html', {
+                'colour_settings': colour_settings,
+                'election': election,
+                'area_list': NewArea.objects.all()
+            })
+        else:
+            return render(request, 'apps/vote/new_election_result.html', {
+                'election': election,
+                'area_list': NewArea.objects.all()
+            })
+    else:
+        messages.error(request, 'This election has not ended yet.')
+        return redirect('election_detail_new', election_id=election_id)
+
+
+def new_election_result_by_area(request, election_id, area_id):
+    """
+    Show the election result of an election by area.
+
+    This page is for new election only.
+    """
+    try:
+        election = NewElection.objects.get(id=election_id)
+    except NewElection.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
+    try:
+        area = NewArea.objects.get(id=area_id)
+    except NewArea.DoesNotExist:
+        messages.error(request, 'This area does not exist.')
+        return redirect('election_detail_new', election_id=election_id)
+    vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id)
+    candidate_no_vote = []
+    # Get candidate in area that's not in the vote result
+    candidate_in_area = NewCandidate.objects.filter(area_id=area_id).order_by('id')
+    for candidate in candidate_in_area:
+        if not vote_result.filter(candidate=candidate):
+            candidate_no_vote.append(candidate)
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/vote/new_election_result_by_area.html', {
+            'colour_settings': colour_settings,
+            'vote_result': vote_result,
+            'election': election,
+            'area': area,
+            'candidate_no_vote': candidate_no_vote
+        })
+    else:
+        return render(request, 'apps/vote/new_election_result_by_area.html', {
+            'vote_result': vote_result,
+            'election': election,
+            'area': area,
+            'candidate_no_vote': candidate_no_vote
+        })
+
+
+def new_election_result_by_party(request, election_id):
+    """
+    Calculate the party list from result.
+
+    Base on https://ilaw.or.th/node/5240
+    """
+    try:
+        election = NewElection.objects.get(id=election_id)
+    except NewElection.DoesNotExist:
+        messages.error(request, 'This election does not exist.')
+        return redirect('election_list')
+    # Get all user who vote in this election
+    vote_per_seat = VoteCheck.objects.all().count() / 500
+    supposed_to_have_result = []
+    for party in NewParty.objects.all():
+        supposed_to_have_result.append({
+            'party': party,
+            'number': VoteResultParty.objects.filter(election=election, party=party).count() / vote_per_seat
+        })
+    real_result = copy.deepcopy(supposed_to_have_result)
+    for result in real_result:
+        # If the party has get first place in the election on the area on VoteResultCandidate, minus that number from the supposed to have result
+        for area in NewArea.objects.all():
+            first_place = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area.id).order_by(
+                '-vote').first()
+            if first_place and first_place.candidate.party == result['party']:
+                result['number'] -= 1
+    # Combine two list
+    result = []
+    for supposed, real in zip(supposed_to_have_result, real_result):
+        result.append({
+            'party': supposed['party'],
+            'supposed_to_have': supposed['number'],
+            'real': real['number']
+        })
+    # floor the result
+    for party in result:
+        party['supposed_to_have'] = math.floor(party['supposed_to_have'])
+        party['real'] = math.floor(party['real'])
+    # Add detail on number during calculation
+    calculation_detail = {
+        'vote_per_seat': vote_per_seat
+    }
+    # Sort the result by real number
+    result = sorted(result, key=lambda k: k['real'], reverse=True)
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/vote/new_election_result_by_party.html', {
+            'colour_settings': colour_settings,
+            'election': election,
+            'supposed_to_have_result': supposed_to_have_result,
+            'real_result': real_result,
+            'result': result,
+            'calculation_detail': calculation_detail
+        })
+    else:
+        return render(request, 'apps/vote/new_election_result_by_party.html', {
+            'election': election,
+            'supposed_to_have_result': supposed_to_have_result,
+            'real_result': real_result,
+            'result': result,
+            'calculation_detail': calculation_detail
+        })
+
+
+def partylist_calculation_detail(request):
+    if request.user.is_authenticated:
+        colour_settings = ColourSettings.objects.filter(user=request.user).first()
+        return render(request, 'apps/vote/partylist_calculation_detail.html', {
+            'colour_settings': colour_settings
+        })
+    else:
+        return render(request, 'apps/vote/partylist_calculation_detail.html')
 
 def party_list(request):
     """

@@ -1,10 +1,12 @@
 from django.utils import timezone
-from apps.models import LegacyElection, LegacyCandidate, LegacyVote
+from apps.models import LegacyElection, LegacyCandidate, LegacyVote, NewElection
 
 
-def check_election_status(election: LegacyElection) -> str:
+def check_election_status(election: LegacyElection | NewElection) -> str:
     """
     Check the status of an election.
+
+    This function can use for checking on both legacy and new election.
 
     :param election: The election to check.
     :return: The status of the election in string.
@@ -22,6 +24,8 @@ def check_election_status(election: LegacyElection) -> str:
 def get_sorted_election_result(election: LegacyElection) -> list:
     """
     Get the election result in a sorted list.
+
+    This function is for calculate in LegacyElection model.
 
     :param election: The election to get the result.
     :return: The election result in a sorted list.

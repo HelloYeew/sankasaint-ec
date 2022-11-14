@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.name }} result in {{ area.name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 5rem;">
+    <h1 style="padding-top: 1rem; padding-bottom: 1rem;">{% include "snippets/back-button.html" %} {{ election.name }} result in {{ area.name }}</h1>
+    <p></p>
+    <div style="overflow:hidden">
+        <table class="table table-striped table-dark" style="vertical-align: middle;">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Image</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Vote</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in vote_result %}
+                    <tr>
+                        <th scope="row">{{ result.candidate.id }}</th>
+                        <td><img src="{{ result.candidate.image.url }}" alt="{{ result.candidate.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
+                        <td>{{ result.candidate.user.first_name }} {{ result.candidate.user.last_name }}</td>
+                        <td>{{ result.vote }}</td>
+                        <td>
+                            <a href="{% url 'candidate_detail_new' result.candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% for candidate in candidate_no_vote %}
+                    <tr>
+                        <th scope="row">{{ candidate.id }}</th>
+                        <td><img src="{{ candidate.image.url }}" alt="{{ candidate.user.username }}" style="width:50px; height: 50px; border-radius: 100px;"></td>
+                        <td>{{ candidate.user.first_name }} {{ candidate.user.last_name }}</td>
+                        <td>0</td>
+                        <td>
+                            <a href="{% url 'candidate_detail_new' candidate.id %}" class="btn btn-ayaka"><i class="mdi mdi-information" aria-hidden="true" style="font-size:15px"></i> Detail</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
