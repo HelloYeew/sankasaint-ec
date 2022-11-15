@@ -1,10 +1,14 @@
 from django.urls import path
 
+# NOTE: THIS IS ONLY TEMPORARY FIX. IT MUST BE ADDRESSED LATER
+from django.views.decorators.csrf import csrf_exempt
+
 from apis.views import *
 
 urlpatterns = [
-    path('login', LoginView.as_view(), name='api_login'),
-    path('logout', LogoutView.as_view(), name='api_logout'),
+    # Remove login view as it is not used anymore.
+    # path('login', csrf_exempt(LoginView.as_view()), name='api_login'),
+    # path('logout', LogoutView.as_view(), name='api_logout'),
     path('profile', UserProfileView.as_view(), name='api_profile'),
     path('area', AreasView.as_view(), name='api_area_list'),
     path('area/<int:area_id>', AreaDetailView.as_view(), name='api_area_detail'),
