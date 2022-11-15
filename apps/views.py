@@ -740,12 +740,13 @@ def new_election_result_by_party(request, election_id):
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
     # Get all user who vote in this election
-    vote_per_seat = VoteCheck.objects.filter(election=election).count() / 500
+    vote_per_seat = VoteCheck.objects.filter(election=election).count() / 500 if VoteCheck.objects.filter(
+        election=election).count() > 0 else 0
     supposed_to_have_result = []
     for party in NewParty.objects.all():
         supposed_to_have_result.append({
             'party': party,
-            'number': VoteResultParty.objects.filter(election=election, party=party).count() / vote_per_seat
+            'number': VoteResultParty.objects.filter(election=election, party=party).count() / vote_per_seat if vote_per_seat else 0
         })
     real_result = copy.deepcopy(supposed_to_have_result)
     for result in real_result:
