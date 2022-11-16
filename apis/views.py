@@ -411,24 +411,16 @@ class ElectionCurrentView(views.APIView):
         """
         Get an only-one ongoing election.
         """
-        all_election = NewElection.objects.all()
-        for election in all_election:
-            if check_election_status(election) == "Ongoing":
-                try:
-                    serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
-                    return Response({'detail': 'Get ongoing election successfully', 'election': serializer.data},
-                                    status=status.HTTP_200_OK)
-                except election.DoesNotExist:
-                    return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
+        try:
+            election = NewElection.objects.get(start_date__gte=timezone.now(), end_date__lt=timezone.now())
+            serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
+            return Response({'detail': 'Get ongoing election successfully', 'election': serializer.data},
+                            status=status.HTTP_200_OK)
+        except NewElection.DoesNotExist:
+            return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
                                                                                                    'ongoing '
                                                                                                    'election.'}},
                                     status=status.HTTP_404_NOT_FOUND)
-        return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
-                                                                                       'ongoing '
-                                                                                       'election.'}},
-                        status=status.HTTP_404_NOT_FOUND)
-
-
 class ElectionDetailView(views.APIView):
     permissions_classes = [permissions.AllowAny]
 
