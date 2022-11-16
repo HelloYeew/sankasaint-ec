@@ -166,8 +166,9 @@ class AreaDetailView(views.APIView):
         try:
             area = NewArea.objects.get(id=area_id)
             area_serializer = serializers.AreaSerializer(area, context={'request': self.request})
-            candidate_serializer = serializers.GetCandidateSerializer(NewCandidate.objects.filter(area=area).order_by('id'), many=True,
-                                                                      context={'request': self.request})
+            candidate_serializer = serializers.GetCandidateSerializer(
+                NewCandidate.objects.filter(area=area).order_by('id'), many=True,
+                context={'request': self.request})
             return Response({'detail': 'Get area detail successfully', 'result': {
                 'area': area_serializer.data,
                 'candidates': candidate_serializer.data
@@ -505,17 +506,18 @@ class PartyView(views.APIView):
         Get the list of all party.
         """
         party = NewParty.objects.all().order_by('id')
-        serializer = serializers.PartySerializer(party, many=True, context={'request': self.request})
+        serializer = serializers.PartySerializer(data=party, many=True, context={'request': self.request})
         return Response({'detail': 'Get party list successfully', 'party': serializer.data},
                         status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=serializers.PartySerializer, responses={
         201: serializers.PartySerializer,
-        401: serializers.ErrorSerializer(detail="You do not have permission to perform this action.")
+        401: serializers.ErrorSerializer(detail="You do not have permission to perform this action."),
+        400: serializers.PartySerializer
     })
     def post(self, request):
         """
-        Create an empty party without candidate
+        Create an empty party without candidate (Currently does not support upload image)
 
         Create an empty party without candidate. Candidate can be assigned later.
         """
@@ -523,7 +525,7 @@ class PartyView(views.APIView):
             return Response({'detail': 'Create new party failed',
                              'errors': {'detail': 'You do not have permission to perform this action.'}},
                             status=status.HTTP_401_UNAUTHORIZED)
-        serializer = serializers.PartySerializer(request.data, context={'request':self.request})
+        serializer = serializers.PartySerializer(data=request.data, context={'request': self.request})
         if not serializer.is_valid():
             return Response({'detail': 'Create new party failed', 'errors': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -531,6 +533,49 @@ class PartyView(views.APIView):
         return Response({'detail': 'Create new party successfully',
                          'result': serializers.PartySerializer(serializer.instance, context={
                              'request': self.request}).data}, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(request_body=serializers.PartySerializer, responses={
+        200: serializers.PartySerializer,
+        401: serializers.ErrorSerializer(detail="You do not have permission to perform this action."),
+        400: serializers.PartySerializer
+    })
+    def put(self, request):
+        """
+        Update party (Currently does not support upload image)
+
+        Update party from given input. This action can be done by staff only.
+        """
+        if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+            return Response({'detail': 'Edit party failed',
+                             'errors': {'detail': 'You do not have permission to perform this action.'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        serializer = serializers.PartySerializer(request.data)
+        if not serializer.is_valid():
+            return Response({'detail': 'Edit party failed', 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            party = NewParty.objects.get(id=serializer.validated_data['id'])
+        except NewParty.DoesNotExist:
+            return Response(
+                {
+                    'detail': 'Update party failed',
+                    'errors': {
+                        'detail': 'Party does not exist.'
+                    }
+                }
+            )
+        data_key_list = serializer.validated_data.keys()
+        validated_data = serializer.validated_data
+        if 'description' in data_key_list and validated_data['description'] != '':
+            party.description = validated_data['description']
+        if 'name' in data_key_list and validated_data['name'] != '':
+            party.name = validated_data['name']
+        # No support for uploading image yet
+        party.save()
+        return Response({
+            'detail': 'Update party successfully',
+            'result': serializers.PartySerializer(party, context={
+                'request': self.request}).data}, status=status.HTTP_201_CREATED)
 
 
 class PartyDetailView(views.APIView):
@@ -583,7 +628,8 @@ class ElectionResultByAreaView(views.APIView):
         if check_election_status(election) != 'Finished' and (
                 request.user.is_staff or request.user.is_superuser) or check_election_status(
             election) == 'Finished':
-            vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id).order_by('-vote')
+            vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id).order_by(
+                '-vote')
             candidate_no_vote = []
             candidate_in_area = NewCandidate.objects.filter(area_id=area_id).order_by('id')
             for candidate in candidate_in_area:
@@ -595,7 +641,10 @@ class ElectionResultByAreaView(views.APIView):
                 api_result.append({'candidate': result.candidate, 'vote_count': result.vote})
             for candidate in candidate_no_vote:
                 api_result.append({'candidate': candidate, 'vote_count': 0})
-            return Response({'detail': 'Get election result successfully', 'vote_result': serializers.VoteAreaResultSerializer(api_result, many=True, context={'request': self.request}).data})
+            return Response({'detail': 'Get election result successfully',
+                             'vote_result': serializers.VoteAreaResultSerializer(api_result, many=True, context={
+                                 'request': self.request}).data})
         else:
-            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
+                status=status.HTTP_400_BAD_REQUEST)
