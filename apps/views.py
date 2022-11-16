@@ -703,7 +703,7 @@ def new_election_result_by_area(request, election_id, area_id):
     except NewArea.DoesNotExist:
         messages.error(request, 'This area does not exist.')
         return redirect('election_detail_new', election_id=election_id)
-    vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id)
+    vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id).order_by('-vote')
     candidate_no_vote = []
     # Get candidate in area that's not in the vote result
     candidate_in_area = NewCandidate.objects.filter(area_id=area_id).order_by('id')
@@ -740,12 +740,13 @@ def new_election_result_by_party(request, election_id):
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
     # Get all user who vote in this election
-    vote_per_seat = VoteCheck.objects.all().count() / 500
+    vote_per_seat = VoteCheck.objects.filter(election=election).count() / 500 if VoteCheck.objects.filter(
+        election=election).count() > 0 else 0
     supposed_to_have_result = []
     for party in NewParty.objects.all():
         supposed_to_have_result.append({
             'party': party,
-            'number': VoteResultParty.objects.filter(election=election, party=party).count() / vote_per_seat
+            'number': VoteResultParty.objects.filter(election=election, party=party).count() / vote_per_seat if vote_per_seat else 0
         })
     real_result = copy.deepcopy(supposed_to_have_result)
     for result in real_result:
@@ -769,7 +770,8 @@ def new_election_result_by_party(request, election_id):
         party['real'] = math.floor(party['real'])
     # Add detail on number during calculation
     calculation_detail = {
-        'vote_per_seat': vote_per_seat
+        'vote_per_seat': vote_per_seat,
+        'total_vote': VoteCheck.objects.filter(election=election).count()
     }
     # Sort the result by real number
     result = sorted(result, key=lambda k: k['real'], reverse=True)
@@ -781,7 +783,8 @@ def new_election_result_by_party(request, election_id):
             'supposed_to_have_result': supposed_to_have_result,
             'real_result': real_result,
             'result': result,
-            'calculation_detail': calculation_detail
+            'calculation_detail': calculation_detail,
+            'raw_result': VoteResultParty.objects.filter(election=election).order_by('-vote'),
         })
     else:
         return render(request, 'apps/vote/new_election_result_by_party.html', {
@@ -789,7 +792,8 @@ def new_election_result_by_party(request, election_id):
             'supposed_to_have_result': supposed_to_have_result,
             'real_result': real_result,
             'result': result,
-            'calculation_detail': calculation_detail
+            'calculation_detail': calculation_detail,
+            'raw_result': VoteResultParty.objects.filter(election=election).order_by('-vote'),
         })
 
 
