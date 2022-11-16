@@ -508,6 +508,25 @@ class PartyView(views.APIView):
         return Response({'detail': 'Get party list successfully', 'party': serializer.data},
                         status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(responses={
+        200: serializers.PartySerializer
+    })
+    def post(self, request):
+        """
+        Create an empty party without candidate
+
+        Create an empty party without candidate. Candidate can be assigned later.
+        """
+        if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+            return Response({'detail': 'Create new party failed',
+                             'errors': {'detail': 'You do not have permission to perform this action.'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        serializer = serializers.PartySerializer(request.data, context={'request':self.request})
+        if not serializer.is_valid():
+            return Response({'detail': 'Create new party failed', 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        # TODO: Success case
+
 
 class PartyDetailView(views.APIView):
     permission_classes = [permissions.AllowAny]
