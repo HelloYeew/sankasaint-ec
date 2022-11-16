@@ -9,6 +9,7 @@ from rest_framework import views
 from rest_framework.response import Response
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
+from apps.utils import check_election_status
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
 
@@ -165,8 +166,9 @@ class AreaDetailView(views.APIView):
         try:
             area = NewArea.objects.get(id=area_id)
             area_serializer = serializers.AreaSerializer(area, context={'request': self.request})
-            candidate_serializer = serializers.GetCandidateSerializer(NewCandidate.objects.filter(area=area).order_by('id'), many=True,
-                                                                      context={'request': self.request})
+            candidate_serializer = serializers.GetCandidateSerializer(
+                NewCandidate.objects.filter(area=area).order_by('id'), many=True,
+                context={'request': self.request})
             return Response({'detail': 'Get area detail successfully', 'result': {
                 'area': area_serializer.data,
                 'candidates': candidate_serializer.data
@@ -396,6 +398,35 @@ class ElectionsView(views.APIView):
             return Response({'detail': 'Update election failed',
                              'errors': {'detail': 'You do not have permission to perform this action.'}},
                             status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ElectionCurrentView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.GetElectionSerializer,
+        404: serializers.ErrorSerializer(detail='Ongoing election does not exist.')
+    })
+    def get(self, request):
+        """
+        Get an only-one ongoing election.
+        """
+        all_election = NewElection.objects.all()
+        for election in all_election:
+            if check_election_status(election) == "Ongoing":
+                try:
+                    serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
+                    return Response({'detail': 'Get ongoing election successfully', 'election': serializer.data},
+                                    status=status.HTTP_200_OK)
+                except election.DoesNotExist:
+                    return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
+                                                                                                   'ongoing '
+                                                                                                   'election.'}},
+                                    status=status.HTTP_404_NOT_FOUND)
+        return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
+                                                                                       'ongoing '
+                                                                                       'election.'}},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 class ElectionDetailView(views.APIView):
