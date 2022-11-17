@@ -46,10 +46,10 @@ class VoteApiTest(APITestCase):
             NewParty.objects.create(name="PT1"),
             NewParty.objects.create(name="PT2"),
         ]
-        self.parties[0].candidates.add(self.candidates[0])
-        self.parties[0].candidates.add(self.candidates[1])
+        self.parties[0].newcandidate_set.add(self.candidates[0])
+        self.parties[0].newcandidate_set.add(self.candidates[1])
         self.parties[0].save()
-        self.parties[1].candidates.add(self.candidates[2])
+        self.parties[1].newcandidate_set.add(self.candidates[2])
         self.parties[1].save()
         self.test_url = reverse('api_election_vote', args=[self.election.id])
 
