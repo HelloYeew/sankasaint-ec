@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.models import LegacyArea, LegacyElection, LegacyCandidate
+from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea
 from users.models import LegacyProfile
 
 
@@ -135,14 +135,14 @@ class AreaDetailViewTest(TestCase):
     def setUp(self):
         """Set up dummy user and area"""
         self.user = User.objects.create_user(username='testuser', password='12345')
-        self.area = LegacyArea.objects.create(name='test area', description='test area description')
-        self.url = reverse('area_detail', kwargs={'area_id': self.area.id})
+        self.area = NewArea.objects.create(name='test area', description='test area description')
+        self.url = reverse('area_detail_new', kwargs={'area_id': self.area.id})
 
     def test_area_detail_view_rendering(self):
         """Area detail must render correctly"""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'apps/area/area_detail_old.html')
+        self.assertTemplateUsed(response, 'apps/area/area_detail_new.html')
 
     def test_area_detail_view_not_login(self):
         """User must see the area detail but not have the edit button."""
