@@ -15,6 +15,7 @@ urlpatterns = [
     path('candidate', CandidatesView.as_view(), name='api_candidate_list'),
     path('candidate/<int:candidate_id>', CandidateDetailView.as_view(), name='api_candidate_detail'),
     path('election', ElectionsView.as_view(), name='api_election_list'),
+    path('election/current', ElectionCurrentView.as_view(), name='api_election_current'),
     path('election/<int:election_id>', ElectionDetailView.as_view(), name='api_election_detail'),
     path('election/<int:election_id>/vote', ElectionVoteView.as_view(), name='api_election_vote'),
     path('election/<int:election_id>/result/area/<int:area_id>', ElectionResultByAreaView.as_view(), name='api_election_result_by_area'),

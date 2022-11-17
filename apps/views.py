@@ -447,9 +447,21 @@ def start_election(request):
 
     This function is only accessible to the staff or superuser.
     """
+    previous_election = NewElection.objects.all()
+    for election in previous_election:
+        if check_election_status(election) == "Ongoing":
+            messages.error(request, 'There are ongoing election.')
+            return redirect('election_list')
+
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
+            # previous_election = NewElection.objects.all()
+            # for election in previous_election:
+            #     if check_election_status(election) == "Ongoing":
+            #         messages.error(request, 'There are ongoing election.')
+            #         return redirect('election_list')
+
             form = StartElectionForm(request.POST, request.FILES)
             if form.is_valid():
                 election = form.save(commit=False)
@@ -458,11 +470,14 @@ def start_election(request):
                 election.save()
                 messages.success(request, 'Election has been added!')
                 return redirect('election_list')
+
         else:
             form = StartElectionForm()
+
         return render(request, 'apps/election/add_election.html', {
             'colour_settings': colour_settings,
-            'form': form
+            'form': form,
+            'ongoing_election': True
         })
     else:
         messages.error(request, 'You are not authorised to access this page.')
@@ -523,19 +538,27 @@ def vote(request, election_id):
                     party_form = PartyVoteForm(request.POST)
                     if candidate_form.is_valid() and party_form.is_valid():
                         # tally the candidate
-                        if VoteResultCandidate.objects.filter(election=election, candidate=candidate_form.cleaned_data['candidate']).exists():
-                            candidate = VoteResultCandidate.objects.get(election=election, candidate=candidate_form.cleaned_data['candidate'])
+                        if VoteResultCandidate.objects.filter(election=election, candidate=candidate_form.cleaned_data[
+                            'candidate']).exists():
+                            candidate = VoteResultCandidate.objects.get(election=election,
+                                                                        candidate=candidate_form.cleaned_data[
+                                                                            'candidate'])
                             candidate.vote += 1
                             candidate.save()
                         else:
-                            candidate = VoteResultCandidate.objects.create(election=election, candidate=candidate_form.cleaned_data['candidate'], vote=1)
+                            candidate = VoteResultCandidate.objects.create(election=election,
+                                                                           candidate=candidate_form.cleaned_data[
+                                                                               'candidate'], vote=1)
                             candidate.save()
-                        if VoteResultParty.objects.filter(election=election, party=party_form.cleaned_data['party']).exists():
-                            party = VoteResultParty.objects.get(election=election, party=party_form.cleaned_data['party'])
+                        if VoteResultParty.objects.filter(election=election,
+                                                          party=party_form.cleaned_data['party']).exists():
+                            party = VoteResultParty.objects.get(election=election,
+                                                                party=party_form.cleaned_data['party'])
                             party.vote += 1
                             party.save()
                         else:
-                            party = VoteResultParty.objects.create(election=election, party=party_form.cleaned_data['party'], vote=1)
+                            party = VoteResultParty.objects.create(election=election,
+                                                                   party=party_form.cleaned_data['party'], vote=1)
                             party.save()
                         # register this user as voted for this election
                         VoteCheck.objects.create(election=election, user=request.user)
@@ -805,6 +828,7 @@ def partylist_calculation_detail(request):
         })
     else:
         return render(request, 'apps/vote/partylist_calculation_detail.html')
+
 
 def party_list(request):
     """

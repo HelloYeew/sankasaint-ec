@@ -42,3 +42,18 @@ def get_sorted_election_result(election: LegacyElection) -> list:
         vote_result[i]['rank'] = i + 1
     return vote_result
 
+
+def is_there_ongoing_election() -> bool:
+    """
+    Return true if there is any on going election.
+    """
+    return NewElection.objects.filter(start_date__gte=timezone.now(), end_date__lt=timezone.now()).exists()
+
+
+def get_one_ongoing_election() -> NewElection:
+    """
+    Return on going election.
+
+    This function assumes there is only one ongoing election.
+    """
+    return NewElection.objects.get(start_date__gte=timezone.now(), end_date__lt=timezone.now())
