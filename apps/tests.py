@@ -73,9 +73,9 @@ class AreaListViewTest(TestCase):
         self.url = reverse('area_list')
         self.user = User.objects.create_user(username='testuser', password='12345')
         # Add 3 dummy area
-        self.area1 = LegacyArea.objects.create(name='test area 1', description='test area 1 description')
-        self.area2 = LegacyArea.objects.create(name='test area 2', description='test area 2 description')
-        self.area3 = LegacyArea.objects.create(name='test area 3', description='test area 3 description')
+        self.area1 = NewArea.objects.create(name='test area 1', description='test area 1 description')
+        self.area2 = NewArea.objects.create(name='test area 2', description='test area 2 description')
+        self.area3 = NewArea.objects.create(name='test area 3', description='test area 3 description')
 
     def test_area_list_view_rendering(self):
         """Area list must render correctly"""
@@ -90,9 +90,9 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, 'test area 2')
         self.assertContains(response, 'test area 3')
         self.assertContains(response, 'Detail')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area1.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area2.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area3.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area1.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area2.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area3.id}))
         self.assertNotContains(response, 'Add area')
         self.assertNotContains(response, 'Edit')
 
@@ -104,9 +104,9 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, 'test area 2')
         self.assertContains(response, 'test area 3')
         self.assertContains(response, 'Detail')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area1.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area2.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area3.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area1.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area2.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area3.id}))
         self.assertNotContains(response, 'Add area')
         self.assertNotContains(response, 'Edit')
 
@@ -120,9 +120,9 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, 'test area 2')
         self.assertContains(response, 'test area 3')
         self.assertContains(response, 'Detail')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area1.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area2.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area3.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area1.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area2.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area3.id}))
         self.assertContains(response, 'Add area')
         self.assertContains(response, 'Edit')
         self.assertContains(response, reverse('add_area'))
