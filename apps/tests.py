@@ -3,6 +3,7 @@ from django.contrib.messages import get_messages
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from rest_framework import status
 
 from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate
 from users.models import LegacyProfile
@@ -10,6 +11,7 @@ from users.models import LegacyProfile
 
 class HomepageTest(TestCase):
     """Test case for the homepage view."""
+
     def setUp(self):
         """Create a dummy user"""
         self.user = User.objects.create_user(username='testuser', password='12345')
@@ -182,12 +184,14 @@ class AreaDetailViewTest(TestCase):
 
     def test_area_detail_view_with_candidate_not_login(self):
         """User must see the candidate in the area detail."""
-        candidate1_user = User.objects.create_user(username="candidate1", password="BadPassword", first_name="Hutao", last_name="Forger")
-        candidate2_user = User.objects.create_user(username="candidate2", password="BadPassword", first_name="Ayaka", last_name="Forger")
+        candidate1_user = User.objects.create_user(username="candidate1", password="BadPassword", first_name="Hutao",
+                                                   last_name="Forger")
+        candidate2_user = User.objects.create_user(username="candidate2", password="BadPassword", first_name="Ayaka",
+                                                   last_name="Forger")
         candidate1 = NewCandidate.objects.create(user=candidate1_user, description='test candidate description 1',
-                                                    area=self.area)
+                                                 area=self.area)
         candidate2 = NewCandidate.objects.create(user=candidate2_user, description='test candidate description 2',
-                                                    area=self.area)
+                                                 area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
@@ -205,12 +209,14 @@ class AreaDetailViewTest(TestCase):
     def test_area_detail_view_with_candidate_login(self):
         """User that's not superuser and staff must see the candidate in the area detail like not login."""
         self.client.login(username='testuser', password='12345')
-        candidate1_user = User.objects.create_user(username="candidate1", password="BadPassword", first_name="Hutao", last_name="Forger")
-        candidate2_user = User.objects.create_user(username="candidate2", password="BadPassword", first_name="Ayaka", last_name="Forger")
+        candidate1_user = User.objects.create_user(username="candidate1", password="BadPassword", first_name="Hutao",
+                                                   last_name="Forger")
+        candidate2_user = User.objects.create_user(username="candidate2", password="BadPassword", first_name="Ayaka",
+                                                   last_name="Forger")
         candidate1 = NewCandidate.objects.create(user=candidate1_user, description='test candidate description 1',
-                                                    area=self.area)
+                                                 area=self.area)
         candidate2 = NewCandidate.objects.create(user=candidate2_user, description='test candidate description 2',
-                                                    area=self.area)
+                                                 area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
@@ -230,12 +236,14 @@ class AreaDetailViewTest(TestCase):
         self.user.is_staff = True
         self.user.save()
         self.client.login(username='testuser', password='12345')
-        candidate1_user = User.objects.create_user(username="candidate1", password="BadPassword", first_name="Hutao", last_name="Forger")
-        candidate2_user = User.objects.create_user(username="candidate2", password="BadPassword", first_name="Ayaka", last_name="Forger")
+        candidate1_user = User.objects.create_user(username="candidate1", password="BadPassword", first_name="Hutao",
+                                                   last_name="Forger")
+        candidate2_user = User.objects.create_user(username="candidate2", password="BadPassword", first_name="Ayaka",
+                                                   last_name="Forger")
         candidate1 = NewCandidate.objects.create(user=candidate1_user, description='test candidate description 1',
-                                                    area=self.area)
+                                                 area=self.area)
         candidate2 = NewCandidate.objects.create(user=candidate2_user, description='test candidate description 2',
-                                                    area=self.area)
+                                                 area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
@@ -258,5 +266,72 @@ class AreaDetailViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'This area does not exist.')
+
+
+class AreaAddTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username="staff", password="password")
+
+    def test_area_add_view_login_required(self):
+        """User must login before using this page."""
+        response = self.client.get(reverse('add_area'), follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('add_area')}")
+
+    def test_area_add_view_staff_only(self):
+        """
+        User must be a staff to access the page.
+
+        Otherwise, they will be redirected to homepage.
+        """
+        User.objects.create_user(username="user1", password="password")
+        self.client.login(username="user1", password="password")
+        response = self.client.get(reverse('add_area'), follow=True)
+        self.assertRedirects(response, reverse('area_list'))
+
+    def test_area_add_view_valid_request(self):
+        """If the request is valid, then a new area is created."""
+        self.client.login(username='staff', password='password')
+        self.client.post(reverse('add_area'), data={'name': 'A3', 'description': 'A32'}, follow=True)
+        self.assertTrue(NewArea.objects.filter(name='A3', description='A32').exists())
+
+    def test_area_add_view_malformed_request(self):
+        """If the request is not valid, it returns appropriate status code."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'}, follow=True)
+        self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class AreaEditView(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.url = reverse('edit_area', args=[self.area.id])
+
+    def test_area_edit_view_login_required(self):
+        """User must login before edit an area."""
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.url}")
+
+    def test_area_edit_view_staff(self):
+        """User must be a staff before editing an area."""
+        User.objects.create_user(username='baduser', password='password')
+        self.client.login(username='baduser', password='password')
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, reverse('area_list'))
+
+    def test_area_edit_view_valid_request(self):
+        """If the request is valid, the area should be edited."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(self.url, data={'name': 'A2', 'description': 'Great area'}, follow=True)
+        self.assertRedirects(response, reverse('area_list'))
+        self.area.refresh_from_db()
+        self.assertEqual(self.area.name, 'A2')
+        self.assertEqual(self.area.description, 'Great area')
+
+    def test_area_edit_view_malformed_request(self):
+        """If the request is malformed, it returns appropriate status code."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(self.url, data={'something': 'is wrong'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
