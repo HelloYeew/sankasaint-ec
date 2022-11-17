@@ -447,21 +447,12 @@ def start_election(request):
 
     This function is only accessible to the staff or superuser.
     """
-    previous_election = NewElection.objects.all()
-    for election in previous_election:
-        if check_election_status(election) == "Ongoing":
+    if NewElection.objects.filter(start_date__gte=timezone.now(), end_date__lt=timezone.now()).exists():
             messages.error(request, 'There are ongoing election.')
             return redirect('election_list')
-
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
-            # previous_election = NewElection.objects.all()
-            # for election in previous_election:
-            #     if check_election_status(election) == "Ongoing":
-            #         messages.error(request, 'There are ongoing election.')
-            #         return redirect('election_list')
-
             form = StartElectionForm(request.POST, request.FILES)
             if form.is_valid():
                 election = form.save(commit=False)
