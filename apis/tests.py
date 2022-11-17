@@ -191,28 +191,24 @@ class CandidateApiTest(APITestCase):
             NewArea.objects.create(name="A3")
         ]
 
-        # Associate users with areas.
-        self.users[1].newprofile.area = self.areas[0]
-        self.users[1].newprofile.save()
-        self.users[2].newprofile.area = self.areas[1]
-        self.users[2].newprofile.save()
-        self.users[3].newprofile.area = self.areas[2]
-        self.users[3].newprofile.save()
+        # TODO Should I keep this?
+        # self.users[1].newprofile.area = self.areas[0]
+        # self.users[1].newprofile.save()
+        # self.users[2].newprofile.area = self.areas[1]
+        # self.users[2].newprofile.save()
+        # self.users[3].newprofile.area = self.areas[2]
+        # self.users[3].newprofile.save()
+
+        self.candidates = [
+            NewCandidate.objects.create(user=self.users[1], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[2], area=self.areas[1]),
+            NewCandidate.objects.create(user=self.users[3], area=self.areas[2])
+        ]
 
         self.url = reverse('api_candidate_list')
 
-    def test_get_no_candidates(self):
-        """An empty result list should be returned if there are no candidates."""
-        response = self.client.get(self.url, format="json")
-        response_content = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response_content["result"]), 0)
-
     def test_get_has_candidates(self):
-        """All candidates should be returned if there are candidates available."""
-        NewCandidate.objects.create(user=self.users[1], area=self.areas[0])
-        NewCandidate.objects.create(user=self.users[2], area=self.areas[1])
-        NewCandidate.objects.create(user=self.users[3], area=self.areas[2])
+        """All available candidates should be returned."""
 
         response = self.client.get(self.url, format="json")
         response_content = json.loads(response.content.decode("utf-8"))
@@ -299,7 +295,7 @@ class CandidateApiTest(APITestCase):
 
     def test_post_already_candidate(self):
         """Creating a candidate should not be possible when provided user is already a candidate."""
-        test_user = User.objects.create_user(username="U7", email="pp6@email.com", password="AmongUs")
+        test_user = User.objects.create_user(username="U7", email="pp7@email.com", password="AmongUs")
         test_area = self.areas[0]
         description = "Bla Bla Bla Bleh"
         NewCandidate.objects.create(user=test_user, area=test_area)
@@ -313,9 +309,9 @@ class CandidateApiTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_post_bad_body(self):
+    def test_post_malformed(self):
         """Malformed request body should trigger an error."""
-        test_user_id = User.objects.create_user(username="U8", email="pp4@email.com", password="AmongUs").id
+        test_user_id = User.objects.create_user(username="U8", email="pp8@email.com", password="AmongUs").id
         test_area_id = self.areas[2].id
         description = "Bla Bla Bla"
 
@@ -329,12 +325,122 @@ class CandidateApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_put_valid(self):
-        """A valid push request. Should pass no matter what."""
+        """Collection of valid push requests. Should pass no matter what."""
+        temp_user = User.objects.create_user(username="U9", email="pp9@email.com", password="AmongUs")
+        test_candidate_id = NewCandidate.objects.create(user=temp_user, area=self.areas[0]).id
+        test_user_id = User.objects.create_user(username="U10", email="pp10@email.com", password="AmongUs").id
+        test_area_id = self.areas[0].id
         description = "So the FCC won't let me be so let me see..."
 
         self.client.force_login(self.users[0])
         response = self.client.put(self.url, {
-            "use": test_user_id,
-            "desction": description,
-            "ara_id": test_area_id
+            "candidate_id": self.candidates[0].id,
+            "description": description,
         })
+        response_content = json.loads(response.content.decode("utf-8"))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_content["result"]["description"], description)
+
+        response = self.client.put(self.url, {
+            "candidate_id": self.candidates[0].id,
+            "area_id": test_area_id,
+        })
+        response_content = json.loads(response.content.decode("utf-8"))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_content["result"]["area"]["id"], test_area_id)
+
+        response = self.client.put(self.url, {
+            "candidate_id": self.candidates[0].id,
+            "user_id": test_user_id
+        })
+        response_content = json.loads(response.content.decode("utf-8"))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_content["result"]["user"]["id"], test_user_id)
+
+        # Add users[1] back in. This means that it doesn't trigger "already a candidate" error.
+        response = self.client.put(self.url, {
+            "candidate_id": test_candidate_id,
+            "user_id": self.users[1].id
+        })
+        response_content = json.loads(response.content.decode("utf-8"))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_content["result"]["id"], test_candidate_id)
+
+    def test_put_no_candidate(self):
+        """If the provided candidate does not exist an error should be returned."""
+        self.client.force_login(self.users[0])
+        response = self.client.put(self.url, {
+            "candidate_id": -1,
+            "description": "hi",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_put_no_user(self):
+        """If the provided user does not exist an error should be returned."""
+        self.client.force_login(self.users[0])
+        response = self.client.put(self.url, {
+            "candidate_id": self.candidates[0].id,
+            "user_id": -1,
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_put_no_area(self):
+        """If he provided area does not exist an error should be returned."""
+        self.client.force_login(self.users[0])
+        response = self.client.put(self.url, {
+            "candidate_id": self.candidates[0].id,
+            "area_id": -1
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_put_user_already_candidate(self):
+        """If the provided user is already a candidate they cannot be designated as another candidate."""
+        temp_user = User.objects.create_user(username="U11", email="pp11@email.com", password="AmongUs")
+        test_candidate_id = NewCandidate.objects.create(user=temp_user, area=self.areas[0]).id
+
+        self.client.force_login(self.users[0])
+        response = self.client.put(self.url, {
+            "candidate_id": test_candidate_id,
+            "user_id": self.users[2].id
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_put_unauthorized_guest(self):
+        """Guests should not be able to modify candidate."""
+        response = self.client.put(self.url, {
+            "candidate_id": self.candidates[0].id,
+            "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_put_unauthorized_user(self):
+        """Users who are not staffs should not be able to modify candidate."""
+        self.client.force_login(self.users[1])
+        response = self.client.put(self.url, {
+            "candidate_id": self.candidates[0].id,
+            "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_put_malformed(self):
+        """Malformed PUT request should trigger an error."""
+        self.client.force_login(self.users[0])
+        response = self.client.put(self.url, {
+            "candidte_id": self.candidates[0].id,
+            "user": self.users[1].id,
+            "detion": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "ara_id": self.areas[0].id
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
