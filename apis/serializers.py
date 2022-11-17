@@ -278,3 +278,12 @@ class PartyWithCandidateSerializer(serializers.ModelSerializer):
     def get_candidates(self, obj):
         candidates = NewCandidate.objects.filter(party=obj).order_by('id')
         return GetCandidateSerializerWithoutParty(candidates, many=True, context=self.context).data
+
+
+class VoteAreaResultSerializer(serializers.Serializer):
+    """
+    This serializer is used to serialize the result of candidate vote in an area.
+    """
+    candidate = GetCandidateSerializer()
+    vote_count = serializers.IntegerField()
+
