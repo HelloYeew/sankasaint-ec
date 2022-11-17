@@ -52,6 +52,8 @@ urlpatterns = [
     path('utils/create-user', users_views.create_user_utility, name='create_user'),
     path('', include('apps.urls')),
     path('api/', include('apis.urls')),
+    # Knox
+    path(r'api/auth/', include('knox.urls')),
     # Swagger path
     re_path(r'^docs/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^docs/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
