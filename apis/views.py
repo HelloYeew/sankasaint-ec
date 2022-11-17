@@ -9,6 +9,7 @@ from rest_framework import views
 from rest_framework.response import Response
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
+from apps.utils import check_election_status
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
 
@@ -417,9 +418,11 @@ class ElectionCurrentView(views.APIView):
                             status=status.HTTP_200_OK)
         except NewElection.DoesNotExist:
             return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
-                                                                                                   'ongoing '
-                                                                                                   'election.'}},
-                                    status=status.HTTP_404_NOT_FOUND)
+                                                                                           'ongoing '
+                                                                                           'election.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
 class ElectionDetailView(views.APIView):
     permissions_classes = [permissions.AllowAny]
 
@@ -581,7 +584,8 @@ class ElectionResultByAreaView(views.APIView):
         if check_election_status(election) != 'Finished' and (
                 request.user.is_staff or request.user.is_superuser) or check_election_status(
             election) == 'Finished':
-            vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id).order_by('-vote')
+            vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id).order_by(
+                '-vote')
             candidate_no_vote = []
             candidate_in_area = NewCandidate.objects.filter(area_id=area_id).order_by('id')
             for candidate in candidate_in_area:
@@ -593,8 +597,10 @@ class ElectionResultByAreaView(views.APIView):
                 api_result.append({'candidate': result.candidate, 'vote_count': result.vote})
             for candidate in candidate_no_vote:
                 api_result.append({'candidate': candidate, 'vote_count': 0})
-            return Response({'detail': 'Get election result successfully', 'vote_result': serializers.VoteAreaResultSerializer(api_result, many=True, context={'request': self.request}).data})
+            return Response({'detail': 'Get election result successfully',
+                             'vote_result': serializers.VoteAreaResultSerializer(api_result, many=True, context={
+                                 'request': self.request}).data})
         else:
-            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
-                            status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
+                status=status.HTTP_400_BAD_REQUEST)
