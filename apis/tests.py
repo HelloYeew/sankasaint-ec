@@ -191,14 +191,6 @@ class CandidateApiTest(APITestCase):
             NewArea.objects.create(name="A3")
         ]
 
-        # TODO Should I keep this?
-        # self.users[1].newprofile.area = self.areas[0]
-        # self.users[1].newprofile.save()
-        # self.users[2].newprofile.area = self.areas[1]
-        # self.users[2].newprofile.save()
-        # self.users[3].newprofile.area = self.areas[2]
-        # self.users[3].newprofile.save()
-
         self.candidates = [
             NewCandidate.objects.create(user=self.users[1], area=self.areas[0]),
             NewCandidate.objects.create(user=self.users[2], area=self.areas[1]),
@@ -444,3 +436,18 @@ class CandidateApiTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_get_param_exist(self):
+        """Get the detail of an existing candidate. Should pass."""
+        self.client.force_login(self.users[0])
+        response = self.client.get(reverse('api_candidate_detail', args=[self.candidates[0].id]))
+        response_content = json.loads(response.content.decode("utf-8"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_content["candidate"]["id"], self.candidates[0].id)
+
+    def test_get_param_nonexistent(self):
+        """If the provided candidate doesn't exist then return an error."""
+        self.client.force_login(self.users[0])
+        response = self.client.get(reverse('api_candidate_detail', args=[123456790]))
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
