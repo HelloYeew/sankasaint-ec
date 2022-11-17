@@ -529,9 +529,76 @@ class PartyView(views.APIView):
         Get the list of all party.
         """
         party = NewParty.objects.all().order_by('id')
-        serializer = serializers.PartySerializer(party, many=True, context={'request': self.request})
+        serializer = serializers.PartySerializer(data=party, many=True, context={'request': self.request})
         return Response({'detail': 'Get party list successfully', 'party': serializer.data},
                         status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=serializers.PartySerializer, responses={
+        201: serializers.PartySerializer,
+        401: serializers.ErrorSerializer(detail="You do not have permission to perform this action."),
+        400: serializers.PartySerializer
+    })
+    def post(self, request):
+        """
+        Create an empty party without candidate (Currently does not support upload image)
+
+        Create an empty party without candidate. Candidate can be assigned later.
+        """
+        if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+            return Response({'detail': 'Create new party failed',
+                             'errors': {'detail': 'You do not have permission to perform this action.'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        serializer = serializers.PartySerializer(data=request.data, context={'request': self.request})
+        if not serializer.is_valid():
+            return Response({'detail': 'Create new party failed', 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response({'detail': 'Create new party successfully',
+                         'result': serializers.PartySerializer(serializer.instance, context={
+                             'request': self.request}).data}, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(request_body=serializers.PartySerializer, responses={
+        200: serializers.PartySerializer,
+        401: serializers.ErrorSerializer(detail="You do not have permission to perform this action."),
+        400: serializers.PartySerializer
+    })
+    def put(self, request):
+        """
+        Update party (Currently does not support upload image)
+
+        Update party from given input. This action can be done by staff only.
+        """
+        if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+            return Response({'detail': 'Edit party failed',
+                             'errors': {'detail': 'You do not have permission to perform this action.'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        serializer = serializers.PartySerializer(request.data)
+        if not serializer.is_valid():
+            return Response({'detail': 'Edit party failed', 'errors': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            party = NewParty.objects.get(id=serializer.validated_data['id'])
+        except NewParty.DoesNotExist:
+            return Response(
+                {
+                    'detail': 'Update party failed',
+                    'errors': {
+                        'detail': 'Party does not exist.'
+                    }
+                }
+            )
+        data_key_list = serializer.validated_data.keys()
+        validated_data = serializer.validated_data
+        if 'description' in data_key_list and validated_data['description'] != '':
+            party.description = validated_data['description']
+        if 'name' in data_key_list and validated_data['name'] != '':
+            party.name = validated_data['name']
+        # No support for uploading image yet
+        party.save()
+        return Response({
+            'detail': 'Update party successfully',
+            'result': serializers.PartySerializer(party, context={
+                'request': self.request}).data}, status=status.HTTP_201_CREATED)
 
 
 class PartyDetailView(views.APIView):
