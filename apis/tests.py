@@ -428,7 +428,6 @@ class ElectionApiTest(APITestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # TODO: Fix test's bug
     def test_get_ongoing_election_result(self):
         """Test case of get result ongoing election"""
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
