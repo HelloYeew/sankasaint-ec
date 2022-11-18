@@ -179,7 +179,7 @@ class ElectionApiTest(APITestCase):
                                                    end_date=timezone.now() + timedelta(days=3))
 
         self.election3 = NewElection.objects.create(name="Test election3",
-                                               start_date=timezone.now() + + timedelta(days=4),
+                                               start_date=timezone.now() + timedelta(days=4),
                                                end_date=timezone.now() + timedelta(days=5))
 
         self.users = [
@@ -359,7 +359,7 @@ class ElectionApiTest(APITestCase):
             'area_id': self.areas[0].id,
             'elction_id': self.election1.id
         }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_election_result_super_user_login(self):
         """Test case for superuser get election result."""

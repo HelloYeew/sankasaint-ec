@@ -412,7 +412,7 @@ class ElectionCurrentView(views.APIView):
         Get an only-one ongoing election.
         """
         try:
-            election = NewElection.objects.get(start_date__gte=timezone.now(), end_date__lt=timezone.now())
+            election = NewElection.objects.get(start_date__lte=timezone.now(), end_date__gte=timezone.now())
             serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
             return Response({'detail': 'Get ongoing election successfully', 'election': serializer.data},
                             status=status.HTTP_200_OK)
