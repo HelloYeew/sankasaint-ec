@@ -253,19 +253,24 @@ class AreaDetailViewTest(TestCase):
 class CandidateListViewTest(TestCase):
     def setUp(self):
         """Set up dummy user, area and candidate"""
-        self.url = reverse('candidate_list')
-        self.user = User.objects.create_user(username='testuser', password='12345')
+        self.staff = User.objects.create_superuser(username="staff", password="password")
+        self.user1 = User.objects.create_user(username='test user1', password='12345')
+        self.user2 = User.objects.create_user(username='test user2', password='12345')
+        self.user3 = User.objects.create_user(username='test user3', password='12345')
+        # Add dummy party
+        self.party1 = NewParty.objects.create(name='test party 1', description='test party 1 description')
+
         # Add 3 dummy area
-        self.area1 = LegacyArea.objects.create(name='test area 1', description='test area 1 description')
-        self.area2 = LegacyArea.objects.create(name='test area 2', description='test area 2 description')
-        self.area3 = LegacyArea.objects.create(name='test area 3', description='test area 3 description')
-        self.candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate 1 '
-                                                                                              'description',
-                                                         area=self.area1)
-        self.candidate2 = LegacyCandidate.objects.create(name='test candidate 2',
-                                                         description='test candidate 2 description', area=self.area1)
-        self.candidate3 = LegacyCandidate.objects.create(name='test candidate 3',
-                                                         description='test candidate 3 description', area=self.area2)
+        self.area1 = NewArea.objects.create(name='test area 1', description='test area 1 description')
+        self.area2 = NewArea.objects.create(name='test area 2', description='test area 2 description')
+        self.area3 = NewArea.objects.create(name='test area 3', description='test area 3 description')
+
+        # Add 3 candidate data
+        self.candidate1 = NewCandidate.objects.create(user=self.user1, area=self.area1)
+        self.candidate2 = NewCandidate.objects.create(user=self.user2, area=self.area1)
+        self.candidate3 = NewCandidate.objects.create(user=self.user3, area=self.area2)
+
+        self.url = reverse('candidate_list')
 
     def test_candidate_list_view_rendering(self):
         """Candidate list must render correctly"""
@@ -273,38 +278,108 @@ class CandidateListViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'apps/candidate/candidate_list.html')
 
-    def test_area_detail_view_not_login(self):
-        """User must see the candidate detail but not have the add candidate button."""
+    def test_candidate_detail_view_not_login(self):
+        """User must see the candidate detail but not have the add and edit candidate button."""
         response = self.client.get(self.url)
-        # TODO: done
-        self.assertContains(response, 'Description')
-        self.assertContains(response, 'test area')
-        self.assertContains(response, 'Available Candidate')
-        self.assertContains(response, 'No available candidate in this area.')
+        self.assertContains(response, 'test user1')
+        self.assertContains(response, 'test user2')
+        self.assertContains(response, 'test user3')
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate2.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate3.id}))
+        self.assertNotContains(response, 'Add candidate')
         self.assertNotContains(response, 'Edit')
 
-    def test_area_detail_view_login(self):
-        """User that's not superuser and staff must see the area detail like not login"""
-        self.client.login(username='testuser', password='12345')
+    def test_candidate_detail_view_login(self):
+        """User that's not superuser and staff must see the candidate detail like when not login"""
+        self.client.login(username='test user1', password='12345')
         response = self.client.get(self.url)
+        self.assertContains(response, 'test user1')
+        self.assertContains(response, 'test user2')
+        self.assertContains(response, 'test user3')
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate2.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate3.id}))
+        self.assertNotContains(response, 'Add candidate')
+
+    def test_candidate_detail_view_login_staff(self):
+        """User that's staff must see the candidate detail with edit button."""
+        self.client.login(username='staff', password='password')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test user1')
+        self.assertContains(response, 'test user2')
+        self.assertContains(response, 'test user3')
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate2.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate3.id}))
+        self.assertContains(response, 'Add candidate')
+
+        self.assertContains(response, reverse('add_candidate'))
+        self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': self.candidate1.id}))
+        self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': self.candidate2.id}))
+        self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': self.candidate3.id}))
+
+
+class CandidateDetailView(TestCase):
+    def setUp(self):
+        """Set up dummy user, area and candidate"""
+        self.staff = User.objects.create_superuser(username="staff", password="password")
+        self.user1 = User.objects.create_user(username='test user1', password='12345')
+        self.user2 = User.objects.create_user(username='test user2', password='12345')
+        self.user3 = User.objects.create_user(username='test user3', password='12345')
+        # Add dummy area
+        self.area1 = NewArea.objects.create(name='test area 1', description='test area 1 description')
+        # Add dummy party
+        self.party1 = NewParty.objects.create(name='test party 1', description='test party 1 description')
+        # Add dummy candidate data
+        self.candidate1 = NewCandidate.objects.create(user=self.user1, area=self.area1)
+
+        self.url = reverse('candidate_detail_new', kwargs={'candidate_id': self.candidate1.id})
+
+    def test_candidate_detail_view_rendering(self):
+        """Candidate detail must render correctly"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'apps/candidate/candidate_detail_new.html')
+
+    def test_candidate_detail_view_not_login(self):
+        """User must see the candidate detail but not have the edit button."""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, 'Party')
         self.assertContains(response, 'Description')
-        self.assertContains(response, 'test area')
-        self.assertContains(response, 'Available Candidate')
-        self.assertContains(response, 'No available candidate in this area.')
         self.assertNotContains(response, 'Edit')
 
-    def test_area_detail_view_login_staff(self):
-        """User that's staff must see the area detail with edit button."""
-        self.user.is_staff = True
-        self.user.save()
-        self.client.login(username='testuser', password='12345')
+    def test_candidate_detail_view_login(self):
+        """User that's not superuser and staff must see the candidate detail like not login"""
+        self.client.login(username='test user1', password='12345')
         response = self.client.get(self.url)
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, 'Party')
         self.assertContains(response, 'Description')
-        self.assertContains(response, 'test area')
-        self.assertContains(response, 'Available Candidate')
-        self.assertContains(response, 'No available candidate in this area.')
-        self.assertContains(response, 'Edit')
-        self.assertContains(response, reverse('edit_area', kwargs={'area_id': self.area.id}))
+
+    def test_candidate_detail_view_login_staff(self):
+        """User that's staff must see the candidate detail with edit button."""
+        self.client.login(username='staff', password='password')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, 'Party')
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'Area')
+        self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': self.candidate1.id}))
+
+    def test_candidate_detail_view_not_found(self):
+        """Candidate not found must redirect to candidate list page."""
+        url = reverse('candidate_detail_new', kwargs={'candidate_id': 999})
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse('candidate_list'))
+        # Check that Django messages are set
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'This candidate does not exist.')
 
 
 class CandidateAddTest(TestCase):
@@ -330,15 +405,13 @@ class CandidateAddTest(TestCase):
         response = self.client.get(reverse('add_candidate'), follow=True)
         self.assertRedirects(response, reverse('homepage'))
 
-    # TODO: This test still have bug.
     def test_candidate_add_view_valid_request(self):
         """If the request is valid, then a new candidate is created."""
         self.test_user = User.objects.create_user(username="user1", password="password")
         self.client.login(username='staff', password='password')
         self.client.post(reverse('add_candidate'),
-                         data={'user': self.test_user.id, 'description': 'Candidate1', 'area': self.area1.id}, follow=True)
-        # self.assertTrue(NewCandidate.objects.filter(user='C1', description='Candidate1', area='area1').exists())
-        # self.assertTrue(NewCandidate.objects.filter(user='user1', description='Candidate1', area='test area 1').exists())
+                         data={'user': self.test_user.id, 'description': 'Candidate1', 'area': self.area1.id},
+                         follow=True)
         self.assertTrue(NewCandidate.objects.filter(user=self.test_user).exists())
 
     def test_candidate_add_view_malformed_request(self):
@@ -375,16 +448,13 @@ class CandidateEditTest(TestCase):
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, reverse('homepage'))
 
-    # TODO: This test still have bug.
     def test_candidate_edit_view_valid_request(self):
         """If the request is valid, the candidate should be edited."""
         self.client.login(username='staff', password='password')
         response = self.client.post(self.url, data={'user': self.test_user.id, 'description': 'test edit candidate',
-                                                   'area': self.area1.id}, follow=True)
-        # response = self.client.post(self.url, data={'candidate_id': self.candidate1.id, 'user_id':
-        # self.test_user.id, 'description': 'test edit candidate', 'area_id': self.area1.id}, follow=True)
+                                                    'area': self.area1.id}, follow=True)
         self.assertRedirects(response, reverse('candidate_list'))
         self.candidate1.refresh_from_db()
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.candidate1.id, self.candidate1.id)
         self.assertEqual(self.candidate1.description, 'test edit candidate')
