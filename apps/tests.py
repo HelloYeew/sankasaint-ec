@@ -4,12 +4,13 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.models import LegacyArea, LegacyElection, LegacyCandidate
-from users.models import LegacyProfile
+from apps.models import *
+from users.models import *
 
 
 class HomepageTest(TestCase):
     """Test case for the homepage view."""
+
     def setUp(self):
         """Create a dummy user"""
         self.user = User.objects.create_user(username='testuser', password='12345')
@@ -36,27 +37,27 @@ class HomepageTest(TestCase):
     def test_homepage_view_login_with_area(self):
         """User must see user's area information and blank list of ongoing election"""
         self.client.login(username='testuser', password='12345')
-        area = LegacyArea.objects.create(name='test area', description='test area description')
-        profile = LegacyProfile.objects.get(user=self.user)
+        area = NewArea.objects.create(name='test area', description='test area description')
+        profile = NewProfile.objects.get(user=self.user)
         profile.area = area
         profile.save()
         response = self.client.get(self.url)
         self.assertContains(response, f'Hello, {self.user.username} !')
         self.assertContains(response, 'test area Detail')
         self.assertContains(response, 'No ongoing election.')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': area.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': area.id}))
 
     def test_homepage_view_login_with_area_and_ongoing_election(self):
         """User must see user's area information and ongoing election list"""
         self.client.login(username='testuser', password='12345')
-        area = LegacyArea.objects.create(name='test area', description='test area description')
-        profile = LegacyProfile.objects.get(user=self.user)
+        area = NewArea.objects.create(name='test area', description='test area description')
+        profile = NewProfile.objects.get(user=self.user)
         profile.area = area
         profile.save()
         # Setup date using django timezone
-        election = LegacyElection.objects.create(name='test election', description='test election description',
-                                                 start_date=timezone.now() - timezone.timedelta(days=1),
-                                                 end_date=timezone.now() + timezone.timedelta(days=1))
+        election = NewElection.objects.create(name='test election', description='test election description',
+                                              start_date=timezone.now() - timezone.timedelta(days=1),
+                                              end_date=timezone.now() + timezone.timedelta(days=1))
         response = self.client.get(self.url)
         self.assertContains(response, f'Hello, {self.user.username} !')
         self.assertContains(response, 'test area Detail')
@@ -64,7 +65,7 @@ class HomepageTest(TestCase):
         self.assertContains(response, 'test election description')
         self.assertContains(response, 'Started at ')
         # Find in response has a link to election detail
-        self.assertContains(response, reverse('election_detail', kwargs={'election_id': election.id}))
+        self.assertContains(response, reverse('election_detail_new', kwargs={'election_id': election.id}))
 
 
 class AreaListViewTest(TestCase):
@@ -246,5 +247,3 @@ class AreaDetailViewTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'This area does not exist.')
-
-
