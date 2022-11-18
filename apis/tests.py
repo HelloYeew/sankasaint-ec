@@ -2,6 +2,7 @@ from datetime import timedelta
 from http.client import UNAUTHORIZED
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -225,6 +226,14 @@ class CandidateApiTest(APITestCase):
         self.assertEqual(response_content["result"]["user"]["id"], test_user_id)
         self.assertEqual(response_content["result"]["description"], description)
         self.assertEqual(response_content["result"]["area"]["id"], test_area_id)
+
+        # Check created candidate's existence.
+        candidate_exists = True
+        try:
+            NewCandidate.objects.get(id=response_content["result"]["id"])
+        except ObjectDoesNotExist:
+            candidate_exists = False
+        self.assertTrue(candidate_exists)
 
     def test_post_unauthorized_guest(self):
         """Guests should not be able to create a new candidate."""
