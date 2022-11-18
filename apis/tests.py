@@ -355,13 +355,12 @@ class ElectionApiTest(APITestCase):
         self.election1.end_date -= timedelta(days=7)
         self.election1.save()
 
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
+        response = self.client.get(self.test_url, {
+            'area_id': self.areas[0].id,
+            'elction_id': self.election1.id
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # TODO: Fix test's bug
     def test_get_election_result_super_user_login(self):
         """Test case for superuser get election result."""
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
@@ -377,17 +376,16 @@ class ElectionApiTest(APITestCase):
         self.election1.end_date -= timedelta(days=7)
         self.election1.save()
 
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
+        response = self.client.get(self.test_url, {
+            'area_id': self.areas[0].id,
+            'elction_id': self.election1.id
         }, format='json')
         response_content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response_content["result"]["user"]["id"], self.candidates[0].id)
-        self.assertEqual(response_content["result"]["area"]["id"], self.areas[0].id)
-        self.assertEqual(response_content["result"]["party"]["id"], self.parties[0].id)
+        self.assertEqual(response_content["detail"], 'Get election result successfully')
+        self.assertEqual(response_content["vote_result"][0]["candidate"]["id"], self.candidates[0].id)
+        self.assertEqual(response_content["vote_result"][0]["candidate"]["area"]["id"], self.areas[0].id)
 
-    # TODO: Fix test's bug
     def test_get_not_exist_election_result(self):
         """Test case for get the result of non-exist election."""
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
@@ -403,13 +401,12 @@ class ElectionApiTest(APITestCase):
         self.election1.end_date -= timedelta(days=7)
         self.election1.save()
 
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
+        response = self.client.get(self.test_url, {
+            'area_id': self.areas[0].id,
+            'elction_id': self.election1.id
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # TODO: Fix test's bug
     def test_get_election_result_in_not_exist_area(self):
         """Test case for get the election result of non-exist area."""
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
@@ -425,9 +422,9 @@ class ElectionApiTest(APITestCase):
         self.election1.end_date -= timedelta(days=7)
         self.election1.save()
 
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
+        response = self.client.get(self.test_url, {
+            'area_id': self.areas[0].id,
+            'elction_id': self.election1.id
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -441,8 +438,8 @@ class ElectionApiTest(APITestCase):
             'candidate_id': self.candidates[0].id,
             'party_id': self.parties[0].id
         }, format='json')
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
+        response = self.client.get(self.test_url, {
+            'area_id': self.areas[0].id,
+            'elction_id': self.election1.id
         }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
