@@ -251,7 +251,7 @@ class AreaDetailViewTest(TestCase):
 
 
 class CandidateListViewTest(TestCase):
-    def setup(self):
+    def setUp(self):
         """Set up dummy user, area and candidate"""
         self.url = reverse('candidate_list')
         self.user = User.objects.create_user(username='testuser', password='12345')
