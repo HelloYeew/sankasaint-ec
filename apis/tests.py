@@ -226,14 +226,7 @@ class CandidateApiTest(APITestCase):
         self.assertEqual(response_content["result"]["user"]["id"], test_user_id)
         self.assertEqual(response_content["result"]["description"], description)
         self.assertEqual(response_content["result"]["area"]["id"], test_area_id)
-
-        # Check created candidate's existence.
-        candidate_exists = True
-        try:
-            NewCandidate.objects.get(id=response_content["result"]["id"])
-        except ObjectDoesNotExist:
-            candidate_exists = False
-        self.assertTrue(candidate_exists)
+        self.assertTrue(NewCandidate.objects.filter(id=response_content["result"]["id"]).exists())
 
     def test_post_unauthorized_guest(self):
         """Guests should not be able to create a new candidate."""
