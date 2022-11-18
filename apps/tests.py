@@ -336,7 +336,7 @@ class CandidateAddTest(TestCase):
         self.test_user = User.objects.create_user(username="user1", password="password")
         self.client.login(username='staff', password='password')
         self.client.post(reverse('add_candidate'),
-                         data={'user': self.test_user, 'description': 'Candidate1', 'area': self.area1}, follow=True)
+                         data={'user': self.test_user.id, 'description': 'Candidate1', 'area': self.area1.id}, follow=True)
         # self.assertTrue(NewCandidate.objects.filter(user='C1', description='Candidate1', area='area1').exists())
         # self.assertTrue(NewCandidate.objects.filter(user='user1', description='Candidate1', area='test area 1').exists())
         self.assertTrue(NewCandidate.objects.filter(user=self.test_user).exists())
@@ -379,8 +379,8 @@ class CandidateEditTest(TestCase):
     def test_candidate_edit_view_valid_request(self):
         """If the request is valid, the candidate should be edited."""
         self.client.login(username='staff', password='password')
-        response = self.client.put(self.url, data={'user_id': self.test_user.id, 'description': 'test edit candidate',
-                                                   'area_id': self.area1.id}, follow=True)
+        response = self.client.post(self.url, data={'user': self.test_user.id, 'description': 'test edit candidate',
+                                                   'area': self.area1.id}, follow=True)
         # response = self.client.post(self.url, data={'candidate_id': self.candidate1.id, 'user_id':
         # self.test_user.id, 'description': 'test edit candidate', 'area_id': self.area1.id}, follow=True)
         self.assertRedirects(response, reverse('candidate_list'))
@@ -388,11 +388,3 @@ class CandidateEditTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.candidate1.id, self.candidate1.id)
         self.assertEqual(self.candidate1.description, 'test edit candidate')
-
-    # TODO: This test still have bug.
-    def test_candidate_edit_view_malformed_request(self):
-        """If the request is malformed, it returns appropriate status code."""
-        self.client.login(username='staff', password='password')
-        response = self.client.put(self.url, data={'sleep': 555, 'user': 'bed', 'description': 'sleepy'}, follow=True)
-        # self.assertRedirects(response, reverse('homepage'))
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
