@@ -312,7 +312,6 @@ class ElectionApiTest(APITestCase):
         response = self.client.get(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # TODO: Make 'api_election_current' work correctly
     def test_get_not_exist_ongoing_election(self):
         """Test case for get ongoing election but there are no ongoing election."""
         # make election end
@@ -326,7 +325,6 @@ class ElectionApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response_content["errors"]["detail"],  'There are no ongoing election.')
 
-    # TODO: Make 'api_election_current' work correctly
     def test_get_ongoing_election(self):
         """Test case for get ongoing election."""
         self.test_url = reverse('api_election_current')
@@ -339,7 +337,6 @@ class ElectionApiTest(APITestCase):
         self.assertNotEqual(response_content["election"]["start_date"], None)
         self.assertNotEqual(response_content["election"]["end_date"], None)
 
-    # TODO: Fix test's bug
     def test_get_election_result_normal_user_login(self):
         """Test case for normal user get election result."""
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
