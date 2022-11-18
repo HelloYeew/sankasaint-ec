@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 
-from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate
+from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate, NewElection
 from users.models import LegacyProfile
 
 
@@ -297,7 +297,8 @@ class AreaAddTest(TestCase):
     def test_area_add_view_malformed_request(self):
         """If the request is not valid, it returns appropriate status code."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'}, follow=True)
+        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'},
+                                    follow=True)
         self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -333,5 +334,136 @@ class AreaEditView(TestCase):
         self.client.login(username='staff', password='password')
         response = self.client.post(self.url, data={'something': 'is wrong'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ElectionListViewTest(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.user = User.objects.create_user(username='user', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.election = NewElection.objects.create(name='test election', description='test election description',
+                                                   start_date=timezone.now(),
+                                                   end_date=timezone.now() + timezone.timedelta(days=1))
+        self.url = reverse('election_list')
+
+    def test_election_list_view_render(self):
+        """Election list page should render correctly."""
+        response = self.client.get(reverse('election_list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTemplateUsed(response, 'apps/election/election.html')
+
+    def test_election_detail_view_not_login(self):
+        """User must see the election detail and don't have edit election button."""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Status')
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, reverse('election_detail_new', kwargs={'election_id': self.election.id}))
+        self.assertNotContains(response, 'Edit')
+
+    def test_election_detail_view_login(self):
+        """User that's not superuser and staff must see the election detail like when not login"""
+        self.client.login(username='user1', password='password1')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Status')
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, reverse('election_detail_new', kwargs={'election_id': self.election.id}))
+        self.assertNotContains(response, 'Edit')
+
+    def test_election_detail_view_login_staff(self):
+        """User that's staff must see the election detail and have the edit election button."""
+        self.client.login(username='staff', password='password')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Status')
+        self.assertContains(response, 'Detail')
+        self.assertContains(response, reverse('election_detail_new', kwargs={'election_id': self.election.id}))
+        self.assertContains(response, 'Edit')
+
+
+class ElectionDetailViewTest(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.user = User.objects.create_user(username='user', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.election = NewElection.objects.create(name='test election', description='test election description',
+                                                   start_date=timezone.now(),
+                                                   end_date=timezone.now() + timezone.timedelta(days=1))
+        self.url = reverse('election_detail_new', kwargs={'election_id': self.election.id})
+
+    def test_election_detail_view_render(self):
+        """"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTemplateUsed(response, 'apps/election/election_detail_new.html')
+
+    def test_election_detail_view_not_login(self):
+        """User that's not superuser and staff must see the election detail like when not login"""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Duration')
+        self.assertContains(response, 'Status')
+        self.assertContains(response, 'Description')
+        self.assertNotContains(response, 'Edit')
+
+    def test_election_detail_view_login(self):
+        """User that's not superuser and staff must see the election detail like when not login"""
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Duration')
+        self.assertContains(response, 'Status')
+        self.assertContains(response, 'Description')
+
+    def test_election_detail_view_login_staff(self):
+        """User that's staff must see the election detail and have the edit election button."""
+        self.client.login(username='staff', password='password')
+        response = self.client.get(self.url)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Duration')
+        self.assertContains(response, 'Status')
+        self.assertContains(response, 'Description')
+        self.assertContains(response, 'Edit')
+        self.assertContains(response, 'Vote History')
+        self.assertContains(response, 'Election Result')
+
+
+class ElectionAddTest(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.url = reverse('start_election')
+
+    def test_election_add_login_required(self):
+        """User must login to add election."""
+        response = self.client.get(reverse('start_election'), follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('start_election')}")
+
+    def test_election_add_view_staff_only(self):
+        """User that's not staff must not be able to add election."""
+        User.objects.create_user(username="user", password="password")
+        self.client.login(username='user', password='password')
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+
+    def test_election_add_view_valid_request(self):
+        """User that's staff must be able to add election."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(self.url, {'name': 'test election', 'description': 'test election description',
+                                    'start_date': timezone.now(),
+                                    'end_date': timezone.now() + timezone.timedelta(days=1)},
+                         follow=True)
+
+        self.assertTrue(NewElection.objects.filter(name='test election').exists())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_election_add_view_start_date_last_day(self):
+        """User that's staff must be able to add election."""
+        self.client.login(username='staff', password='password')
+        self.client.post(self.url, {'name': 'test election', 'description': 'test election description',
+                                    'start_date': timezone.now() - timezone.timedelta(days=1),
+                                    'end_date': timezone.now() + timezone.timedelta(days=1)},
+                         follow=True)
+        self.assertTrue(NewElection.objects.filter(name='test election').exists())
 
 
