@@ -447,23 +447,80 @@ class ElectionAddTest(TestCase):
         self.assertRedirects(response, reverse('homepage'))
 
     def test_election_add_view_valid_request(self):
-        """User that's staff must be able to add election."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(self.url, {'name': 'test election', 'description': 'test election description',
+        self.client.post(self.url, {'name': 'test election', 'description': 'test election description',
                                     'start_date': timezone.now(),
                                     'end_date': timezone.now() + timezone.timedelta(days=1)},
                          follow=True)
 
         self.assertTrue(NewElection.objects.filter(name='test election').exists())
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_election_add_view_start_date_last_day(self):
-        """User that's staff must be able to add election."""
+
+class ElectionEditTest(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.election = NewElection.objects.create(name='test election', description='test election description',
+                                                   start_date=timezone.now(),
+                                                   end_date=timezone.now() + timezone.timedelta(days=1))
+        self.url = reverse('edit_election', args=[self.election.id])
+
+    def test_election_edit_login_required(self):
+        """User must login to edit election."""
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.url}")
+
+    def test_election_edit_view_staff_only(self):
+        """User that's not staff must not be able to edit election."""
+        User.objects.create_user(username="user", password="password")
+        self.client.login(username='user', password='password')
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+
+    def test_election_edit_view_valid_request(self):
         self.client.login(username='staff', password='password')
-        self.client.post(self.url, {'name': 'test election', 'description': 'test election description',
-                                    'start_date': timezone.now() - timezone.timedelta(days=1),
-                                    'end_date': timezone.now() + timezone.timedelta(days=1)},
-                         follow=True)
-        self.assertTrue(NewElection.objects.filter(name='test election').exists())
+        response = self.client.post(self.url, {'name': 'test election', 'description': 'test edit election description',
+                                               'start_date': timezone.now(),
+                                               'end_date': timezone.now() + timezone.timedelta(days=1)},
+                                    follow=True)
+
+        self.assertRedirects(response, reverse('election_list'))
+        self.election.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.election.id, self.election.id)
+        self.assertEqual(self.election.description, 'test edit election description')
+
+
+
+
+class ElectionVoteHistory(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.election = NewElection.objects.create(name='test election', description='test election description',
+                                                   start_date=timezone.now(),
+                                                   end_date=timezone.now() + timezone.timedelta(days=1))
+        self.url = reverse('vote_history', args=[self.election.id])
+
+    def test_election_vote_history_login_required(self):
+        """User must login to see vote history."""
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.url}")
+
+    def test_election_vote_history_view_staff_only(self):
+        """User that's not staff must not be able to see vote history."""
+        User.objects.create_user(username="user", password="password")
+        self.client.login(username='user', password='password')
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+
+    def test_election_vote_history_view_valid_request(self):
+        self.client.login(username='staff', password='password')
+        response = self.client.get(self.url, follow=True)
+        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Vote History')
+        self.assertTemplateUsed(response, 'apps/vote/vote_history.html')
+
+
 
 
