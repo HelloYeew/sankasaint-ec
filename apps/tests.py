@@ -74,9 +74,9 @@ class AreaListViewTest(TestCase):
         self.url = reverse('area_list')
         self.user = User.objects.create_user(username='testuser', password='12345')
         # Add 3 dummy area
-        self.area1 = LegacyArea.objects.create(name='test area 1', description='test area 1 description')
-        self.area2 = LegacyArea.objects.create(name='test area 2', description='test area 2 description')
-        self.area3 = LegacyArea.objects.create(name='test area 3', description='test area 3 description')
+        self.area1 = NewArea.objects.create(name='test area 1', description='test area 1 description')
+        self.area2 = NewArea.objects.create(name='test area 2', description='test area 2 description')
+        self.area3 = NewArea.objects.create(name='test area 3', description='test area 3 description')
 
     def test_area_list_view_rendering(self):
         """Area list must render correctly"""
@@ -91,9 +91,9 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, 'test area 2')
         self.assertContains(response, 'test area 3')
         self.assertContains(response, 'Detail')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area1.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area2.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area3.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area1.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area2.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area3.id}))
         self.assertNotContains(response, 'Add area')
         self.assertNotContains(response, 'Edit')
 
@@ -105,11 +105,13 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, 'test area 2')
         self.assertContains(response, 'test area 3')
         self.assertContains(response, 'Detail')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area1.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area2.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area3.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area1.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area2.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area3.id}))
         self.assertNotContains(response, 'Add area')
-        self.assertNotContains(response, 'Edit')
+        self.assertNotContains(response, reverse('edit_area', kwargs={'area_id': self.area1.id}))
+        self.assertNotContains(response, reverse('edit_area', kwargs={'area_id': self.area2.id}))
+        self.assertNotContains(response, reverse('edit_area', kwargs={'area_id': self.area3.id}))
 
     def test_area_list_view_login_staff(self):
         """User that's staff must see the list with create and edit button."""
@@ -121,9 +123,9 @@ class AreaListViewTest(TestCase):
         self.assertContains(response, 'test area 2')
         self.assertContains(response, 'test area 3')
         self.assertContains(response, 'Detail')
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area1.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area2.id}))
-        self.assertContains(response, reverse('area_detail', kwargs={'area_id': self.area3.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area1.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area2.id}))
+        self.assertContains(response, reverse('area_detail_new', kwargs={'area_id': self.area3.id}))
         self.assertContains(response, 'Add area')
         self.assertContains(response, 'Edit')
         self.assertContains(response, reverse('add_area'))
@@ -136,16 +138,23 @@ class AreaDetailViewTest(TestCase):
     def setUp(self):
         """Set up dummy user and area"""
         self.user = User.objects.create_user(username='testuser', password='12345')
-        self.area = LegacyArea.objects.create(name='test area', description='test area description')
-        self.url = reverse('area_detail', kwargs={'area_id': self.area.id})
+        self.test_user_1 = User.objects.create_user(username='googoo', password='12345')
+        self.test_user_2 = User.objects.create_user(username='gaga', password='12345')
+        self.test_user_3 = User.objects.create_user(username='sussy', password='12345')
+        self.test_user_4 = User.objects.create_user(username='baka', password='12345')
+        self.test_user_5 = User.objects.create_user(username='somlek', password='12345')
+        self.test_user_6 = User.objects.create_user(username='meow', password='12345')
 
-    def test_area_detail_view_rendering(self):
+        self.area = NewArea.objects.create(name='test area', description='test area description')
+        self.url = reverse('area_detail_new', kwargs={'area_id': self.area.id})
+
+    def test_area_detail_new_view_rendering(self):
         """Area detail must render correctly"""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'apps/area/area_detail_old.html')
+        self.assertTemplateUsed(response, 'apps/area/area_detail_new.html')
 
-    def test_area_detail_view_not_login(self):
+    def test_area_detail_new_view_not_login(self):
         """User must see the area detail but not have the edit button."""
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
@@ -154,7 +163,7 @@ class AreaDetailViewTest(TestCase):
         self.assertContains(response, 'No available candidate in this area.')
         self.assertNotContains(response, 'Edit')
 
-    def test_area_detail_view_login(self):
+    def test_area_detail_new_view_login(self):
         """User that's not superuser and staff must see the area detail like not login"""
         self.client.login(username='testuser', password='12345')
         response = self.client.get(self.url)
@@ -162,9 +171,9 @@ class AreaDetailViewTest(TestCase):
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'No available candidate in this area.')
-        self.assertNotContains(response, 'Edit')
+        self.assertNotContains(response, reverse('edit_area', kwargs={'area_id': self.area.id}))
 
-    def test_area_detail_view_login_staff(self):
+    def test_area_detail_new_view_login_staff(self):
         """User that's staff must see the area detail with edit button."""
         self.user.is_staff = True
         self.user.save()
@@ -177,70 +186,70 @@ class AreaDetailViewTest(TestCase):
         self.assertContains(response, 'Edit')
         self.assertContains(response, reverse('edit_area', kwargs={'area_id': self.area.id}))
 
-    def test_area_detail_view_with_candidate_not_login(self):
+    def test_area_detail_new_view_with_candidate_not_login(self):
         """User must see the candidate in the area detail."""
-        candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate description 1',
-                                                    area=self.area)
-        candidate2 = LegacyCandidate.objects.create(name='test candidate 2', description='test candidate description 2',
-                                                    area=self.area)
+        candidate1 = NewCandidate.objects.create(user=self.test_user_5, description='test candidate description 1',
+                                                 area=self.area)
+        candidate2 = NewCandidate.objects.create(user=self.test_user_6, description='test candidate description 2',
+                                                 area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
-        self.assertContains(response, 'test candidate 1')
-        self.assertContains(response, 'test candidate 2')
-        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate1.id}))
-        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate2.id}))
+        self.assertContains(response, 'somlek')
+        self.assertContains(response, 'meow')
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': candidate2.id}))
         self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate1.id}))
         self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate2.id}))
         self.assertNotContains(response, 'No available candidate in this area.')
         self.assertNotContains(response, 'Edit')
 
-    def test_area_detail_view_with_candidate_login(self):
+    def test_area_detail_new_view_with_candidate_login(self):
         """User that's not superuser and staff must see the candidate in the area detail like not login."""
         self.client.login(username='testuser', password='12345')
-        candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate description 1',
-                                                    area=self.area)
-        candidate2 = LegacyCandidate.objects.create(name='test candidate 2', description='test candidate description 2',
-                                                    area=self.area)
+        candidate1 = NewCandidate.objects.create(user=self.test_user_1, description='test candidate description 1',
+                                                 area=self.area)
+        candidate2 = NewCandidate.objects.create(user=self.test_user_2, description='test candidate description 2',
+                                                 area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
-        self.assertContains(response, 'test candidate 1')
-        self.assertContains(response, 'test candidate 2')
-        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate1.id}))
-        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate2.id}))
+        self.assertContains(response, 'googoo')
+        self.assertContains(response, 'gaga')
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': candidate2.id}))
         self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate1.id}))
         self.assertNotContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate2.id}))
         self.assertNotContains(response, 'No available candidate in this area.')
-        self.assertNotContains(response, 'Edit')
+        self.assertNotContains(response, reverse('edit_area', kwargs={'area_id': self.area.id}))
 
-    def test_area_detail_view_with_candidate_login_staff(self):
+    def test_area_detail_new_view_with_candidate_login_staff(self):
         """User that's staff must see the candidate in the area detail with edit button."""
         self.user.is_staff = True
         self.user.save()
         self.client.login(username='testuser', password='12345')
-        candidate1 = LegacyCandidate.objects.create(name='test candidate 1', description='test candidate description 1',
-                                                    area=self.area)
-        candidate2 = LegacyCandidate.objects.create(name='test candidate 2', description='test candidate description 2',
-                                                    area=self.area)
+        candidate1 = NewCandidate.objects.create(user=self.test_user_3, description='test candidate description 1',
+                                                 area=self.area)
+        candidate2 = NewCandidate.objects.create(user=self.test_user_4, description='test candidate description 2',
+                                                 area=self.area)
         response = self.client.get(self.url)
         self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
-        self.assertContains(response, 'test candidate 1')
-        self.assertContains(response, 'test candidate 2')
+        self.assertContains(response, 'sussy')
+        self.assertContains(response, 'baka')
         self.assertContains(response, 'Edit')
-        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate1.id}))
-        self.assertContains(response, reverse('candidate_detail', kwargs={'candidate_id': candidate2.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': candidate1.id}))
+        self.assertContains(response, reverse('candidate_detail_new', kwargs={'candidate_id': candidate2.id}))
         self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate1.id}))
         self.assertContains(response, reverse('edit_candidate', kwargs={'candidate_id': candidate2.id}))
         self.assertNotContains(response, 'No available candidate in this area.')
 
-    def test_area_detail_view_not_found(self):
+    def test_area_detail_new_view_not_found(self):
         """Area not found must redirect to area list page."""
-        url = reverse('area_detail', kwargs={'area_id': 999})
+        url = reverse('area_detail_new', kwargs={'area_id': 999})
         response = self.client.get(url)
         self.assertRedirects(response, reverse('area_list'))
         # Check that Django messages are set
