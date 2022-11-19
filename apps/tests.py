@@ -297,7 +297,8 @@ class AreaAddTest(TestCase):
     def test_area_add_view_malformed_request(self):
         """If the request is not valid, it returns appropriate status code."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'}, follow=True)
+        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'},
+                                    follow=True)
         self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -337,7 +338,7 @@ class AreaEditView(TestCase):
 
 class PartyListViewTest(TestCase):
     def setUp(self) -> None:
-        self.staff = User.objects.create_superuser(username='staff',password='staff')
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
         self.non_staff = User.objects.create_user(username='user', password='password')
         self.url = reverse('party_list')
         self.parties = [
@@ -348,7 +349,7 @@ class PartyListViewTest(TestCase):
     def test_party_list_view(self):
         """The page list all parties' names."""
         response = self.client.get(self.url)
-        self.assertTemplateUsed(response, 'apps/party/party_list.html') # not legacy one
+        self.assertTemplateUsed(response, 'apps/party/party_list.html')  # not legacy one
         # Name
         for party in self.parties:
             self.assertContains(response, party.name)
@@ -415,3 +416,31 @@ class PartyDetailViewTest(TestCase):
             'party_id': self.party_with_candidate.id,
             'candidate_id': self.candidate.id
         }))
+
+
+class PartyAddViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
+
+    def test_party_add_view_unauthenticated(self):
+        """This page requires login"""
+        response = self.client.get(reverse('add_party'), follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('add_party')}")
+
+    def test_party_add_view_not_staff(self):
+        """Normal user cannot access this page."""
+        self.client.force_login(User.objects.create_user(username='user', password='password'))
+        response = self.client.get(reverse('add_party'), follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+        self.assertContains(response, 'You are not authorised to access this page.')
+
+    def test_party_add_view_valid(self):
+        """A party should be added if the request is valid and user is a staff."""
+        self.client.force_login(self.staff)
+        response = self.client.post(reverse('add_party'), {
+            'name': 'Hutao Party',
+            'description': 'Sad Hutao'
+        }, follow=True)
+        self.assertRedirects(response, reverse('party_list'))
+        self.assertTrue(NewParty.objects.filter(name='Hutao Party', description='Sad Hutao').exists())
