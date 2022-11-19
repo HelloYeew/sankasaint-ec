@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 
-from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate
+from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate, NewParty
 from users.models import LegacyProfile
 
 
@@ -335,3 +335,37 @@ class AreaEditView(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+class PartyListViewTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff',password='staff')
+        self.non_staff = User.objects.create_user(username='user', password='password')
+        self.url = reverse('party_list')
+        self.parties = [
+            NewParty.objects.create(name='Sad Party'),
+            NewParty.objects.create(name='Sock Party')
+        ]
+
+    def test_party_list_view(self):
+        """The page list all parties' names."""
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'apps/party/party_list.html') # not legacy one
+        # Name
+        for party in self.parties:
+            self.assertContains(response, party.name)
+            self.assertContains(response, reverse('party_detail_new', args=[party.id]))
+        self.assertNotContains(response, 'Add party')
+
+    def test_party_list_view_staff(self):
+        """Staff should be able to add a party."""
+        self.client.force_login(self.staff)
+        response = self.client.get(self.url)
+        for party in self.parties:
+            self.assertContains(response, reverse('edit_party', args=[party.id]))
+        self.assertContains(response, 'Add party')
+        self.assertContains(response, reverse('add_party'))
+
+    def test_party_list_view_not_staff(self):
+        """Even the user is authenticated, They should not see a Add Party button unless they are a staff."""
+        self.client.force_login(self.non_staff)
+        response = self.client.get(self.url)
+        self.assertNotContains(response, 'Add party')
