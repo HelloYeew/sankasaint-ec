@@ -444,3 +444,34 @@ class PartyAddViewTest(TestCase):
         }, follow=True)
         self.assertRedirects(response, reverse('party_list'))
         self.assertTrue(NewParty.objects.filter(name='Hutao Party', description='Sad Hutao').exists())
+
+
+class PartyEditViewTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
+        self.party = NewParty.objects.create(name='Hutao', description='Ayaka bad')
+        self.test_url = reverse('edit_party', args=[self.party.id])
+
+    def test_party_edit_view_unauthenticated(self):
+        """Unauthenticated user user must login first"""
+        response = self.client.get(self.test_url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.test_url}")
+
+    def test_party_edit_view_not_staff(self):
+        """If the user is not a staff, they cannot edit."""
+        self.client.force_login(User.objects.create_user(username='user', password='password'))
+        response = self.client.get(self.test_url, follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+        self.assertContains(response, 'You are not authorised to access this page.')
+
+    def test_party_edit_view_work(self):
+        """The party edit view should change the data if the request is valid."""
+        self.client.force_login(self.staff)
+        response = self.client.post(self.test_url, {
+            'name': 'Sora',
+            'description': 'Makima'
+        })
+        self.assertRedirects(response, reverse('party_list'))
+        self.party.refresh_from_db()
+        self.assertEqual(self.party.name, 'Sora')
+        self.assertEqual(self.party.description, 'Makima')
