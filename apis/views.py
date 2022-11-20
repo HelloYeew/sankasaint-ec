@@ -256,7 +256,8 @@ class CandidatesView(views.APIView):
                     candidate = NewCandidate.objects.get(id=serializer.validated_data['candidate_id'])
                 except NewCandidate.DoesNotExist:
                     return Response(
-                        {'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}})
+                        {'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}}
+                        , status=status.HTTP_400_BAD_REQUEST)
                 data_key_list = serializer.validated_data.keys()
                 if 'user_id' in data_key_list:
                     try:
@@ -276,7 +277,8 @@ class CandidatesView(views.APIView):
                             candidate.area = area
                         except NewArea.DoesNotExist:
                             return Response({'detail': 'Update candidate failed',
-                                             'errors': {'area_id': 'Area does not exist.'}})
+                                             'errors': {'area_id': 'Area does not exist.'}}
+                                            , status=status.HTTP_400_BAD_REQUEST)
                 try:
                     candidate.save()
                 except IntegrityError:
