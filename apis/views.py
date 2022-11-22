@@ -535,6 +535,7 @@ class PartyView(views.APIView):
         """
         party = NewParty.objects.all().order_by('id')
         serializer = serializers.PartySerializer(data=party, many=True, context={'request': self.request})
+        serializer.is_valid()
         return Response({'detail': 'Get party list successfully', 'party': serializer.data},
                         status=status.HTTP_200_OK)
 

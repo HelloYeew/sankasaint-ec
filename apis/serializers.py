@@ -269,7 +269,7 @@ class PartyWithCandidateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewParty
-        fields = ('id', 'name', 'description', 'image', 'candidates')
+        fields = ('id', 'name', 'description', 'quote', 'image', 'candidates')
 
     def get_image(self, obj):
         """Add website URL to image path."""
