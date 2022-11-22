@@ -93,7 +93,7 @@ class PartySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewParty
-        fields = ('id', 'name', 'description', 'image')
+        fields = ('id', 'name', 'description', 'quote', 'image')
 
     def get_image(self, obj):
         """Add website URL to image path."""

@@ -54,6 +54,7 @@ class LegacyParty(models.Model):
 class NewParty(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
+    quote = models.TextField()
     image = models.ImageField(default='default_party.png', upload_to='parties')
 
     def __str__(self):
