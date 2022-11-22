@@ -754,6 +754,7 @@ def new_election_result_by_party(request, election_id):
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
     result = calculate_election_party_result(election.id)
+    print(result)
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/vote/new_election_result_by_party.html', {

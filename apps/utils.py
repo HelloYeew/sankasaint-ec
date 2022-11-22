@@ -67,6 +67,9 @@ def get_one_ongoing_election() -> NewElection:
 def calculate_election_party_result(election_id: int) -> dict[
     str, list[dict[str, float | int | Any]] | list[dict[str, float | int | Any]] | dict[str, float | int | Any] | list[
         dict[str, float | int | Any]]]:
+    """
+    Calculate the election result for partylist.
+    """
     election = NewElection.objects.get(id=election_id)
     # Get all user who vote in this election
     vote_per_seat = VoteCheck.objects.filter(election=election).count() / 500 if VoteCheck.objects.filter(

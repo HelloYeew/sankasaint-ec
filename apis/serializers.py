@@ -295,3 +295,12 @@ class VotePartyRawResultSerializer(serializers.Serializer):
     party = PartySerializer()
     vote_count = serializers.IntegerField()
 
+
+class PartylistElectionResultSerializer(serializers.Serializer):
+    """
+    This serializer is used to serialize the result of partylist election.
+    """
+    party = PartySerializer()
+    supposed_to_have_result = serializers.IntegerField()
+    real_result = serializers.IntegerField()
+
