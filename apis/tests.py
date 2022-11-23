@@ -533,6 +533,7 @@ class ElectionApiTest(APITestCase):
 
     def test_start_election_super_user_login(self):
         """If user was superuser, they can start election."""
+        self.election1.delete() # On going election
         self.client.force_login(self.users[4])
         self.test_url = reverse('api_election_list')
         # response = self.client.post(self.test_url)
