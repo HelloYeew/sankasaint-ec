@@ -52,7 +52,7 @@ def is_there_ongoing_election() -> bool:
     """
     Return true if there is any on going election.
     """
-    return NewElection.objects.filter(start_date__gte=timezone.now(), end_date__lt=timezone.now()).exists()
+    return NewElection.objects.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now()).exists()
 
 
 def get_one_ongoing_election() -> NewElection:
@@ -61,6 +61,7 @@ def get_one_ongoing_election() -> NewElection:
 
     This function assumes there is only one ongoing election.
     """
+    return NewElection.objects.get(start_date__lte=timezone.now(), end_date__gte=timezone.now())
     return NewElection.objects.get(start_date__gte=timezone.now(), end_date__lt=timezone.now())
 
 

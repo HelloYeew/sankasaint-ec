@@ -9,7 +9,8 @@ from rest_framework import views
 from rest_framework.response import Response
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
-from apps.utils import is_there_ongoing_election, check_election_status, calculate_election_party_result
+from apps.utils import check_election_status, is_there_ongoing_election, check_election_status, \
+    calculate_election_party_result
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
 
@@ -417,7 +418,7 @@ class ElectionCurrentView(views.APIView):
         Get an only-one ongoing election.
         """
         try:
-            election = NewElection.objects.get(start_date__gte=timezone.now(), end_date__lt=timezone.now())
+            election = NewElection.objects.get(start_date__lte=timezone.now(), end_date__gte=timezone.now())
             serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
             return Response({'detail': 'Get ongoing election successfully', 'election': serializer.data},
                             status=status.HTTP_200_OK)
