@@ -14,7 +14,8 @@ from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionF
     PartyVoteForm, AddCandidateToPartyForm
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
     NewElection, NewParty, VoteCheck, VoteResultCandidate, VoteResultParty
-from apps.utils import check_election_status, get_sorted_election_result, calculate_election_party_result
+from apps.utils import check_election_status, get_sorted_election_result, calculate_election_party_result, \
+    is_there_ongoing_election
 from users.models import ColourSettings, UtilityMissionLog
 
 
@@ -359,11 +360,13 @@ def election_list(request):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election.html', {
             'colour_settings': colour_settings,
-            'all_election_new': rendered_new_election
+            'all_election_new': rendered_new_election,
+            'enable_create': not is_there_ongoing_election()
         })
     else:
         return render(request, 'apps/election/election.html', {
-            'all_election_new': rendered_new_election
+            'all_election_new': rendered_new_election,
+            'enable_create': not is_there_ongoing_election()
         })
 
 
@@ -447,9 +450,9 @@ def start_election(request):
 
     This function is only accessible to the staff or superuser.
     """
-    if NewElection.objects.filter(start_date__gte=timezone.now(), end_date__lt=timezone.now()).exists():
-            messages.error(request, 'There are ongoing election.')
-            return redirect('election_list')
+    if NewElection.objects.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now()).exists():
+        messages.error(request, 'There is already an election ongoing.')
+        return redirect('election_list')
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
