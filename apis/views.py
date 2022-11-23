@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
 from apps.utils import check_election_status, is_there_ongoing_election, check_election_status, \
-    calculate_election_party_result
+    calculate_election_party_result, get_one_ongoing_election
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
 
@@ -71,8 +71,12 @@ class UserProfileView(views.APIView):
         if not request.user.is_authenticated:
             return Response({'detail': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = serializers.UserProfileSerializer(request.user.newprofile, context={'request': self.request})
-        return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data},
-                        status=status.HTTP_200_OK)
+        try:
+            already_vote = VoteCheck.objects.filter(user=request.user, election=get_one_ongoing_election()).exists()
+        except NewElection.DoesNotExist:
+            already_vote = False
+        return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data,
+                         'voted_current_election': already_vote}, status=status.HTTP_200_OK)
 
 
 class AreasView(views.APIView):

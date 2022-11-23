@@ -61,7 +61,7 @@ def get_one_ongoing_election() -> NewElection:
 
     This function assumes there is only one ongoing election.
     """
-    return NewElection.objects.get(start_date__lte=timezone.now(), end_date__gte=timezone.now()).exists()
+    return NewElection.objects.get(start_date__lte=timezone.now(), end_date__gte=timezone.now())
 
 
 def calculate_election_party_result(election_id: int) -> dict[
