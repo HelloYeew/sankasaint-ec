@@ -21,4 +21,6 @@ urlpatterns = [
     path('election/<int:election_id>/result/area/<int:area_id>', ElectionResultByAreaView.as_view(), name='api_election_result_by_area'),
     path('party', PartyView.as_view(), name='api_party_list'),
     path('party/<int:party_id>', PartyDetailView.as_view(), name='api_party_detail'),
+    path('election/<int:election_id>/result/party', ElectionResultByPartyView.as_view(), name='api_election_result_by_party'),
+    path('election/<int:election_id>/result/party/raw', RawElectionResultByPartyView.as_view(), name='api_raw_election_result_by_party'),
 ]

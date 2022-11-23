@@ -1,11 +1,10 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-
 from rest_framework import serializers
 
-from apps.models import LegacyArea, LegacyCandidate, LegacyElection, NewArea, NewCandidate, NewElection, VoteCheck, \
+from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, \
     NewParty
-from users.models import LegacyProfile, NewProfile
+from users.models import NewProfile
 
 
 class LoginSerializer(serializers.Serializer):
@@ -94,7 +93,7 @@ class PartySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewParty
-        fields = ('id', 'name', 'description', 'image')
+        fields = ('id', 'name', 'description', 'quote', 'image')
 
     def get_image(self, obj):
         """Add website URL to image path."""
@@ -108,7 +107,7 @@ class AreaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewArea
-        fields = ('id', 'name', 'description')
+        fields = ('id', 'name', 'population', 'number_of_voters')
 
 
 class UpdateAreaSerializer(serializers.ModelSerializer):
@@ -118,11 +117,12 @@ class UpdateAreaSerializer(serializers.ModelSerializer):
     area_id = serializers.IntegerField(write_only=True)
     # Since we want user can only update some field, user can put blank value if they don't want to update.
     name = serializers.CharField(required=False, allow_blank=True)
-    description = serializers.CharField(required=False, allow_blank=True)
+    population = serializers.IntegerField(required=False)
+    number_of_voters = serializers.IntegerField(required=False)
 
     class Meta:
         model = NewArea
-        fields = ('area_id', 'name', 'description')
+        fields = ('area_id', 'name', 'population', 'number_of_voters')
 
 
 class GetCandidateSerializer(serializers.ModelSerializer):
@@ -269,7 +269,7 @@ class PartyWithCandidateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewParty
-        fields = ('id', 'name', 'description', 'image', 'candidates')
+        fields = ('id', 'name', 'description', 'quote', 'image', 'candidates')
 
     def get_image(self, obj):
         """Add website URL to image path."""
@@ -286,4 +286,21 @@ class VoteAreaResultSerializer(serializers.Serializer):
     """
     candidate = GetCandidateSerializer()
     vote_count = serializers.IntegerField()
+
+
+class VotePartyRawResultSerializer(serializers.Serializer):
+    """
+    This serializer is used to serialize the raw result of party vote in an election.
+    """
+    party = PartySerializer()
+    vote_count = serializers.IntegerField()
+
+
+class PartylistElectionResultSerializer(serializers.Serializer):
+    """
+    This serializer is used to serialize the result of partylist election.
+    """
+    party = PartySerializer()
+    supposed_to_have_result = serializers.IntegerField()
+    real_result = serializers.IntegerField()
 

@@ -113,10 +113,13 @@ class PartyForm(forms.ModelForm):
     description = forms.CharField(label="Party Description", widget=forms.Textarea(
         attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Description'}),
         help_text="Short description of the party.")
+    quote = forms.CharField(label="Party Quote", widget=forms.Textarea(
+        attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Quote'}),
+        help_text="A freaking cool quote of the party. Raw HTML supported.")
 
     class Meta:
         model = NewParty
-        fields = ['name', 'image', 'description']
+        fields = ['name', 'image', 'description', 'quote']
 
 
 class AddCandidateToPartyForm(forms.Form):
