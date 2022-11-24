@@ -440,7 +440,8 @@ class PartyAddViewTest(TestCase):
         self.client.force_login(self.staff)
         response = self.client.post(reverse('add_party'), {
             'name': 'Hutao Party',
-            'description': 'Sad Hutao'
+            'description': 'Sad Hutao',
+            'quote': 'Hu Tao must be sad forever.'
         }, follow=True)
         self.assertRedirects(response, reverse('party_list'))
         self.assertTrue(NewParty.objects.filter(name='Hutao Party', description='Sad Hutao').exists())
