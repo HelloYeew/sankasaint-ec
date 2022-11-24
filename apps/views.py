@@ -1,6 +1,3 @@
-import copy
-import math
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -434,7 +431,8 @@ def election_detail_new(request, election_id):
             'colour_settings': colour_settings,
             'election': election_object,
             'status': check_election_status(election_object),
-            'vote_history': VoteCheck.objects.filter(election=election_object, user=request.user).first()
+            'vote_history': VoteCheck.objects.filter(election=election_object, user=request.user).first(),
+            'right_to_vote': request.user.newprofile.right_to_vote
         })
     else:
         return render(request, 'apps/election/election_detail_new.html', {
@@ -517,6 +515,9 @@ def vote(request, election_id):
     """
     if request.user.newprofile.area is None:
         messages.error(request, 'Please contact administrator to set your area.')
+        return redirect('election_detail_new', election_id=election_id)
+    elif not request.user.newprofile.right_to_vote:
+        messages.error(request, 'You are not allowed to vote.')
         return redirect('election_detail_new', election_id=election_id)
     else:
         try:
