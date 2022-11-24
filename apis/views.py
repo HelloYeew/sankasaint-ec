@@ -790,20 +790,44 @@ class LatestElectionResultByAreaView(views.APIView):
         except IndexError:
             return Response({'detail': 'Get election result failed', 'errors': {'detail': 'No election found.'}},
                             status=status.HTTP_404_NOT_FOUND)
-        vote_result = VoteResultParty.objects.filter(election=election).order_by('-vote')
-        party_no_vote = []
-        for party in NewParty.objects.all():
-            if not vote_result.filter(party=party):
-                party_no_vote.append(party)
-        api_result = []
-        for result in vote_result:
-            # Set candidate and vote in VoteAreaResultSerializer
-            api_result.append({'party': result.party, 'vote_count': result.vote})
-        for party in party_no_vote:
-            api_result.append({'party': party, 'vote_count': 0})
-        return Response({'detail': 'Get election result successfully',
-                         'vote_result': serializers.VotePartyRawResultSerializer(api_result, many=True, context={
-                             'request': self.request}).data})
+        if check_election_status(election) != 'Finished' and (
+                request.user.is_staff or request.user.is_superuser) or check_election_status(
+            election) == 'Finished':
+            vote_result = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area_id).order_by(
+                '-vote')
+            candidate_no_vote = []
+            candidate_in_area = NewCandidate.objects.filter(area_id=area_id).order_by('id')
+            for candidate in candidate_in_area:
+                if not vote_result.filter(candidate=candidate):
+                    candidate_no_vote.append(candidate)
+            api_result = []
+            for result in vote_result:
+                # Set candidate and vote in VoteAreaResultSerializer
+                api_result.append({'candidate': result.candidate, 'vote_count': result.vote})
+            for candidate in candidate_no_vote:
+                api_result.append({'candidate': candidate, 'vote_count': 0})
+            return Response({'detail': 'Get election result successfully',
+                             'vote_result': serializers.VoteAreaResultSerializer(api_result, many=True, context={
+                                 'request': self.request}).data})
+        else:
+            return Response(
+                {'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        # vote_result = VoteResultParty.objects.filter(election=election).order_by('-vote')
+        # party_no_vote = []
+        # for party in NewParty.objects.all():
+        #     if not vote_result.filter(party=party):
+        #         party_no_vote.append(party)
+        # api_result = []
+        # for result in vote_result:
+        #     # Set candidate and vote in VoteAreaResultSerializer
+        #     api_result.append({'party': result.party, 'vote_count': result.vote})
+        # for party in party_no_vote:
+        #     api_result.append({'party': party, 'vote_count': 0})
+        # return Response({'detail': 'Get election result successfully',
+        #                  'vote_result': serializers.VotePartyRawResultSerializer(api_result, many=True, context={
+        #                      'request': self.request}).data})
 
 
 class LatestRawElectionResultByPartyView(views.APIView):
