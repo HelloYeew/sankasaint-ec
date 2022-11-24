@@ -470,9 +470,11 @@ class PartyEditViewTest(TestCase):
         self.client.force_login(self.staff)
         response = self.client.post(self.test_url, {
             'name': 'Sora',
-            'description': 'Makima'
+            'description': 'Makima',
+            'quote': 'Makima does not deserve happiness.'
         })
         self.assertRedirects(response, reverse('party_list'))
         self.party.refresh_from_db()
         self.assertEqual(self.party.name, 'Sora')
         self.assertEqual(self.party.description, 'Makima')
+        self.assertEqual(self.party.quote, 'Makima does not deserve happiness.')
