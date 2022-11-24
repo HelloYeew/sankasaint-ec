@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
 from django.test import TestCase
@@ -5,7 +7,8 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 
-from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate, NewElection
+from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate, NewElection, NewParty, \
+    LegacyVote
 from users.models import LegacyProfile
 
 
@@ -491,15 +494,47 @@ class ElectionEditTest(TestCase):
         self.assertEqual(self.election.description, 'test edit election description')
 
 
-
-
 class ElectionVoteHistory(TestCase):
     def setUp(self):
-        self.staff = User.objects.create_superuser(username='staff', password='password')
-        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
-        self.election = NewElection.objects.create(name='test election', description='test election description',
+        """Create election for testing."""
+        self.election = NewElection.objects.create(name="Test election",
                                                    start_date=timezone.now(),
-                                                   end_date=timezone.now() + timezone.timedelta(days=1))
+                                                   end_date=timezone.now() + timedelta(days=1))
+
+        self.users = [
+            # Candidates
+            User.objects.create_superuser(username="p1", email="p1@email.com", password="BadPassword"),
+            User.objects.create_user(username="p2", email="p2@email.com", password="BadPassword"),
+            User.objects.create_user(username="p3", email="p3@email.com", password="BadPassword"),
+            # Not candidates
+            User.objects.create_user(username="p4", email="p4@email.com", password="BadPassword"),
+        ]
+        self.areas = [
+            NewArea.objects.create(name="A1"),
+            NewArea.objects.create(name="A2"),
+        ]
+        self.users[0].newprofile.area = self.areas[0]
+        self.users[0].newprofile.save()
+        self.users[1].newprofile.area = self.areas[0]
+        self.users[1].newprofile.save()
+        self.users[2].newprofile.area = self.areas[1]
+        self.users[2].newprofile.save()
+        self.users[3].newprofile.area = self.areas[1]
+        self.users[3].newprofile.save()
+        self.candidates = [
+            NewCandidate.objects.create(user=self.users[0], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[1], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[2], area=self.areas[1]),
+        ]
+        self.parties = [
+            NewParty.objects.create(name="PT1"),
+            NewParty.objects.create(name="PT2"),
+        ]
+        self.parties[0].newcandidate_set.add(self.candidates[0])
+        self.parties[0].newcandidate_set.add(self.candidates[1])
+        self.parties[0].save()
+        self.parties[1].newcandidate_set.add(self.candidates[2])
+        self.parties[1].save()
         self.url = reverse('vote_history', args=[self.election.id])
 
     def test_election_vote_history_login_required(self):
@@ -515,12 +550,64 @@ class ElectionVoteHistory(TestCase):
         self.assertRedirects(response, reverse('homepage'))
 
     def test_election_vote_history_view_valid_request(self):
-        self.client.login(username='staff', password='password')
+        self.client.login(username='p1', password='BadPassword')
         response = self.client.get(self.url, follow=True)
-        self.assertContains(response, 'test election')
+        self.assertContains(response, 'Test election')
         self.assertContains(response, 'Vote History')
         self.assertTemplateUsed(response, 'apps/vote/vote_history.html')
 
 
+class ElectionVoteTest(TestCase):
+    def setUp(self):
+        """Create election for testing."""
+        self.election = NewElection.objects.create(name="Test election",
+                                                   start_date=timezone.now(),
+                                                   end_date=timezone.now() + timedelta(days=1))
+
+        self.users = [
+            # Candidates
+            User.objects.create_user(username="p1", email="p1@email.com", password="BadPassword"),
+            User.objects.create_user(username="p2", email="p2@email.com", password="BadPassword"),
+            User.objects.create_user(username="p3", email="p3@email.com", password="BadPassword"),
+            # Not candidates
+            User.objects.create_user(username="p4", email="p4@email.com", password="BadPassword"),
+        ]
+        self.areas = [
+            NewArea.objects.create(name="A1"),
+            NewArea.objects.create(name="A2"),
+        ]
+        self.users[0].newprofile.area = self.areas[0]
+        self.users[0].newprofile.save()
+        self.users[1].newprofile.area = self.areas[0]
+        self.users[1].newprofile.save()
+        self.users[2].newprofile.area = self.areas[1]
+        self.users[2].newprofile.save()
+        self.users[3].newprofile.area = self.areas[1]
+        self.users[3].newprofile.save()
+        self.candidates = [
+            NewCandidate.objects.create(user=self.users[0], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[1], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[2], area=self.areas[1]),
+        ]
+        self.parties = [
+            NewParty.objects.create(name="PT1"),
+            NewParty.objects.create(name="PT2"),
+        ]
+        self.parties[0].newcandidate_set.add(self.candidates[0])
+        self.parties[0].newcandidate_set.add(self.candidates[1])
+        self.parties[0].save()
+        self.parties[1].newcandidate_set.add(self.candidates[2])
+        self.parties[1].save()
+        self.url = reverse('vote', args=[self.election.id])
+
+    def test_election_vote_login_required(self):
+        """User must login to vote."""
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.url}")
+
+    def test_election_vote_view_valid(self):
+        self.client.login(username='p1', password='BadPassword')
+        response = self.client.get(self.url, follow=True)
+        self.assertTemplateUsed(response, 'apps/vote/vote.html')
 
 
