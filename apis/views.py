@@ -9,7 +9,8 @@ from rest_framework import views
 from rest_framework.response import Response
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
-from apps.utils import is_there_ongoing_election, check_election_status
+from apps.utils import check_election_status, is_there_ongoing_election, check_election_status, \
+    calculate_election_party_result, get_one_ongoing_election
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
 
@@ -70,8 +71,12 @@ class UserProfileView(views.APIView):
         if not request.user.is_authenticated:
             return Response({'detail': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = serializers.UserProfileSerializer(request.user.newprofile, context={'request': self.request})
-        return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data},
-                        status=status.HTTP_200_OK)
+        try:
+            already_vote = VoteCheck.objects.filter(user=request.user, election=get_one_ongoing_election()).exists()
+        except NewElection.DoesNotExist:
+            already_vote = False
+        return Response({'detail': 'Get current user profile successfully.', 'result': serializer.data,
+                         'voted_current_election': already_vote}, status=status.HTTP_200_OK)
 
 
 class AreasView(views.APIView):
@@ -136,9 +141,12 @@ class AreasView(views.APIView):
                 if 'name' in data_key_list:
                     if serializer.validated_data['name'] != '':
                         area.name = serializer.validated_data['name']
-                if 'description' in data_key_list:
-                    if serializer.validated_data['description'] != '':
-                        area.description = serializer.validated_data['description']
+                if 'population' in data_key_list:
+                    if serializer.validated_data['population'] != '':
+                        area.description = serializer.validated_data['population']
+                if 'number_of_voters' in data_key_list:
+                    if serializer.validated_data['number_of_voters'] != '':
+                        area.number_of_voters = serializer.validated_data['number_of_voters']
                 area.save()
                 return Response({'detail': 'Update area successfully', 'result': serializers.AreaSerializer(area).data},
                                 status=status.HTTP_201_CREATED)
@@ -256,7 +264,8 @@ class CandidatesView(views.APIView):
                     candidate = NewCandidate.objects.get(id=serializer.validated_data['candidate_id'])
                 except NewCandidate.DoesNotExist:
                     return Response(
-                        {'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}})
+                        {'detail': 'Update candidate failed', 'errors': {'detail': 'Candidate does not exist.'}}
+                        , status=status.HTTP_400_BAD_REQUEST)
                 data_key_list = serializer.validated_data.keys()
                 if 'user_id' in data_key_list:
                     try:
@@ -276,7 +285,8 @@ class CandidatesView(views.APIView):
                             candidate.area = area
                         except NewArea.DoesNotExist:
                             return Response({'detail': 'Update candidate failed',
-                                             'errors': {'area_id': 'Area does not exist.'}})
+                                             'errors': {'area_id': 'Area does not exist.'}}
+                                            , status=status.HTTP_400_BAD_REQUEST)
                 try:
                     candidate.save()
                 except IntegrityError:
@@ -412,7 +422,7 @@ class ElectionCurrentView(views.APIView):
         Get an only-one ongoing election.
         """
         try:
-            election = NewElection.objects.get(start_date__gte=timezone.now(), end_date__lt=timezone.now())
+            election = NewElection.objects.get(start_date__lte=timezone.now(), end_date__gte=timezone.now())
             serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
             return Response({'detail': 'Get ongoing election successfully', 'election': serializer.data},
                             status=status.HTTP_200_OK)
@@ -530,6 +540,7 @@ class PartyView(views.APIView):
         """
         party = NewParty.objects.all().order_by('id')
         serializer = serializers.PartySerializer(data=party, many=True, context={'request': self.request})
+        serializer.is_valid()
         return Response({'detail': 'Get party list successfully', 'party': serializer.data},
                         status=status.HTTP_200_OK)
 
@@ -671,3 +682,196 @@ class ElectionResultByAreaView(views.APIView):
             return Response(
                 {'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
                 status=status.HTTP_400_BAD_REQUEST)
+
+
+class RawElectionResultByPartyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.VotePartyRawResultSerializer,
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Election has not ended.')
+    })
+    def get(self, request, election_id):
+        """
+        Get a raw election result by party.
+
+        Get the raw result of party vote sorted by vote count.
+        """
+        try:
+            election = NewElection.objects.get(id=election_id)
+        except NewElection.DoesNotExist:
+            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Election does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+        if check_election_status(election) != 'Finished' and (
+                request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
+            vote_result = VoteResultParty.objects.filter(election=election).order_by('-vote')
+            party_no_vote = []
+            for party in NewParty.objects.all():
+                if not vote_result.filter(party=party):
+                    party_no_vote.append(party)
+            api_result = []
+            for result in vote_result:
+                # Set candidate and vote in VoteAreaResultSerializer
+                api_result.append({'party': result.party, 'vote_count': result.vote})
+            for party in party_no_vote:
+                api_result.append({'party': party, 'vote_count': 0})
+            return Response({'detail': 'Get election result successfully',
+                             'vote_result': serializers.VotePartyRawResultSerializer(api_result, many=True, context={
+                                 'request': self.request}).data})
+        else:
+            return Response(
+                {'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
+                status=status.HTTP_400_BAD_REQUEST)
+
+
+class ElectionResultByPartyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.PartylistElectionResultSerializer,
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Election has not ended.')
+    })
+    def get(self, request, election_id):
+        """
+        Get a calculated election result by party.
+
+        Get the calculated result or partylist of the election
+        """
+        try:
+            election = NewElection.objects.get(id=election_id)
+        except NewElection.DoesNotExist:
+            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Election does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+        if check_election_status(election) != 'Finished' and (
+                request.user.is_staff or request.user.is_superuser) or check_election_status(election) == 'Finished':
+            result = calculate_election_party_result(election.id)
+            result = result['result']
+            api_result = []
+            for data in result:
+                api_result.append({
+                    'party': data['party'],
+                    'supposed_to_have_result': data['supposed_to_have'],
+                    'real_result': data['real']
+                })
+            return Response({'detail': 'Get election result successfully',
+                             'vote_result': serializers.PartylistElectionResultSerializer(api_result, many=True,
+                                                                                          context={
+                                                                                              'request': self.request}).data})
+        else:
+            return Response(
+                {'detail': 'Get election result failed', 'errors': {'detail': 'Election has not finished.'}},
+                status=status.HTTP_400_BAD_REQUEST)
+
+
+class LatestElectionResultByAreaView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.VoteAreaResultSerializer,
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Election has not ended.')
+    })
+    def get(self, request, area_id):
+        """
+        Get the latest election result by area.
+
+        Get the latest election result by area.
+        """
+        try:
+            area = NewArea.objects.get(id=area_id)
+        except NewArea.DoesNotExist:
+            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'Area does not exist.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+        try:
+            # get election that end time is the latest and already finish, not finish in the future
+            election = NewElection.objects.filter(end_date__lte=timezone.now()).order_by('-end_date')[0]
+        except IndexError:
+            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'No election found.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+        vote_result = VoteResultParty.objects.filter(election=election).order_by('-vote')
+        party_no_vote = []
+        for party in NewParty.objects.all():
+            if not vote_result.filter(party=party):
+                party_no_vote.append(party)
+        api_result = []
+        for result in vote_result:
+            # Set candidate and vote in VoteAreaResultSerializer
+            api_result.append({'party': result.party, 'vote_count': result.vote})
+        for party in party_no_vote:
+            api_result.append({'party': party, 'vote_count': 0})
+        return Response({'detail': 'Get election result successfully',
+                         'vote_result': serializers.VotePartyRawResultSerializer(api_result, many=True, context={
+                             'request': self.request}).data})
+
+
+class LatestRawElectionResultByPartyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.VotePartyRawResultSerializer,
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Election has not ended.')
+    })
+    def get(self, request):
+        """
+        Get the latest raw election result by party.
+
+        Get the latest raw result of party vote sorted by vote count.
+        """
+        try:
+            # get election that end time is the latest and already finish, not finish in the future
+            election = NewElection.objects.filter(end_date__lte=timezone.now()).order_by('-end_date')[0]
+        except IndexError:
+            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'No election found.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+        vote_result = VoteResultParty.objects.filter(election=election).order_by('-vote')
+        party_no_vote = []
+        for party in NewParty.objects.all():
+            if not vote_result.filter(party=party):
+                party_no_vote.append(party)
+        api_result = []
+        for result in vote_result:
+            # Set candidate and vote in VoteAreaResultSerializer
+            api_result.append({'party': result.party, 'vote_count': result.vote})
+        for party in party_no_vote:
+            api_result.append({'party': party, 'vote_count': 0})
+        return Response({'detail': 'Get election result successfully',
+                         'vote_result': serializers.VotePartyRawResultSerializer(api_result, many=True, context={
+                             'request': self.request}).data})
+
+
+class LatestElectionResultByPartyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.PartylistElectionResultSerializer,
+        404: serializers.ErrorSerializer(detail='Election does not exist.'),
+        400: serializers.ErrorSerializer(detail='Election has not ended.')
+    })
+    def get(self, request):
+        """
+        Get a calculated election result by party.
+
+        Get the calculated result or partylist of the election
+        """
+        try:
+            # get election that end time is the latest and already finish, not finish in the future
+            election = NewElection.objects.filter(end_date__lte=timezone.now()).order_by('-end_date')[0]
+        except IndexError:
+            return Response({'detail': 'Get election result failed', 'errors': {'detail': 'No election found.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+        result = calculate_election_party_result(election.id)
+        result = result['result']
+        api_result = []
+        for data in result:
+            api_result.append({
+                'party': data['party'],
+                'supposed_to_have_result': data['supposed_to_have'],
+                'real_result': data['real']
+            })
+        return Response({'detail': 'Get election result successfully',
+                         'vote_result': serializers.PartylistElectionResultSerializer(api_result, many=True,
+                                                                                      context={
+                                                                                          'request': self.request}).data})

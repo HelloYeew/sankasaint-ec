@@ -30,8 +30,7 @@ def seed_data():
             party_for_import.append(i)
     for i in range(len(area_for_import)):
         area_for_import[i] = {
-            'name': area_for_import[i]['fields']['name'],
-            'description': area_for_import[i]['fields']['description']
+            'name': area_for_import[i]['fields']['name']
         }
     for i in range(len(election_for_import)):
         election_for_import[i] = {
