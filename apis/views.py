@@ -52,17 +52,20 @@ class LoginView(KnoxLoginView):
         # TODO: Use production API
 
         try:
-            data = requests.post("https://catnip-api.herokuapp.com/api/v1/locations", data={
+            response = requests.post("https://catnip-api.herokuapp.com/api/v1/validate-cvv", json={
                 'citizenID': int(username),
-                'cvv': str(cvv)
-            }).json()
+                'citizenCVV': str(cvv)
+            })
         except ValueError:
             return Response({'error': {'detail': 'Invalid credential'}}, status=status.HTTP_400_BAD_REQUEST)
-        print("Reached")
-        if data['detail']:
+        if response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_404_NOT_FOUND]:
+            return Response({'error': {'detail': 'Invalid citizenID or CVV'}}, status=status.HTTP_401_UNAUTHORIZED)
+        data = response.json()
+        # MUST BE A BOOLEAN
+        if data['detail'] is True:
             login(request, User.objects.get(username=username))
             return super(LoginView, self).post(request, format=None)
-        return Response({'error': {'detail': 'Invalid citizenID or CVV'}}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': {'detail': {'Wrong payload from the government service'}, 'payload': data}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LogoutView(views.APIView):
