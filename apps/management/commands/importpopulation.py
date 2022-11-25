@@ -36,10 +36,21 @@ class Command(BaseCommand):
                     user_profile.title = population['title']
                     user_profile.sex = population['sex']
                     user_profile.area = NewArea.objects.get(id=population['locationID'])
+                    # If cannot vote, remove from the database.
+                    if not population['rightToVote']:
+                        self.stdout.write(
+                            self.style.SUCCESS('User with id "%s" cannot vote!, removing' % user_in_database.username)
+                        )
+                        user_profile.delete()
+                        user_in_database.delete()
+                        continue
                     user_profile.right_to_vote = population['rightToVote']
                     user_profile.blacklist = population['blacklist']
                     user_profile.save()
                 else:
+                    if not population['rightToVote']:
+                        self.stdout.write(self.style.SUCCESS('User with id "%s" cannot vote.. no import' % population['citizenID']))
+                        continue
                     self.stdout.write(self.style.SUCCESS('User with id "%s" not found in database, importing...' % population['citizenID']))
                     user = User.objects.create(
                         username=population['citizenID'],
