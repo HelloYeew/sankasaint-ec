@@ -65,7 +65,8 @@ class LoginView(KnoxLoginView):
         if data['detail'] is True:
             login(request, User.objects.get(username=username))
             return super(LoginView, self).post(request, format=None)
-        return Response({'error': {'detail': {'Wrong payload from the government service'}, 'payload': data}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': {'detail': {'Wrong payload from the government service'}, 'payload': data}},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LogoutView(views.APIView):
@@ -369,7 +370,7 @@ class ElectionsView(views.APIView):
 
         Get a list of all elections.
         """
-        serializer = serializers.GetElectionSerializer(NewElection.objects.all().order_by('id'), many=True,
+        serializer = serializers.GetElectionSerializer(NewElection.objects.all().order_by('-end_date'), many=True,
                                                        context={'request': self.request})
         return Response({'detail': 'Get all elections successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
@@ -459,6 +460,34 @@ class ElectionCurrentView(views.APIView):
         except NewElection.DoesNotExist:
             return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
                                                                                            'ongoing '
+                                                                                           'election.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
+class ElectionLatestView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.GetElectionSerializer,
+        404: serializers.ErrorSerializer(detail='No latest end election')
+    })
+    def get(self, request):
+        """
+        Get an only-one latest election.
+        """
+        try:
+            election = NewElection.objects.filter(end_date__lte=timezone.now()).first()
+            if election is None:
+                return Response({'detail': 'get latest election failed', 'errors': {'detail': 'there are no '
+                                                                                              'latest'
+                                                                                              'election.'}},
+                                status=status.HTTP_404_NOT_FOUND)
+            serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
+            return Response({'detail': 'Get latest election successfully', 'election': serializer.data},
+                            status=status.HTTP_200_OK)
+        except NewElection.DoesNotExist:
+            return Response({'detail': 'Get latest election failed', 'errors': {'detail': 'There are no '
+                                                                                           'latest '
                                                                                            'election.'}},
                             status=status.HTTP_404_NOT_FOUND)
 
