@@ -369,7 +369,7 @@ class ElectionsView(views.APIView):
 
         Get a list of all elections.
         """
-        serializer = serializers.GetElectionSerializer(NewElection.objects.all().order_by('id'), many=True,
+        serializer = serializers.GetElectionSerializer(NewElection.objects.filter(end_date__lte=timezone.now()).order_by('-end_date'), many=True,
                                                        context={'request': self.request})
         return Response({'detail': 'Get all elections successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
