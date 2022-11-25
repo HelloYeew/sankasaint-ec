@@ -8,7 +8,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate, NewElection, NewParty, \
-    LegacyVote
+    LegacyVote, VoteCheck, VoteResultParty, VoteResultCandidate
 from users.models import LegacyProfile
 
 
@@ -610,4 +610,62 @@ class ElectionVoteTest(TestCase):
         response = self.client.get(self.url, follow=True)
         self.assertTemplateUsed(response, 'apps/vote/vote.html')
 
+        def test_election_vote_work(self):
+            self.client.force_login(self.users[0])
+            response = self.client.post(self.url, {
+                'candidate_id': self.candidates[0].id,
+                'party_id': self.parties[0].id
+            }, format='json')
+            self.assertEqual(response.status_code, 200)
 
+    class ElectionVoteResultTest(TestCase):
+        def setUp(self):
+            self.election = NewElection.objects.create(name="Test election",
+                                                       start_date=timezone.now(),
+                                                       end_date=timezone.now() + timedelta(days=1))
+
+            self.users = [
+                # Candidates
+                User.objects.create_user(username="p1", email="p1@email.com", password="BadPassword"),
+                User.objects.create_superuser(username="p2", email="p2@email.com", password="BadPassword"),
+                User.objects.create_user(username="p3", email="p3@email.com", password="BadPassword"),
+                # Not candidates
+                User.objects.create_user(username="p4", email="p4@email.com", password="BadPassword"),
+            ]
+            self.areas = [
+                NewArea.objects.create(name="A1"),
+                NewArea.objects.create(name="A2"),
+            ]
+            self.users[0].newprofile.area = self.areas[0]
+            self.users[0].newprofile.save()
+            self.users[1].newprofile.area = self.areas[0]
+            self.users[1].newprofile.save()
+            self.users[2].newprofile.area = self.areas[1]
+            self.users[2].newprofile.save()
+            self.users[3].newprofile.area = self.areas[1]
+            self.users[3].newprofile.save()
+            self.candidates = [
+                NewCandidate.objects.create(user=self.users[0], area=self.areas[0]),
+                NewCandidate.objects.create(user=self.users[1], area=self.areas[0]),
+                NewCandidate.objects.create(user=self.users[2], area=self.areas[1]),
+            ]
+            self.parties = [
+                NewParty.objects.create(name="PT1"),
+                NewParty.objects.create(name="PT2"),
+            ]
+            self.parties[0].newcandidate_set.add(self.candidates[0])
+            self.parties[0].newcandidate_set.add(self.candidates[1])
+            self.parties[0].save()
+            self.parties[1].newcandidate_set.add(self.candidates[2])
+            self.parties[1].save()
+            self.url = reverse('new_election_result', args=[self.election.id])
+
+        def test_election_result_view_valid(self):
+            self.client.login(username='p2', password='BadPassword')
+            response = self.client.get(self.url, follow=True)
+            self.assertTemplateUsed(response, 'apps/vote/new_election_result.html')
+
+        def test_election_result_view_invalid(self):
+            self.client.login(username='p1', password='BadPassword')
+            response = self.client.get(self.url, follow=True)
+            self.assertRedirects(response, reverse('election_detail_new', args=[self.election.id]))
