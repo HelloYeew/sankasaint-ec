@@ -39,7 +39,7 @@ class Command(BaseCommand):
                     # If cannot vote, remove from the database.
                     if not population['rightToVote']:
                         self.stdout.write(
-                            self.style.SUCCESS('User with id "%s" cannot vote!, removing')
+                            self.style.SUCCESS('User with id "%s" cannot vote!, removing' % user_in_database.username)
                         )
                         user_profile.delete()
                         user_in_database.delete()
@@ -48,6 +48,9 @@ class Command(BaseCommand):
                     user_profile.blacklist = population['blacklist']
                     user_profile.save()
                 else:
+                    if not population['rightToVote']:
+                        self.stdout.write(self.style.SUCCESS('User with id "%s" cannot vote.. no import' % population['citizenID']))
+                        continue
                     self.stdout.write(self.style.SUCCESS('User with id "%s" not found in database, importing...' % population['citizenID']))
                     user = User.objects.create(
                         username=population['citizenID'],
