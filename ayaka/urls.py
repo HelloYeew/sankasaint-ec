@@ -21,7 +21,9 @@ from django.urls import path, include, re_path
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 
+from apis.views import LoginView
 from users import views as users_views
+from knox import views as knox_views
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -52,6 +54,10 @@ urlpatterns = [
     path('utils/create-user', users_views.create_user_utility, name='create_user'),
     path('', include('apps.urls')),
     path('api/', include('apis.urls')),
+    # Knox
+    # path(r'api/auth/', include('knox.urls')),
+    path(r'api/auth/login/', LoginView.as_view(), name='knox_login_login_login'),
+    path(r'api/auth/logout/', knox_views.LogoutView.as_view(), name='knox_logout' ),
     # Swagger path
     re_path(r'^docs/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^docs/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
