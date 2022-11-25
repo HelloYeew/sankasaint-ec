@@ -291,13 +291,13 @@ class AreaAddTest(TestCase):
     def test_area_add_view_valid_request(self):
         """If the request is valid, then a new area is created."""
         self.client.login(username='staff', password='password')
-        self.client.post(reverse('add_area'), data={'name': 'A3', 'description': 'A32'}, follow=True)
+        self.client.post(reverse('add_area'))
         self.assertTrue(NewArea.objects.filter(name='A3', description='A32').exists())
 
     def test_area_add_view_malformed_request(self):
         """If the request is not valid, it returns appropriate status code."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'}, follow=True)
+        response = self.client.post(reverse('add_area'))
         self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -322,7 +322,7 @@ class AreaEditView(TestCase):
     def test_area_edit_view_valid_request(self):
         """If the request is valid, the area should be edited."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(self.url, data={'name': 'A2', 'description': 'Great area'}, follow=True)
+        response = self.client.post(self.url)
         self.assertRedirects(response, reverse('area_list'))
         self.area.refresh_from_db()
         self.assertEqual(self.area.name, 'A2')
@@ -331,7 +331,7 @@ class AreaEditView(TestCase):
     def test_area_edit_view_malformed_request(self):
         """If the request is malformed, it returns appropriate status code."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(self.url, data={'something': 'is wrong'})
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
