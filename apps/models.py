@@ -13,7 +13,8 @@ class LegacyArea(models.Model):
 
 class NewArea(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    population = models.IntegerField(default=0)
+    number_of_voters = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -53,6 +54,7 @@ class LegacyParty(models.Model):
 class NewParty(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
+    quote = models.TextField()
     image = models.ImageField(default='default_party.png', upload_to='parties')
 
     def __str__(self):

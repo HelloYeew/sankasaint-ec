@@ -14,8 +14,14 @@
                 <p><img src="{{ profile.image.url }}" alt="{{ profile.user.username }}'s profile" style="width:200px; height:200px; border-radius:100px; object-fit:cover;"></p>
             </div>
             <div>
-                <h2>{{ profile.user.username }}</h2>
-                <p><i class="mdi mdi-email" aria-hidden="true" style="font-size:18px"></i> {{ profile.user.email }}</p>
+                <h2>
+                    {{ profile.title }}{{ user.first_name }} {{ user.last_name }}
+                    {% if profile.sex == "Male" %}
+                    <i class="mdi mdi-gender-male" aria-hidden="true" style="font-size:25px"></i>
+                    {% elif profile.sex == "Female" %}
+                    <i class="mdi mdi-gender-female" aria-hidden="true" style="font-size:25px"></i>
+                    {% endif %}
+                </h2>
                 <p><i class="mdi mdi-map-marker radius" aria-hidden="true" style="font-size:18px"></i>
                     {% if profile.area.id == null %}
                     No registered area
@@ -23,6 +29,8 @@
                     <a href="{% url 'area_detail_new' profile.area.id %}">{{ profile.area.name }}</a>
                     {% endif %}
                 </p>
+                <p>Right to vote : {{ profile.right_to_vote }}</p>
+                <p>Government blacklist : {{ profile.blacklist }}</p>
             </div>
         </div>
         {% if user.id == profile.user.id %}
