@@ -19,7 +19,8 @@ class AreaForm(forms.ModelForm):
 
 
 class CandidateForm(forms.ModelForm):
-    user = forms.ModelChoiceField(queryset=User.objects.all().order_by('id'), label="Citizen", widget=forms.Select(
+    user = forms.ModelChoiceField(queryset=User.objects.filter(newprofile__blacklist=False).order_by('id'),
+                                  label="Citizen", widget=forms.Select(
         attrs={'class': 'form-control'}), help_text="The citizen that will be the candidate.")
     image = forms.ImageField(label="Candidate Image", required=False, widget=forms.FileInput(
         attrs={'class': 'form-control-file', 'placeholder': 'Candidate Image'}),

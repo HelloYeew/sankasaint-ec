@@ -332,7 +332,7 @@ class AreaEditView(TestCase):
     def test_area_edit_view_malformed_request(self):
         """If the request is malformed, it returns appropriate status code."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(self.url, data={'something': 'is wrong'})
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
