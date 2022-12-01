@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
 from apps.models import LegacyVote, VoteCheck
@@ -54,6 +55,7 @@ def profile(request):
     """
     Show a user's profile.
     """
+    user_object = User.objects.filter(id=request.user.id).first()
     try:
         user = NewProfile.objects.get(id=request.user.id)
     except NewProfile.DoesNotExist:
@@ -66,6 +68,7 @@ def profile(request):
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
+            'user': user_object,
             'vote_history': votes_new,
             'vote_history_legacy': votes_legacy
         })
@@ -80,6 +83,7 @@ def profile_with_id(request, user_id):
     """
     Show a user's profile.
     """
+    user_object = User.objects.filter(id=user_id).first()
     try:
         user = NewProfile.objects.get(id=user_id)
     except NewProfile.DoesNotExist:
@@ -92,6 +96,7 @@ def profile_with_id(request, user_id):
         return render(request, 'users/profile.html', {
             'colour_settings': colour_settings,
             'profile': user,
+            'user': user_object,
             'vote_history': votes_new,
             'vote_history_legacy': votes_legacy
         })
