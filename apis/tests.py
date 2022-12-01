@@ -61,10 +61,7 @@ class VoteApiTest(APITestCase):
         Test normal case that should work.
         """
         self.client.force_login(self.users[0])
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, 201)
         party_result = VoteResultParty.objects.get(election=self.election, party=self.parties[0])
         self.assertEqual(party_result.vote, 1)
@@ -76,10 +73,7 @@ class VoteApiTest(APITestCase):
         """
         Test voting without authentication
         """
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id,
-        })
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, UNAUTHORIZED)
 
     def test_vote_multiple_time(self):
@@ -88,30 +82,20 @@ class VoteApiTest(APITestCase):
         """
         self.client.force_login(self.users[0])
         VoteCheck.objects.create(user=self.users[0], election=self.election)
-        response = self.client.post(self.test_url, {
-            # Change candidate does not change expected result
-            'candidate_id': self.candidates[1].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_vote_invalid_party(self):
         """Voting invalid party should not be possible"""
         self.client.force_login(self.users[1])
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': 99999999
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(VoteCheck.objects.filter(user=self.users[1], election=self.election).exists())
 
     def test_vote_invalid_candidate(self):
         """Voting invalid candidate should not be possible."""
         self.client.force_login(self.users[1])
-        response = self.client.post(self.test_url, {
-            'candidate_id': 9999999,
-            'party_id': self.parties[0].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(VoteCheck.objects.filter(user=self.users[1], election=self.election).exists())
 
@@ -124,10 +108,7 @@ class VoteApiTest(APITestCase):
         self.election.end_date -= timedelta(days=2)
         self.election.save()
 
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg="Ended election should not be voted")
         self.assertFalse(VoteCheck.objects.filter(user=self.users[0], election=self.election).exists())
@@ -136,10 +117,7 @@ class VoteApiTest(APITestCase):
         self.election.end_date += timedelta(days=21)
         self.election.start_date += timedelta(days=10)
         self.election.save()
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg="Upcoming election should not be voted")
         self.assertFalse(VoteCheck.objects.filter(user=self.users[0], election=self.election).exists())
@@ -147,10 +125,7 @@ class VoteApiTest(APITestCase):
     def test_vote_outside_area(self):
         """Voting candidate is only allowed in the same area."""
         self.client.force_login(self.users[3])
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[1].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg="Cannot vote outside area")
         self.assertFalse(VoteCheck.objects.filter(user=self.users[3], election=self.election).exists())
@@ -160,10 +135,7 @@ class VoteApiTest(APITestCase):
         self.client.force_login(self.users[0])
         self.areas[0].newprofile_set.remove(self.users[0].newprofile)
         self.areas[0].save()
-        response = self.client.post(self.test_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[1].id
-        }, format='json')
+        response = self.client.post(self.test_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          msg="Must handle no area case")
         self.assertFalse(VoteCheck.objects.filter(user=self.users[0], election=self.election).exists())
@@ -215,11 +187,7 @@ class CandidateApiTest(APITestCase):
         description = "Bla Bla Bla"
 
         self.client.force_login(self.users[0])
-        response = self.client.post(self.url, {
-            "user_id": test_user_id,
-            "description": description,
-            "area_id": test_area_id
-        })
+        response = self.client.post(self.url)
         response_content = json.loads(response.content.decode("utf-8"))
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -234,11 +202,7 @@ class CandidateApiTest(APITestCase):
         test_area_id = self.areas[1].id
         description = "Bla Bla Bla Bleh"
 
-        response = self.client.post(self.url, {
-            "user_id": test_user_id,
-            "description": description,
-            "area_id": test_area_id
-        })
+        response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -249,11 +213,7 @@ class CandidateApiTest(APITestCase):
         description = "Bla Bla Bla Bleh"
 
         self.client.force_login(self.users[1])
-        response = self.client.post(self.url, {
-            "user_id": test_user_id,
-            "description": description,
-            "area_id": test_area_id
-        })
+        response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -264,11 +224,7 @@ class CandidateApiTest(APITestCase):
         description = "Bla Bla Bla"
 
         self.client.force_login(self.users[0])
-        response = self.client.post(self.url, {
-            "user_id": test_user_id,
-            "description": description,
-            "area_id": test_area_id
-        })
+        response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -279,11 +235,7 @@ class CandidateApiTest(APITestCase):
         description = "Bla Bla Bla Bleh"
 
         self.client.force_login(self.users[0])
-        response = self.client.post(self.url, {
-            "user_id": test_user_id,
-            "description": description,
-            "area_id": test_area_id
-        })
+        response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -295,11 +247,7 @@ class CandidateApiTest(APITestCase):
         NewCandidate.objects.create(user=test_user, area=test_area)
 
         self.client.force_login(self.users[0])
-        response = self.client.post(self.url, {
-            "user_id": test_user.id,
-            "description": description,
-            "area_id": test_area.id
-        })
+        response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -310,11 +258,7 @@ class CandidateApiTest(APITestCase):
         description = "Bla Bla Bla"
 
         self.client.force_login(self.users[0])
-        response = self.client.post(self.url, {
-            "use": test_user_id,
-            "desction": description,
-            "ara_id": test_area_id
-        })
+        response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -537,12 +481,7 @@ class ElectionApiTest(APITestCase):
         self.client.force_login(self.users[4])
         self.test_url = reverse('api_election_list')
         # response = self.client.post(self.test_url)
-        response = self.client.post(self.test_url, {
-            'name': 'Test election9',
-            'description': 'Test election',
-            'start_date': '3022-11-17T14:03:53.883Z',
-            'end_date': '3022-11-18T14:03:53.883Z'
-        }, format='json')
+        response = self.client.post(self.test_url)
         response_content = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response_content["result"]["id"], 4)
@@ -629,10 +568,7 @@ class ElectionApiTest(APITestCase):
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
         self.test_url = reverse('api_election_result_by_area', args=[self.election1.id, self.areas[0].id])
         self.client.force_login(self.users[3])
-        self.client.post(self.vote_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        self.client.post(self.vote_url)
 
         # make election end
         self.election1.start_date -= timedelta(days=9)
@@ -650,10 +586,7 @@ class ElectionApiTest(APITestCase):
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
         self.test_url = reverse('api_election_result_by_area', args=[self.election1.id, self.areas[0].id])
         self.client.force_login(self.users[4])
-        self.client.post(self.vote_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        self.client.post(self.vote_url)
 
         # make election end
         self.election1.start_date -= timedelta(days=9)
@@ -675,10 +608,7 @@ class ElectionApiTest(APITestCase):
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
         self.test_url = reverse('api_election_result_by_area', args=[999, self.areas[0].id])
         self.client.force_login(self.users[4])
-        self.client.post(self.vote_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        self.client.post(self.vote_url)
 
         # make election end
         self.election1.start_date -= timedelta(days=9)
@@ -696,10 +626,7 @@ class ElectionApiTest(APITestCase):
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
         self.test_url = reverse('api_election_result_by_area', args=[self.election1.id, 999])
         self.client.force_login(self.users[4])
-        self.client.post(self.vote_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        self.client.post(self.vote_url)
 
         # make election end
         self.election1.start_date -= timedelta(days=9)
@@ -717,10 +644,7 @@ class ElectionApiTest(APITestCase):
         self.vote_url = reverse('api_election_vote', args=[self.election1.id])
         self.test_url = reverse('api_election_result_by_area', args=[self.election1.id, self.areas[0].id])
         self.client.force_login(self.users[3])
-        self.client.post(self.vote_url, {
-            'candidate_id': self.candidates[0].id,
-            'party_id': self.parties[0].id
-        }, format='json')
+        self.client.post(self.vote_url)
         response = self.client.get(self.test_url, {
             'area_id': self.areas[0].id,
             'elction_id': self.election1.id

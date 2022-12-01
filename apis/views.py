@@ -1,3 +1,7 @@
+import base64
+import logging
+
+import requests
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -7,35 +11,62 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework import views
 from rest_framework.response import Response
+import logging
 
 from apps.models import NewArea, NewCandidate, NewElection, VoteCheck, VoteResultCandidate, VoteResultParty, NewParty
 from apps.utils import check_election_status, is_there_ongoing_election, check_election_status, \
     calculate_election_party_result, get_one_ongoing_election
 from . import serializers
 from .serializers import VoteSerializer, VoteCheckSerializer
+from knox.views import LoginView as KnoxLoginView
+
+logger = logging.getLogger(__name__)
 
 
-class LoginView(views.APIView):
+class LoginView(KnoxLoginView):
     # This view should be accessible also for unauthenticated users.
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
-    @csrf_exempt
-    @swagger_auto_schema(request_body=serializers.LoginSerializer, responses={200: serializers.UserProfileSerializer})
-    def post(self, request):
+    def post(self, request, format=None):
         """
         Login a user.
 
-        Login to the API using a username and password. The response will assign a token as a cookie to the user.
-        All of this operations are handled by the Django authentication framework. The response is user profile
-        so there is no need to do redundant request to profile API.
+        Login with Thai national ID and CVV validation.
         """
-        serializer = serializers.LoginSerializer(data=self.request.data, context={'request': self.request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        serializer = serializers.UserProfileSerializer(request.user.newprofile, context={'request': self.request})
-        return Response({'detail': 'Login successfully', 'result': serializer.data},
-                        status=status.HTTP_200_OK)
+        auth_info = request.META.get("HTTP_AUTHORIZATION", "").split()
+        logger.info(auth_info)
+        if not auth_info:
+            return Response({'error': {'detail': 'No credential provided'}}, status=status.HTTP_400_BAD_REQUEST)
+        if auth_info[0].lower() != 'basic':
+            return Response({'error': 'login_view_request'})
+            # return super(LoginView, self).post(request)
+        if len(auth_info) != 2:
+            return Response({'error': {'detail': 'Malformed request'}}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            auth_decoded = base64.b64decode(auth_info[1]).decode('utf-8')
+            username, cvv = auth_decoded.split(":")
+        except (UnicodeDecodeError, ValueError):
+            return Response({'error': {'detail': 'Malformed basic auth request'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        # TODO: Use production API
+
+        try:
+            response = requests.post("https://catnip-api.herokuapp.com/api/v1/validate-cvv", json={
+                'citizenID': int(username),
+                'citizenCVV': str(cvv)
+            })
+        except ValueError:
+            return Response({'error': {'detail': 'Invalid credential'}}, status=status.HTTP_400_BAD_REQUEST)
+        if response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_404_NOT_FOUND]:
+            return Response({'error': {'detail': 'Invalid citizenID or CVV'}}, status=status.HTTP_401_UNAUTHORIZED)
+        data = response.json()
+        # MUST BE A BOOLEAN
+        if data['detail'] is True:
+            login(request, User.objects.get(username=username))
+            return super(LoginView, self).post(request, format=None)
+        return Response({'error': {'detail': {'Wrong payload from the government service'}, 'payload': data}},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LogoutView(views.APIView):
@@ -339,7 +370,7 @@ class ElectionsView(views.APIView):
 
         Get a list of all elections.
         """
-        serializer = serializers.GetElectionSerializer(NewElection.objects.all().order_by('id'), many=True,
+        serializer = serializers.GetElectionSerializer(NewElection.objects.all().order_by('-end_date'), many=True,
                                                        context={'request': self.request})
         return Response({'detail': 'Get all elections successfully', 'result': serializer.data},
                         status=status.HTTP_200_OK)
@@ -429,6 +460,34 @@ class ElectionCurrentView(views.APIView):
         except NewElection.DoesNotExist:
             return Response({'detail': 'Get ongoing election failed', 'errors': {'detail': 'There are no '
                                                                                            'ongoing '
+                                                                                           'election.'}},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
+class ElectionLatestView(views.APIView):
+    permissions_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(responses={
+        200: serializers.GetElectionSerializer,
+        404: serializers.ErrorSerializer(detail='No latest end election')
+    })
+    def get(self, request):
+        """
+        Get an only-one latest election.
+        """
+        try:
+            election = NewElection.objects.filter(end_date__lte=timezone.now()).first()
+            if election is None:
+                return Response({'detail': 'get latest election failed', 'errors': {'detail': 'there are no '
+                                                                                              'latest'
+                                                                                              'election.'}},
+                                status=status.HTTP_404_NOT_FOUND)
+            serializer = serializers.GetElectionSerializer(election, context={'request': self.request})
+            return Response({'detail': 'Get latest election successfully', 'election': serializer.data},
+                            status=status.HTTP_200_OK)
+        except NewElection.DoesNotExist:
+            return Response({'detail': 'Get latest election failed', 'errors': {'detail': 'There are no '
+                                                                                           'latest '
                                                                                            'election.'}},
                             status=status.HTTP_404_NOT_FOUND)
 

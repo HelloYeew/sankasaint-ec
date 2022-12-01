@@ -852,6 +852,7 @@ def add_party(request):
         return redirect('homepage')
 
 
+@login_required
 def edit_party(request, party_id):
     """
     Edit an existing party in the database.
