@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 
-from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate
+from apps.models import LegacyArea, LegacyElection, LegacyCandidate, NewArea, NewCandidate, NewParty
 from users.models import LegacyProfile
 
 
@@ -291,13 +291,14 @@ class AreaAddTest(TestCase):
     def test_area_add_view_valid_request(self):
         """If the request is valid, then a new area is created."""
         self.client.login(username='staff', password='password')
-        self.client.post(reverse('add_area'))
+        self.client.post(reverse('add_area'), data={'name': 'A3', 'description': 'A32'}, follow=True)
         self.assertTrue(NewArea.objects.filter(name='A3', description='A32').exists())
 
     def test_area_add_view_malformed_request(self):
         """If the request is not valid, it returns appropriate status code."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(reverse('add_area'))
+        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'},
+                                    follow=True)
         self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -322,7 +323,7 @@ class AreaEditView(TestCase):
     def test_area_edit_view_valid_request(self):
         """If the request is valid, the area should be edited."""
         self.client.login(username='staff', password='password')
-        response = self.client.post(self.url)
+        response = self.client.post(self.url, data={'name': 'A2', 'description': 'Great area'}, follow=True)
         self.assertRedirects(response, reverse('area_list'))
         self.area.refresh_from_db()
         self.assertEqual(self.area.name, 'A2')
@@ -335,3 +336,145 @@ class AreaEditView(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+class PartyListViewTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
+        self.non_staff = User.objects.create_user(username='user', password='password')
+        self.url = reverse('party_list')
+        self.parties = [
+            NewParty.objects.create(name='Sad Party'),
+            NewParty.objects.create(name='Sock Party')
+        ]
+
+    def test_party_list_view(self):
+        """The page list all parties' names."""
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'apps/party/party_list.html')  # not legacy one
+        # Name
+        for party in self.parties:
+            self.assertContains(response, party.name)
+            self.assertContains(response, reverse('party_detail_new', args=[party.id]))
+        self.assertNotContains(response, 'Add party')
+
+    def test_party_list_view_staff(self):
+        """Staff should be able to add a party."""
+        self.client.force_login(self.staff)
+        response = self.client.get(self.url)
+        for party in self.parties:
+            self.assertContains(response, reverse('edit_party', args=[party.id]))
+        self.assertContains(response, 'Add party')
+        self.assertContains(response, reverse('add_party'))
+
+    def test_party_list_view_not_staff(self):
+        """Even the user is authenticated, They should not see a Add Party button unless they are a staff."""
+        self.client.force_login(self.non_staff)
+        response = self.client.get(self.url)
+        self.assertNotContains(response, 'Add party')
+
+
+class PartyDetailViewTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
+        self.non_staff = User.objects.create_user(username='user', password='password')
+        self.non_staff.first_name = 'Ayaka'
+        self.non_staff.last_name = 'Kamisato'
+        self.non_staff.save()
+        self.party_no_candidate = NewParty.objects.create(name='Hutao Party', description='Sad sad sad')
+        self.party_with_candidate = NewParty.objects.create(name='Ayaka Party', description='Bad bad bad')
+        self.candidate = self.party_with_candidate.newcandidate_set.create(user=self.non_staff)
+        self.no_candidate_url = reverse('party_detail_new', args=[self.party_no_candidate.id])
+        self.with_candidate_url = reverse('party_detail_new', args=[self.party_with_candidate.id])
+
+    def test_party_detail_view_basic_info(self):
+        """It display party details correctly."""
+        response = self.client.get(self.no_candidate_url)
+        self.assertTemplateUsed(response, 'apps/party/party_detail_new.html')
+        self.assertContains(response, self.party_no_candidate.name)
+        self.assertContains(response, self.party_no_candidate.description)
+        # No candidate
+        self.assertContains(response, 'No available candidate in this party.')
+
+    def test_party_detail_view_candidate_info(self):
+        """If there is any candidate, they will be displayed."""
+        response = self.client.get(self.with_candidate_url)
+        self.assertContains(response, f"{self.non_staff.first_name} {self.non_staff.last_name}")
+        self.assertContains(response, reverse('candidate_detail_new', args=[self.candidate.id]))
+
+    def test_party_detail_view_staff(self):
+        """If the user is a staff, they can use staff-specific action."""
+        self.client.force_login(self.staff)
+        # Check candidate action as well.
+        response = self.client.get(self.with_candidate_url)
+
+        # Party
+        self.assertContains(response, reverse('edit_party', args=[self.party_with_candidate.id]))
+        self.assertContains(response, reverse('add_candidate_to_party', args=[self.party_with_candidate.id]))
+
+        # Candidate
+        self.assertContains(response, reverse('edit_candidate', args=[self.candidate.id]))
+        self.assertContains(response, reverse('remove_candidate_from_party', kwargs={
+            'party_id': self.party_with_candidate.id,
+            'candidate_id': self.candidate.id
+        }))
+
+
+class PartyAddViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
+
+    def test_party_add_view_unauthenticated(self):
+        """This page requires login"""
+        response = self.client.get(reverse('add_party'), follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('add_party')}")
+
+    def test_party_add_view_not_staff(self):
+        """Normal user cannot access this page."""
+        self.client.force_login(User.objects.create_user(username='user', password='password'))
+        response = self.client.get(reverse('add_party'), follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+        self.assertContains(response, 'You are not authorised to access this page.')
+
+    def test_party_add_view_valid(self):
+        """A party should be added if the request is valid and user is a staff."""
+        self.client.force_login(self.staff)
+        response = self.client.post(reverse('add_party'), {
+            'name': 'Hutao Party',
+            'description': 'Sad Hutao',
+            'quote': 'Hu Tao must be sad forever.'
+        }, follow=True)
+        self.assertRedirects(response, reverse('party_list'))
+        self.assertTrue(NewParty.objects.filter(name='Hutao Party', description='Sad Hutao').exists())
+
+
+class PartyEditViewTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='staff')
+        self.party = NewParty.objects.create(name='Hutao', description='Ayaka bad')
+        self.test_url = reverse('edit_party', args=[self.party.id])
+
+    def test_party_edit_view_unauthenticated(self):
+        """Unauthenticated user user must login first"""
+        response = self.client.get(self.test_url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.test_url}")
+
+    def test_party_edit_view_not_staff(self):
+        """If the user is not a staff, they cannot edit."""
+        self.client.force_login(User.objects.create_user(username='user', password='password'))
+        response = self.client.get(self.test_url, follow=True)
+        self.assertRedirects(response, reverse('homepage'))
+        self.assertContains(response, 'You are not authorised to access this page.')
+
+    def test_party_edit_view_work(self):
+        """The party edit view should change the data if the request is valid."""
+        self.client.force_login(self.staff)
+        response = self.client.post(self.test_url, {
+            'name': 'Sora',
+            'description': 'Makima',
+            'quote': 'Makima does not deserve happiness.'
+        })
+        self.assertRedirects(response, reverse('party_list'))
+        self.party.refresh_from_db()
+        self.assertEqual(self.party.name, 'Sora')
+        self.assertEqual(self.party.description, 'Makima')
+        self.assertEqual(self.party.quote, 'Makima does not deserve happiness.')
