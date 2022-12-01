@@ -38,7 +38,7 @@ class HomepageTest(TestCase):
     def test_homepage_view_login_with_area(self):
         """User must see user's area information and blank list of ongoing election"""
         self.client.login(username='testuser', password='12345')
-        area = NewArea.objects.create(name='test area', description='test area description')
+        area = NewArea.objects.create(name='test area')
         profile = NewProfile.objects.get(user=self.user)
         profile.area = area
         profile.save()
@@ -51,7 +51,7 @@ class HomepageTest(TestCase):
     def test_homepage_view_login_with_area_and_ongoing_election(self):
         """User must see user's area information and ongoing election list"""
         self.client.login(username='testuser', password='12345')
-        area = NewArea.objects.create(name='test area', description='test area description')
+        area = NewArea.objects.create(name='test area')
         profile = NewProfile.objects.get(user=self.user)
         profile.area = area
         profile.save()
