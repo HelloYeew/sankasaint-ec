@@ -151,7 +151,6 @@ class AreaDetailViewTest(TestCase):
     def test_area_detail_view_not_login(self):
         """User must see the area detail but not have the edit button."""
         response = self.client.get(self.url)
-        self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'No available candidate in this area.')
@@ -161,7 +160,6 @@ class AreaDetailViewTest(TestCase):
         """User that's not superuser and staff must see the area detail like not login"""
         self.client.login(username='testuser', password='12345')
         response = self.client.get(self.url)
-        self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'No available candidate in this area.')
@@ -174,8 +172,6 @@ class AreaDetailViewTest(TestCase):
         self.user.save()
         self.client.login(username='testuser', password='12345')
         response = self.client.get(self.url)
-        self.assertContains(response, 'Description')
-        self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'No available candidate in this area.')
         # FIXME: Edit profile button also matches.
@@ -193,7 +189,6 @@ class AreaDetailViewTest(TestCase):
         candidate2 = NewCandidate.objects.create(user=candidate2_user, description='test candidate description 2',
                                                  area=self.area)
         response = self.client.get(self.url)
-        self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'Hutao Forger')
@@ -218,7 +213,6 @@ class AreaDetailViewTest(TestCase):
         candidate2 = NewCandidate.objects.create(user=candidate2_user, description='test candidate description 2',
                                                  area=self.area)
         response = self.client.get(self.url)
-        self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'Hutao Forger')
@@ -245,7 +239,6 @@ class AreaDetailViewTest(TestCase):
         candidate2 = NewCandidate.objects.create(user=candidate2_user, description='test candidate description 2',
                                                  area=self.area)
         response = self.client.get(self.url)
-        self.assertContains(response, 'Description')
         self.assertContains(response, 'test area')
         self.assertContains(response, 'Available Candidate')
         self.assertContains(response, 'Hutao Forger')
@@ -328,12 +321,6 @@ class AreaEditView(TestCase):
         self.area.refresh_from_db()
         self.assertEqual(self.area.name, 'A2')
         self.assertEqual(self.area.description, 'Great area')
-
-    def test_area_edit_view_malformed_request(self):
-        """If the request is malformed, it returns appropriate status code."""
-        self.client.login(username='staff', password='password')
-        response = self.client.post(self.url)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class PartyListViewTest(TestCase):

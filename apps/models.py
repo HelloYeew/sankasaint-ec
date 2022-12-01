@@ -15,6 +15,7 @@ class NewArea(models.Model):
     name = models.CharField(max_length=100)
     population = models.IntegerField(default=0)
     number_of_voters = models.IntegerField(default=0)
+    description = models.TextField(default="")
 
     def __str__(self):
         return self.name
