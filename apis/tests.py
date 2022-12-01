@@ -650,3 +650,65 @@ class ElectionApiTest(APITestCase):
             'elction_id': self.election1.id
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+class PartyApiTest(APITestCase):
+    def setUp(self) -> None:
+        """
+        Create user for test party api
+        """
+        self.users = [
+            # Candidates
+            User.objects.create_user(username="p1", email="p1@email.com", password="BadPassword"),
+            User.objects.create_user(username="p2", email="p2@email.com", password="BadPassword"),
+            User.objects.create_user(username="p3", email="p3@email.com", password="BadPassword"),
+            # Not candidates
+            User.objects.create_user(username="p4", email="p4@email.com", password="BadPassword"),
+        ]
+
+        self.areas = [
+            NewArea.objects.create(name="A1"),
+            NewArea.objects.create(name="A2"),
+        ]
+        self.users[0].newprofile.area = self.areas[0]
+        self.users[0].newprofile.save()
+        self.users[1].newprofile.area = self.areas[0]
+        self.users[1].newprofile.save()
+        self.users[2].newprofile.area = self.areas[1]
+        self.users[2].newprofile.save()
+        self.users[3].newprofile.area = self.areas[1]
+        self.users[3].newprofile.save()
+        self.candidates = [
+            NewCandidate.objects.create(user=self.users[0], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[1], area=self.areas[0]),
+            NewCandidate.objects.create(user=self.users[2], area=self.areas[1]),
+        ]
+        self.parties = [
+            NewParty.objects.create(name="PT1"),
+            NewParty.objects.create(name="PT2"),
+        ]
+        self.parties[0].newcandidate_set.add(self.candidates[0])
+        self.parties[0].newcandidate_set.add(self.candidates[1])
+        self.parties[0].save()
+        self.parties[1].newcandidate_set.add(self.candidates[2])
+        self.parties[1].save()
+
+        self.url = reverse('api_party_list')
+        self.urls = reverse('api_party_detail', kwargs={'party_id': 1})
+
+    def test_get_has_party(self):
+        """User who has party should be able to see party list."""
+        self.client.force_login(self.users[0])
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_party_detail_found(self):
+        """Party detail should be found."""
+        self.client.force_login(self.users[0])
+        response = self.client.get(self.urls)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_party_detail_not_found(self):
+        """Party detail should not be found."""
+        self.client.force_login(self.users[0])
+        response = self.client.get(reverse('api_party_detail', kwargs={'party_id': 3}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
