@@ -19,7 +19,8 @@ class AreaForm(forms.ModelForm):
 
 
 class CandidateForm(forms.ModelForm):
-    user = forms.ModelChoiceField(queryset=User.objects.all().order_by('id'), label="Citizen", widget=forms.Select(
+    user = forms.ModelChoiceField(queryset=User.objects.filter(newprofile__blacklist=False).order_by('id'),
+                                  label="Citizen", widget=forms.Select(
         attrs={'class': 'form-control'}), help_text="The citizen that will be the candidate.")
     image = forms.ImageField(label="Candidate Image", required=False, widget=forms.FileInput(
         attrs={'class': 'form-control-file', 'placeholder': 'Candidate Image'}),
@@ -113,10 +114,13 @@ class PartyForm(forms.ModelForm):
     description = forms.CharField(label="Party Description", widget=forms.Textarea(
         attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Description'}),
         help_text="Short description of the party.")
+    quote = forms.CharField(label="Party Quote", widget=forms.Textarea(
+        attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Party Quote'}),
+        help_text="A freaking cool quote of the party. Raw HTML supported.")
 
     class Meta:
         model = NewParty
-        fields = ['name', 'image', 'description']
+        fields = ['name', 'image', 'description', 'quote']
 
 
 class AddCandidateToPartyForm(forms.Form):
