@@ -544,6 +544,8 @@ class CandidateEditTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.candidate1.id, self.candidate1.id)
         self.assertEqual(self.candidate1.description, 'test edit candidate')
+
+
 class PartyListViewTest(TestCase):
     def setUp(self) -> None:
         self.staff = User.objects.create_superuser(username='staff', password='staff')
