@@ -268,6 +268,76 @@ class AreaDetailViewTest(TestCase):
         self.assertEqual(str(messages[0]), 'This area does not exist.')
 
 
+<<<<<<< HEAD
+=======
+class AreaAddTest(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username="staff", password="password")
+
+    def test_area_add_view_login_required(self):
+        """User must login before using this page."""
+        response = self.client.get(reverse('add_area'), follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('add_area')}")
+
+    def test_area_add_view_staff_only(self):
+        """
+        User must be a staff to access the page.
+
+        Otherwise, they will be redirected to homepage.
+        """
+        User.objects.create_user(username="user1", password="password")
+        self.client.login(username="user1", password="password")
+        response = self.client.get(reverse('add_area'), follow=True)
+        self.assertRedirects(response, reverse('area_list'))
+
+    def test_area_add_view_valid_request(self):
+        """If the request is valid, then a new area is created."""
+        self.client.login(username='staff', password='password')
+        self.client.post(reverse('add_area'), data={'name': 'A3', 'description': 'A32'}, follow=True)
+        self.assertTrue(NewArea.objects.filter(name='A3', description='A32').exists())
+
+    def test_area_add_view_malformed_request(self):
+        """If the request is not valid, it returns appropriate status code."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(reverse('add_area'), data={'bad': 99, 'name': 'aar', 'description': 'Badd'}, follow=True)
+        self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class AreaEditView(TestCase):
+    def setUp(self) -> None:
+        self.staff = User.objects.create_superuser(username='staff', password='password')
+        self.area = NewArea.objects.create(name='A3', description='A3 is the best')
+        self.url = reverse('edit_area', args=[self.area.id])
+
+    def test_area_edit_view_login_required(self):
+        """User must login before edit an area."""
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={self.url}")
+
+    def test_area_edit_view_staff(self):
+        """User must be a staff before editing an area."""
+        User.objects.create_user(username='baduser', password='password')
+        self.client.login(username='baduser', password='password')
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, reverse('area_list'))
+
+    def test_area_edit_view_valid_request(self):
+        """If the request is valid, the area should be edited."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(self.url, data={'name': 'A2', 'description': 'Great area'}, follow=True)
+        self.assertRedirects(response, reverse('area_list'))
+        self.area.refresh_from_db()
+        self.assertEqual(self.area.name, 'A2')
+        self.assertEqual(self.area.description, 'Great area')
+
+    def test_area_edit_view_malformed_request(self):
+        """If the request is malformed, it returns appropriate status code."""
+        self.client.login(username='staff', password='password')
+        response = self.client.post(self.url, data={'something': 'is wrong'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+>>>>>>> 9abdd2941d319ad5700181b99a98a5ce614ef450
 class CandidateListViewTest(TestCase):
     def setUp(self):
         """Set up dummy user, area and candidate"""
@@ -476,6 +546,7 @@ class CandidateEditTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.candidate1.id, self.candidate1.id)
         self.assertEqual(self.candidate1.description, 'test edit candidate')
+<<<<<<< HEAD
 class AreaAddTest(TestCase):
     def setUp(self) -> None:
         self.staff = User.objects.create_superuser(username="staff", password="password")
@@ -543,3 +614,5 @@ class AreaEditView(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+=======
+>>>>>>> 9abdd2941d319ad5700181b99a98a5ce614ef450
