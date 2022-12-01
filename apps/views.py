@@ -1,6 +1,3 @@
-import copy
-import math
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -14,7 +11,8 @@ from apps.forms import AreaForm, CandidateForm, StartElectionForm, EditElectionF
     PartyVoteForm, AddCandidateToPartyForm
 from apps.models import LegacyArea, LegacyCandidate, LegacyElection, LegacyVote, LegacyParty, NewArea, NewCandidate, \
     NewElection, NewParty, VoteCheck, VoteResultCandidate, VoteResultParty
-from apps.utils import check_election_status, get_sorted_election_result
+from apps.utils import check_election_status, get_sorted_election_result, calculate_election_party_result, \
+    is_there_ongoing_election
 from users.models import ColourSettings, UtilityMissionLog
 
 
@@ -359,11 +357,13 @@ def election_list(request):
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/election/election.html', {
             'colour_settings': colour_settings,
-            'all_election_new': rendered_new_election
+            'all_election_new': rendered_new_election,
+            'enable_create': not is_there_ongoing_election()
         })
     else:
         return render(request, 'apps/election/election.html', {
-            'all_election_new': rendered_new_election
+            'all_election_new': rendered_new_election,
+            'enable_create': not is_there_ongoing_election()
         })
 
 
@@ -431,7 +431,8 @@ def election_detail_new(request, election_id):
             'colour_settings': colour_settings,
             'election': election_object,
             'status': check_election_status(election_object),
-            'vote_history': VoteCheck.objects.filter(election=election_object, user=request.user).first()
+            'vote_history': VoteCheck.objects.filter(election=election_object, user=request.user).first(),
+            'right_to_vote': request.user.newprofile.right_to_vote
         })
     else:
         return render(request, 'apps/election/election_detail_new.html', {
@@ -447,21 +448,12 @@ def start_election(request):
 
     This function is only accessible to the staff or superuser.
     """
-    previous_election = NewElection.objects.all()
-    for election in previous_election:
-        if check_election_status(election) == "Ongoing":
-            messages.error(request, 'There are ongoing election.')
-            return redirect('election_list')
-
+    if NewElection.objects.filter(start_date__lte=timezone.now(), end_date__gte=timezone.now()).exists():
+        messages.error(request, 'There is already an election ongoing.')
+        return redirect('election_list')
     if request.user.is_staff or request.user.is_superuser:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         if request.method == 'POST':
-            # previous_election = NewElection.objects.all()
-            # for election in previous_election:
-            #     if check_election_status(election) == "Ongoing":
-            #         messages.error(request, 'There are ongoing election.')
-            #         return redirect('election_list')
-
             form = StartElectionForm(request.POST, request.FILES)
             if form.is_valid():
                 election = form.save(commit=False)
@@ -523,6 +515,9 @@ def vote(request, election_id):
     """
     if request.user.newprofile.area is None:
         messages.error(request, 'Please contact administrator to set your area.')
+        return redirect('election_detail_new', election_id=election_id)
+    elif not request.user.newprofile.right_to_vote:
+        messages.error(request, 'You are not allowed to vote.')
         return redirect('election_detail_new', election_id=election_id)
     else:
         try:
@@ -762,60 +757,26 @@ def new_election_result_by_party(request, election_id):
     except NewElection.DoesNotExist:
         messages.error(request, 'This election does not exist.')
         return redirect('election_list')
-    # Get all user who vote in this election
-    vote_per_seat = VoteCheck.objects.filter(election=election).count() / 500 if VoteCheck.objects.filter(
-        election=election).count() > 0 else 0
-    supposed_to_have_result = []
-    for party in NewParty.objects.all():
-        supposed_to_have_result.append({
-            'party': party,
-            'number': VoteResultParty.objects.filter(election=election, party=party).count() / vote_per_seat if vote_per_seat else 0
-        })
-    real_result = copy.deepcopy(supposed_to_have_result)
-    for result in real_result:
-        # If the party has get first place in the election on the area on VoteResultCandidate, minus that number from the supposed to have result
-        for area in NewArea.objects.all():
-            first_place = VoteResultCandidate.objects.filter(election=election, candidate__area_id=area.id).order_by(
-                '-vote').first()
-            if first_place and first_place.candidate.party == result['party']:
-                result['number'] -= 1
-    # Combine two list
-    result = []
-    for supposed, real in zip(supposed_to_have_result, real_result):
-        result.append({
-            'party': supposed['party'],
-            'supposed_to_have': supposed['number'],
-            'real': real['number']
-        })
-    # floor the result
-    for party in result:
-        party['supposed_to_have'] = math.floor(party['supposed_to_have'])
-        party['real'] = math.floor(party['real'])
-    # Add detail on number during calculation
-    calculation_detail = {
-        'vote_per_seat': vote_per_seat,
-        'total_vote': VoteCheck.objects.filter(election=election).count()
-    }
-    # Sort the result by real number
-    result = sorted(result, key=lambda k: k['real'], reverse=True)
+    result = calculate_election_party_result(election.id)
+    print(result)
     if request.user.is_authenticated:
         colour_settings = ColourSettings.objects.filter(user=request.user).first()
         return render(request, 'apps/vote/new_election_result_by_party.html', {
             'colour_settings': colour_settings,
             'election': election,
-            'supposed_to_have_result': supposed_to_have_result,
-            'real_result': real_result,
-            'result': result,
-            'calculation_detail': calculation_detail,
+            'supposed_to_have_result': result['supposed_to_have_result'],
+            'real_result': result['real_result'],
+            'result': result['result'],
+            'calculation_detail': result['calculation_detail'],
             'raw_result': VoteResultParty.objects.filter(election=election).order_by('-vote'),
         })
     else:
         return render(request, 'apps/vote/new_election_result_by_party.html', {
             'election': election,
-            'supposed_to_have_result': supposed_to_have_result,
-            'real_result': real_result,
-            'result': result,
-            'calculation_detail': calculation_detail,
+            'supposed_to_have_result': result['supposed_to_have_result'],
+            'real_result': result['real_result'],
+            'result': result['result'],
+            'calculation_detail': result['calculation_detail'],
             'raw_result': VoteResultParty.objects.filter(election=election).order_by('-vote'),
         })
 
